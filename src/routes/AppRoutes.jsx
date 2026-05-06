@@ -33,7 +33,7 @@ import AnnouncementsPage from "../pages/hr/AnnouncementsPage";
 import AttendanceCorrectionRequest from "../pages/employee/Attendancecorrectionrequest";
 import AttendanceCorrectionApproval from "../pages/hr/AttendanceCorrectionApproval";
 import HRHelpdesk from "../pages/hr/HRHelpdesk";
-import TeamAttendance from "../pages/teamLeader/Teamattendance";
+import TeamAttendance from "../pages/teamLeader/TeamAttendance";
 import HRAttendanceOverview from "../pages/hr/HRAttendanceOverview";
 import PublicProfile from "../pages/employee/PublicProfile";
 import ScanLogsPage from "../components/scanner/ScanLogsPage";
