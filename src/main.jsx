@@ -26,8 +26,7 @@ createRoot(document.getElementById('root')).render(
           draggable
           theme="colored"
         />
-
       </AuthProvider>
     </BrowserRouter>
-  </StrictMode>,
+  </StrictMode>
 )
