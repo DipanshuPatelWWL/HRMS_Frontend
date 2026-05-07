@@ -30,7 +30,7 @@ import LeaveApproval from "../pages/hr/LeaveApproval";
 import PayrollMgmt from "../pages/hr/PayrollMgmt";
 import HRHoliday from "../pages/hr/Holiday";
 import AnnouncementsPage from "../pages/hr/AnnouncementsPage";
-import AttendanceCorrectionRequest from "../pages/employee/Attendancecorrectionrequest";
+import AttendanceCorrectionRequest from "../pages/employee/AttendanceCorrectionRequest";
 import AttendanceCorrectionApproval from "../pages/hr/AttendanceCorrectionApproval";
 import HRHelpdesk from "../pages/hr/HRHelpdesk";
 import TeamAttendance from "../pages/teamLeader/TeamAttendance";
