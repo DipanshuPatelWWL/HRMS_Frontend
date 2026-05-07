@@ -44,7 +44,7 @@ import Celebrations from "../components/common/Celebrations";
 import ManagerSalesReports from "../pages/manager/ManagerSalesReports";
 
 // ─────────────────────────────────────────────
-//  Protected route wrapper
+//  Protected route
 // ─────────────────────────────────────────────
 const Protected = ({ children, allowedRoles }) => {
     const { user } = useContext(AuthContext);
