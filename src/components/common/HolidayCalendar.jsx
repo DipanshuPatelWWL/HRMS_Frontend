@@ -3,6 +3,7 @@ import Calendar from "react-calendar";
 import axios from "axios";
 import DashboardLayout from "../layout/DashboardLayout";
 import StopwatchLoader from "./StopwatchLoader";
+import API from "../../services/api";
 
 const HolidayCalendar = () => {
     const [value, setValue] = useState(new Date());
@@ -18,9 +19,8 @@ const HolidayCalendar = () => {
             try {
                 const month = value.getMonth() + 1;
                 const year = value.getFullYear();
-                const res = await axios.get(
-                    `http://localhost:5000/api/holidays?month=${month}&year=${year}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
+                const res = await API.get(
+                    `/holidays?month=${month}&year=${year}`
                 );
                 setHolidays(res.data.holidays);
             } catch (err) {

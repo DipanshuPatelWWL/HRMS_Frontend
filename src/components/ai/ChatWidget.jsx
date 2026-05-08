@@ -1,10 +1,7 @@
 import { useState, useContext, useRef, useEffect } from "react";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
-
-const API_URL = import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL}/api/ai/ask`
-    : "http://localhost:5000/api/ai/ask";
+import API from "../../services/api";
 
 const SOURCE_LABELS = { kb: "Knowledge Base", db: "Live Data", ai: "AI" };
 const SOURCE_COLORS = { kb: "#7c3aed", db: "#059669", ai: "#2563eb" };
@@ -44,11 +41,9 @@ export default function ChatWidget() {
         setLoading(true);
 
         try {
-            const res = await axios.post(
-                API_URL,
-                { question: text },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const res = await API.post("/ai/ask", {
+                question: text,
+            });
             setMessages(prev => [
                 ...prev,
                 { from: "ai", text: res.data.answer, source: res.data.source },

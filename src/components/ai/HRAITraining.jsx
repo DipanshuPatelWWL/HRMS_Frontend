@@ -13,6 +13,7 @@ import {
     FiInbox,
 } from "react-icons/fi";
 import { LuBrain } from "react-icons/lu";
+import API from "../../services/api";
 
 const HRAITraining = () => {
     const [questions, setQuestions] = useState([]);
@@ -34,9 +35,7 @@ const HRAITraining = () => {
     const fetchQuestions = async () => {
         try {
             setLoading(true);
-            const res = await axios.get("http://localhost:5000/api/hr-ai/unanswered", {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const res = await API.get("/hr-ai/unanswered");
             setQuestions(res.data.questions || []);
         } catch (error) {
             showToast(error?.response?.data?.message || "Failed to fetch questions", "error");
@@ -54,11 +53,9 @@ const HRAITraining = () => {
         if (!answers[id]?.trim()) return showToast("Please write an answer first", "error");
         try {
             setSavingId(id);
-            await axios.post(
-                `http://localhost:5000/api/hr-ai/answer/${id}`,
-                { answer: answers[id] },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await API.post(`/hr-ai/answer/${id}`, {
+                answer: answers[id],
+            });
             showToast("Answer saved & added to Knowledge Base ✓");
             setAnswers((prev) => ({ ...prev, [id]: "" }));
             fetchQuestions();
@@ -73,9 +70,7 @@ const HRAITraining = () => {
     const deleteQuestion = async (id) => {
         try {
             setDeletingId(id);
-            await axios.delete(`http://localhost:5000/api/hr-ai/unanswered/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            await API.delete(`/hr-ai/unanswered/${id}`);
             showToast("Question deleted successfully");
             setQuestions((prev) => prev.filter((q) => q._id !== id));
             setConfirmDeleteId(null);

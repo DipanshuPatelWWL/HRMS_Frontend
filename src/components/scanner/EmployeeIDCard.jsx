@@ -1,5 +1,6 @@
 import { QRCodeSVG } from "qrcode.react";
 import { useRef } from "react";
+import { BASE_URL } from "../../services/api";
 
 /* ── Company constants ── */
 const COMPANY = {
@@ -313,7 +314,7 @@ function CardBack({ user, logoImg }) {
                         boxShadow: "0 2px 10px rgba(0,0,0,.1)",
                     }}>
                         <QRCodeSVG
-                            value={`http://localhost:5000/api/employee/${user?.employeeId || "WWL000"}`}
+                            value={`${BASE_URL}/employee/${user?.employeeId || "WWL000"}`}
                             size={80}
                             fgColor={THEME.navy}
                             bgColor="#ffffff"
