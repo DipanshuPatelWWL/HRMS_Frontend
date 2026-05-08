@@ -997,6 +997,37 @@ const Employees = () => {
 
                 .emp-root { font-family: 'Inter', -apple-system, sans-serif; }
 
+                /* ── MODAL BACKDROP FIX ── */
+                .modal-backdrop {
+                    position: fixed !important;
+                    inset: 0 !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    bottom: 0 !important;
+                    z-index: 99999 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    padding: 1rem !important;
+                    background: rgba(15, 23, 42, 0.55) !important;
+                    backdrop-filter: blur(6px) !important;
+                    -webkit-backdrop-filter: blur(6px) !important;
+                    overflow-y: auto !important;
+                }
+
+                /* ── MODAL BOX FIX ── */
+                .modal {
+                    position: relative !important;
+                    z-index: 100000 !important;
+                    background: #ffffff !important;
+                    border-radius: 16px !important;
+                    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25), 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+                    padding: 1.5rem !important;
+                    width: 100% !important;
+                    margin: auto !important;
+                }
+
                 /* ── Toolbar ── */
                 .emp-toolbar {
                     display: flex;
@@ -1026,8 +1057,8 @@ const Employees = () => {
                     animation: modalSlideIn 0.2s ease-out;
                 }
                 @keyframes modalSlideIn {
-                    from { opacity: 0; transform: translateY(-20px); }
-                    to { opacity: 1; transform: translateY(0); }
+                    from { opacity: 0; transform: translateY(-20px) scale(0.97); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
                 }
                 @keyframes fadeInError {
                     from { opacity: 0; transform: translateY(-4px); }
@@ -1185,6 +1216,7 @@ const Employees = () => {
                     .emp-stat-card { grid-template-columns: 1fr 1fr; gap: .5rem; padding: .75rem; }
                     .stat-value { font-size: 1.4rem; }
                     .enhanced-modal { width: calc(100% - 1rem); }
+                    .modal-backdrop { padding: 0.5rem !important; align-items: flex-start !important; padding-top: 1rem !important; }
                 }
                 @media (max-width: 480px) {
                     .emp-toolbar-right { flex-wrap: wrap; }

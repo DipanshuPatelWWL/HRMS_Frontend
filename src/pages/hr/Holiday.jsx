@@ -215,7 +215,8 @@ const HRHoliday = () => {
                                     style={{ opacity: isLoading ? 0.7 : 1 }}
                                     disabled={isLoading}
                                 >
-                                    {isLoading ? "Saving..." : editingId ? "Update Holiday" : "Add Holiday"}
+                                    {isLoading ? (<><span className="spinner" /> Saving...</>
+                                    ) : (editingId ? "Update Holiday" : "Add Holiday")}
                                 </button>
                             </div>
                         </div>
@@ -384,6 +385,17 @@ const HRHoliday = () => {
                     display: flex;
                     flex-direction: column;
                     gap: 16px;
+                }
+
+                /* ── Spinner ── */
+                .spinner {
+                    width: 14px; height: 14px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top-color: white;
+                    border-radius: 50%;
+                    display: inline-block;
+                    animation: spin 0.6s linear infinite;
+                    margin-right: 6px;
                 }
 
                 /* ───────── CALENDAR CARD ───────── */

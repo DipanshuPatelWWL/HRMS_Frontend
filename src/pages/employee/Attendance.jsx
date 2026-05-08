@@ -566,7 +566,20 @@ const Attendance = () => {
 
     return (
         <>
-            <style>{css}</style>
+            <style>
+                {`
+                ${css}
+                /* ── Spinner ── */
+                .spinner {
+                    width: 14px; height: 14px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top-color: white;
+                    border-radius: 50%;
+                    display: inline-block;
+                    animation: spin 0.6s linear infinite;
+                    margin-right: 6px;
+                }`}
+            </style>
             <DashboardLayout>
                 <div className="att-root">
 
@@ -643,7 +656,8 @@ const Attendance = () => {
                                 className="btn-punch btn-punchin"
                             >
                                 <Icon d={icons.login} size={15} color="#052e16" />
-                                {navigator.onLine ? "Punch In" : "Punch In (Offline)"}
+                                {loading ? <><span className="spinner" /> Punching In...</>
+                                    : navigator.onLine ? "Punch In" : "Punch In (Offline)"}
                             </button>
                             <button
                                 onClick={navigator.onLine ? handlePunchOut : () => saveOfflinePunch("punch-out")}
@@ -652,7 +666,8 @@ const Attendance = () => {
                                 className="btn-punch btn-punchout"
                             >
                                 <Icon d={icons.logout} size={15} />
-                                {navigator.onLine ? "Punch Out" : "Punch Out (Offline)"}
+                                {loading ? <><span className="spinner" /> Punching Out...</>
+                                    : navigator.onLine ? "Punch Out" : "Punch Out (Offline)"}
                             </button>
                         </div>
                     </div>

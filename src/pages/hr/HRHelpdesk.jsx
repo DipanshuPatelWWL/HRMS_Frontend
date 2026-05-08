@@ -756,6 +756,18 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
 
     return (
         <div className="hr-backdrop" onClick={onClose}>
+            <style>
+                {`/* ── Spinner ── */
+                .spinner {
+                    width: 14px; height: 14px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top-color: white;
+                    border-radius: 50%;
+                    display: inline-block;
+                    animation: spin 0.6s linear infinite;
+                    margin-right: 6px;
+                }`}
+            </style>
             <div className="hr-modal" onClick={(e) => e.stopPropagation()}>
 
                 {/* Header */}
@@ -855,7 +867,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                             onClick={handleSaveControls}
                             disabled={saving || !isDirty}
                         >
-                            {saving ? "Saving…" : "Save changes"}
+                            {saving ? (<><span className="spinner" /> Saving...</>) : ("Save changes")}
                         </button>
                     </div>
                 </div>

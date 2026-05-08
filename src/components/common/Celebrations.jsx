@@ -511,6 +511,18 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}
             onClick={e => e.target === e.currentTarget && onClose()}
         >
+            <style>
+                {`/* ── Spinner ── */
+                .spinner {
+                    width: 14px; height: 14px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top-color: white;
+                    border-radius: 50%;
+                    display: inline-block;
+                    animation: spin 0.6s linear infinite;
+                    margin-right: 6px;
+                }`}
+            </style>
             <div style={{
                 background: "#fff", borderRadius: 18, border: "1px solid #e5e7eb",
                 width: "100%", maxWidth: showPreview ? 880 : 520,
@@ -756,7 +768,7 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
                             }}
                         >
                             {saving ? <FaSpinner style={{ animation: "spin 1s linear infinite" }} /> : <FaCheck />}
-                            {editData ? "Save Changes" : "Schedule"}
+                            {editData ? (<><span className="spinner" /> Save Changes</>) : ("Schedule")}
                         </button>
                     </div>
                 </div>

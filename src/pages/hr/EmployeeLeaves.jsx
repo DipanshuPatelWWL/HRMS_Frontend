@@ -106,6 +106,16 @@ const EmployeeLeaves = () => {
                     display: flex; align-items: center; justify-content: center;
                     font-weight: 700; font-size: .9rem; flex-shrink: 0; color: #fff;
                 }
+                    /* ── Spinner ── */
+                .spinner {
+                    width: 14px; height: 14px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top-color: white;
+                    border-radius: 50%;
+                    display: inline-block;
+                    animation: spin 0.6s linear infinite;
+                    margin-right: 6px;
+                }
                 .hlb-stat-row {
                     display: grid;
                     grid-template-columns: repeat(3, 1fr);
@@ -352,7 +362,7 @@ const EmployeeLeaves = () => {
                                     disabled={saving}
                                     style={{ flex: 1, justifyContent: "center" }}
                                 >
-                                    {saving ? "Saving…" : "💾  Save Balance"}
+                                    {saving ? (<><span className="spinner" /> Saving...</>) : ("💾 Save Balance")}
                                 </button>
                                 <button
                                     className="btn"
