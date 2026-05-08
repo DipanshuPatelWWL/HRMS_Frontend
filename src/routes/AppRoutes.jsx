@@ -42,6 +42,7 @@ import ManagerTasks from "../pages/manager/ManagerTasks";
 import EmployeeLeaves from "../pages/hr/EmployeeLeaves";
 import Celebrations from "../components/common/Celebrations";
 import ManagerSalesReports from "../pages/manager/ManagerSalesReports";
+import HRAITraining from "../components/ai/HRAITraining";
 
 // ─────────────────────────────────────────────
 //  Protected route
@@ -135,6 +136,7 @@ const AppRoutes = () => (
         <Route path="/hr/scan-logs" element={<Protected allowedRoles={["hr"]}><ScanLogsPage /></Protected>} />
         <Route path="/hr/employee-leave" element={<Protected allowedRoles={["hr"]}><EmployeeLeaves /></Protected>} />
         <Route path="/hr/upcoming-events" element={<Protected allowedRoles={["hr"]}><Celebrations /></Protected>} />
+        <Route path="/hr/ai-training" element={<Protected allowedRoles={["hr"]}><HRAITraining /></Protected>} />
 
 
 
