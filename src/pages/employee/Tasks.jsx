@@ -676,6 +676,18 @@ const ViewTaskModal = ({ task, onClose, onSave }) => {
 
     return (
         <div className="tk-backdrop" onClick={onClose}>
+            <style>
+                {`/* ── Spinner ── */
+                .spinner {
+                    width: 14px; height: 14px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top-color: white;
+                    border-radius: 50%;
+                    display: inline-block;
+                    animation: spin 0.6s linear infinite;
+                    margin-right: 6px;
+                }`}
+            </style>
             <div className="tk-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="tk-modal-header">
                     <div className="tk-modal-title">{task.title}</div>
@@ -758,7 +770,7 @@ const ViewTaskModal = ({ task, onClose, onSave }) => {
                 )}
 
                 <button className="tk-save-btn" onClick={handleSave} disabled={saving || !changed}>
-                    {saving ? "Saving…" : "Save changes"}
+                    {saving ? <><span className="spinner" /> Saving...</> : "Save changes"}
                 </button>
             </div>
         </div>
@@ -892,7 +904,7 @@ const TaskFormModal = ({ mode = "create", task = null, members = [], onClose, on
                 )}
 
                 <button className="tk-save-btn" onClick={handleSubmit} disabled={saving}>
-                    {saving ? "Saving…" : mode === "create" ? "Create Task" : "Update Task"}
+                    {saving ? (<><span className="spinner" /> Saving...</>) : mode === "create" ? ("Create Task") : ("Update Task")}
                 </button>
             </div>
         </div>
