@@ -904,7 +904,8 @@ export default function Profile() {
                     {selfMsg && <Alert {...selfMsg} />}
                     <div>
                         <Btn type="submit" loading={selfLoading}>
-                            <LuSave size={14} /> {selfLoading ? "Saving…" : "Save Changes"}
+                            {selfLoading ? (<><span className="spinner" /> Saving...</>) : (<><LuSave size={14} /> Save Changes
+                            </>)}
                         </Btn>
                     </div>
                 </form>
@@ -1175,7 +1176,21 @@ export default function Profile() {
     ════════════════════════════════════════ */
     return (
         <DashboardLayout profileComplete={profileComplete}>
-            <style>{css}</style>
+            <style>
+                {`
+                ${css}
+                
+                /* ── Spinner ── */
+                .spinner {
+                    width: 14px; height: 14px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top-color: white;
+                    border-radius: 50%;
+                    display: inline-block;
+                    animation: spin 0.6s linear infinite;
+                    margin-right: 6px;
+                }`}
+            </style>
 
             <div style={{ maxWidth: 860, margin: "0 auto", padding: "0 0 48px", fontFamily: ff }}>
 

@@ -208,6 +208,18 @@ const ReportModal = ({ open, onClose, onSave, editData, saving }) => {
                 background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(6px)',
             }}
         >
+            <style>
+                {`/* ── Spinner ── */
+                .spinner {
+                    width: 14px; height: 14px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top-color: white;
+                    border-radius: 50%;
+                    display: inline-block;
+                    animation: spin 0.6s linear infinite;
+                    margin-right: 6px;
+                }`}
+            </style>
             <div
                 onClick={e => e.stopPropagation()}
                 style={{
@@ -368,7 +380,8 @@ const ReportModal = ({ open, onClose, onSave, editData, saving }) => {
                                 display: 'inline-block',
                             }} />
                         )}
-                        {saving ? 'Saving...' : editData ? 'Update Report' : 'Add Report'}
+                        {saving ? (<><span className="spinner" /> Saving...</>) : editData ? (
+                            "Update Report") : ("Add Report")}
                     </button>
                 </div>
             </div>
