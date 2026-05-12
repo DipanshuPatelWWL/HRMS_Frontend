@@ -235,6 +235,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <NavItem to="/employee/holidays" label="Holiday Calendar" iconKey="holiday" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/leave" label="Leave" iconKey="leave" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/attendance-correction" label="Attendance Correction" iconKey="attendanceCorrection" onClick={onClose} collapsed={collapsed} />
+                        <NavItem to="/employee/daily-report" label="Daily Report" iconKey="attendanceCorrection" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/payroll" label="Payroll" iconKey="payroll" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/tasks" label="Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
@@ -337,6 +338,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager-view-task" label="View Tasks" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager/upcoming-events" label="Upcoming Events" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-sales-reports" label="Sales Report" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager-daily-report" label="Daily Report" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>

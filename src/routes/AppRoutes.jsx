@@ -19,6 +19,7 @@ import Helpdesk from "../pages/employee/Helpdesk";
 import Announcements from "../pages/employee/Announcements";
 
 import SalesReports from "../pages/employee/SalesReports"
+import DailyReports from "../pages/employee/DailyReports";
 
 // TL pages
 import TLDashboard from "../pages/teamLeader/Tldashboard"; // NEW
@@ -42,6 +43,7 @@ import ManagerTasks from "../pages/manager/ManagerTasks";
 import EmployeeLeaves from "../pages/hr/EmployeeLeaves";
 import Celebrations from "../components/common/Celebrations";
 import ManagerSalesReports from "../pages/manager/ManagerSalesReports";
+import ManagerDailyReport from "../pages/manager/ManagerDailyReport";
 import HRAITraining from "../components/ai/HRAITraining";
 import BDESalesReport from "../pages/bde-bdm/BDESalesReport";
 
@@ -100,6 +102,7 @@ const AppRoutes = () => (
         <Route path="/employee/announcements" element={<Protected allowedRoles={["employee"]}><Announcements /></Protected>} />
         <Route path="/employee/holidays" element={<Protected allowedRoles={["employee"]}><HolidayCalendar /></Protected>} />
         <Route path="/employee/attendance-correction" element={<Protected allowedRoles={["employee"]}><AttendanceCorrectionRequest /></Protected>} />
+        <Route path="/employee/daily-report" element={<Protected allowedRoles={["employee"]}><DailyReports /></Protected>} />
 
         {/* Sales Report Route */}
         <Route path="/employee/sales-reports"
@@ -180,6 +183,7 @@ const AppRoutes = () => (
         <Route path="/manager-view-task" element={<Protected allowedRoles={["manager"]}><ManagerTasks /></Protected>} />
         <Route path="/manager/upcoming-events" element={<Protected allowedRoles={["manager"]}><Celebrations /></Protected>} />
         <Route path="/manager-sales-reports" element={<Protected allowedRoles={["manager"]}><ManagerSalesReports /></Protected>} />
+        <Route path="/manager-daily-report" element={<Protected allowedRoles={["manager"]}><ManagerDailyReport /></Protected>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/login" replace />} />

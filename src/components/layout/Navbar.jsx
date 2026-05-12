@@ -17,6 +17,7 @@ const pageTitles = {
     "/employee/announcements": "Announcements",
 
     "/employee/sales-reports": "Sales Report",
+    "/employee/daily-report": "Daily Report",
 
     // TL – Personal
     "/tl": "TL Dashboard",
@@ -56,6 +57,7 @@ const pageTitles = {
     "/manager-view-task": "View Tasks",
     "/manager/upcoming-events": "Upcoming Events",
     "/manager-sales-reports": "Sales Reports",
+    "/manager-daily-report": "Daily Report",
 };
 
 /* ── Icons ── */
