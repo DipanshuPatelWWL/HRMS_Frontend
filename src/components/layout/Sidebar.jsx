@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useLayoutEffect, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
 
 import {
@@ -164,6 +164,8 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
     const { user, logout } = useContext(AuthContext);
     const styleInjected = useRef(false);
 
+    const navRef = useRef(null);
+
     useEffect(() => {
         if (styleInjected.current) return;
         const tag = document.createElement("style");
@@ -172,6 +174,32 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
         document.head.appendChild(tag);
         styleInjected.current = true;
     }, []);
+
+
+
+    useLayoutEffect(() => {
+        const nav = navRef.current;
+
+        if (!nav) return;
+
+        // Restore instantly before paint
+        const savedScroll = sessionStorage.getItem("sidebar-scroll");
+
+        if (savedScroll) {
+            nav.scrollTop = parseInt(savedScroll, 10);
+        }
+
+        const handleScroll = () => {
+            sessionStorage.setItem("sidebar-scroll", nav.scrollTop);
+        };
+
+        nav.addEventListener("scroll", handleScroll);
+
+        return () => {
+            nav.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
+
 
     const sidebarClass = [
         "sidebar",
@@ -196,7 +224,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
             </div>
 
             {/* ── Navigation ── */}
-            <nav className="sidebar-nav">
+            <nav className="sidebar-nav" ref={navRef}>
 
                 {/* EMPLOYEE */}
                 {user?.role === "employee" && (
@@ -212,14 +240,34 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <NavItem to="/employee/tasks" label="Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
-                        <NavItem to="/employee/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
 
                         {
-                            user.role === "employee" && user.department === "Sales" && (
+                            user.role === "employee" && user.department === "Sales" && user.designation !== "Business Development Manager" && user.designation !== "Business Development Executive" && (
                                 <NavItem to="/employee/sales-reports" label="Sales Report" iconKey="profile" onClick={onClose} collapsed={collapsed} />
 
                             )
                         }
+
+                        <div>
+                            {/* BDE - BDM  */}
+                            {
+                                user.department === "Sales" &&
+                                (
+                                    user.designation === "Business Development Manager" ||
+                                    user.designation === "Business Development Executive"
+                                ) && (
+                                    <NavItem
+                                        to="/sales-reports"
+                                        label="Sales Report"
+                                        iconKey="profile"
+                                        onClick={onClose}
+                                        collapsed={collapsed}
+                                    />
+                                )
+                            }
+                        </div>
+
+                        <NavItem to="/employee/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                     </div>
                 )}
 
@@ -249,6 +297,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                     </>
                 )}
 
+
                 {/* HR */}
                 {user?.role === "hr" && (
                     <>
@@ -261,6 +310,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/scan-logs" label="Scan Logs" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/upcoming-events" label="Upcoming Events" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/ai-training" label="AI Training" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>

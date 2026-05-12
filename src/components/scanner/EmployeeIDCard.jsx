@@ -1,5 +1,6 @@
 import { QRCodeSVG } from "qrcode.react";
 import { useRef } from "react";
+import { BASE_URL, QR_CODE_URL } from "../../services/api";
 
 /* ── Company constants ── */
 const COMPANY = {
@@ -313,7 +314,7 @@ function CardBack({ user, logoImg }) {
                         boxShadow: "0 2px 10px rgba(0,0,0,.1)",
                     }}>
                         <QRCodeSVG
-                            value={`http://localhost:5000/api/employee/${user?.employeeId || "WWL000"}`}
+                            value={`${QR_CODE_URL}/employee/${user?.employeeId || "WWL000"}`}
                             size={80}
                             fgColor={THEME.navy}
                             bgColor="#ffffff"
@@ -492,38 +493,3 @@ export default function EmployeeIDCard({ user, logoImg, BASE_URL }) {
         </div>
     );
 }
-
-/*
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  HOW TO USE IN Profile.jsx
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. Import:
-   import EmployeeIDCard from "../../components/profile/EmployeeIDCard";
-   import logoImg from "../../assets/logo.png";
-
-2. User object expected shape:
-   {
-     name: "Dipanshu Patel",
-     designation: "Jr. Developer",
-     employeeId: "WWL126",
-     joiningDate: "2025-05-15",       // ISO string or Date
-     avatar: "/uploads/avatar.jpg",   // relative or absolute URL
-     bloodGroup: "B+",
-     phone: "6388208718",
-     emergencyContact: "8470864154",
-     status: "active",
-   }
-
-3. Add panel:
-   idcard: (
-     <EmployeeIDCard
-       user={user}
-       logoImg={logoImg}
-       BASE_URL={BASE_URL}
-     />
-   ),
-
-4. Add tab: { id: "idcard", label: "ID Card", Icon: LuCreditCard }
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*/

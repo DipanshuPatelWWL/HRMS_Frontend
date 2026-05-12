@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import API from "../../services/api";
+import API, { BASE_URL } from "../../services/api";
 import logo from "../../assets/logo.png";
 
 import {
@@ -36,8 +36,6 @@ const ROLE_THEME = {
 const getTheme = (role) => ROLE_THEME[role?.toLowerCase()] ?? ROLE_THEME.employee;
 
 const ff = "'Plus Jakarta Sans', sans-serif";
-
-const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
 
 /* ════════════════════════════════════════
    LOADING SCREEN

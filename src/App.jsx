@@ -1,9 +1,25 @@
-import React from 'react'
+import React, { useContext } from "react";
+import { useLocation } from "react-router-dom";
 
 import AppRoutes from "./routes/AppRoutes";
+import ChatWidget from "./components/ai/ChatWidget.jsx";
+import { AuthContext } from "./context/AuthContext.jsx";
 
 const App = () => {
-  return <AppRoutes />;
-}
+  const { user } = useContext(AuthContext);
+  const location = useLocation();
 
-export default App
+  // Hide AI assistant on public employee profile
+  const hideChat =
+    /^\/employee\/[^/]+$/.test(location.pathname);
+
+  return (
+    <>
+      <AppRoutes />
+
+      {user && !hideChat && <ChatWidget />}
+    </>
+  );
+};
+
+export default App;

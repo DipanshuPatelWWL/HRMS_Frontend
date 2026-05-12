@@ -49,6 +49,7 @@ const pageTitles = {
     "/hr/scan-logs": "Scan Logs",
     "/hr/employee-leave": "Employee Leaves",
     "/hr/upcoming-events": "Upcoming Events",
+    "/hr/ai-training": "AI Training",
 
     // Manager
 

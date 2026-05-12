@@ -1,15 +1,22 @@
 import axios from "axios";
 
+export const BASE_URL = "https://hrms-backend-2qmr.onrender.com";
+export const QR_CODE_URL = "https://wwl-hrms.vercel.app";
+// export const BASE_URL = "http://localhost:5000";
+// export const QR_CODE_URL = "http://localhost:5173";
+
+
 const API = axios.create({
-    // baseURL: "http://localhost:5000/api"
-    baseURL: "https://hrms-backend-2qmr.onrender.com/api"
+    baseURL: `${BASE_URL}/api`,
 });
 
 API.interceptors.request.use((req) => {
     const token = localStorage.getItem("token");
+
     if (token) {
         req.headers.Authorization = `Bearer ${token}`;
     }
+
     return req;
 });
 
