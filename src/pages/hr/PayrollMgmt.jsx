@@ -52,20 +52,20 @@ const useFadeIn = (delay = 0) => {
 // ─────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
     const s = status === "paid"
-        ? { bg: "#dcfce7", color: "#166534", border: "#86efac", dot: "#16a34a", label: "Paid", Icon: FiCheckCircle }
-        : { bg: "#fef9c3", color: "#854d0e", border: "#fde047", dot: "#ca8a04", label: "Draft", Icon: FiClock };
+        ? { bg: "#dcfce7", color: "#14532d", border: "#4ade80", dot: "#16a34a", label: "Paid", Icon: FiCheckCircle }
+        : { bg: "#fef3c7", color: "#78350f", border: "#f59e0b", dot: "#d97706", label: "Draft", Icon: FiClock };
     return (
         <span style={{
-            background: s.bg, color: s.color, border: `1px solid ${s.border}`,
-            padding: "4px 10px", borderRadius: "20px", fontSize: ".71rem", fontWeight: 700,
-            display: "inline-flex", alignItems: "center", gap: 5,
+            background: s.bg, color: s.color, border: `1.5px solid ${s.border}`,
+            padding: "5px 12px", borderRadius: "20px", fontSize: ".78rem", fontWeight: 700,
+            display: "inline-flex", alignItems: "center", gap: 6,
             transition: "transform 0.2s ease, box-shadow 0.2s ease",
             cursor: "default",
         }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.06)"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.1)"; }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.06)"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.12)"; }}
             onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "none"; }}
         >
-            <s.Icon size={11} />
+            <s.Icon size={13} />
             {s.label}
         </span>
     );
@@ -76,9 +76,9 @@ const StatCard = ({ label, value, sub, accent, Icon, delay = 0 }) => {
     return (
         <div ref={ref} style={{
             background: "#fff",
-            border: "1px solid #e2e8f0",
+            border: "1px solid #d1d5db",
             borderRadius: 14,
-            padding: "1.1rem 1.25rem",
+            padding: "1.2rem 1.35rem",
             borderTop: `3px solid ${accent}`,
             transition: "transform 0.22s ease, box-shadow 0.22s ease",
             cursor: "default",
@@ -87,7 +87,7 @@ const StatCard = ({ label, value, sub, accent, Icon, delay = 0 }) => {
         }}
             onMouseEnter={e => {
                 e.currentTarget.style.transform = "translateY(-3px)";
-                e.currentTarget.style.boxShadow = `0 8px 28px rgba(0,0,0,0.09)`;
+                e.currentTarget.style.boxShadow = `0 8px 28px rgba(0,0,0,0.1)`;
             }}
             onMouseLeave={e => {
                 e.currentTarget.style.transform = "translateY(0)";
@@ -95,24 +95,24 @@ const StatCard = ({ label, value, sub, accent, Icon, delay = 0 }) => {
             }}
         >
             {/* Decorative bg icon */}
-            <div style={{ position: "absolute", top: 10, right: 14, opacity: 0.07, color: accent }}>
-                {Icon && <Icon size={42} />}
+            <div style={{ position: "absolute", top: 10, right: 14, opacity: 0.1, color: accent }}>
+                {Icon && <Icon size={44} />}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: ".4rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: ".5rem" }}>
                 {Icon && (
                     <span style={{
-                        background: `${accent}18`, color: accent,
-                        borderRadius: 8, width: 30, height: 30,
+                        background: `${accent}22`, color: accent,
+                        borderRadius: 8, width: 34, height: 34,
                         display: "grid", placeItems: "center", flexShrink: 0,
                         transition: "background 0.2s"
                     }}>
-                        <Icon size={15} />
+                        <Icon size={17} />
                     </span>
                 )}
-                <p style={{ fontSize: ".72rem", color: "#64748b", textTransform: "uppercase", letterSpacing: ".5px", fontWeight: 600 }}>{label}</p>
+                <p style={{ fontSize: ".78rem", color: "#374151", textTransform: "uppercase", letterSpacing: ".5px", fontWeight: 700 }}>{label}</p>
             </div>
-            <p style={{ fontSize: "1.6rem", fontWeight: 800, color: "#0f172a", lineHeight: 1 }}>{value}</p>
-            {sub && <p style={{ fontSize: ".72rem", color: "#94a3b8", marginTop: ".3rem" }}>{sub}</p>}
+            <p style={{ fontSize: "1.65rem", fontWeight: 800, color: "#111827", lineHeight: 1 }}>{value}</p>
+            {sub && <p style={{ fontSize: ".78rem", color: "#6b7280", marginTop: ".35rem", fontWeight: 500 }}>{sub}</p>}
         </div>
     );
 };
@@ -120,16 +120,16 @@ const StatCard = ({ label, value, sub, accent, Icon, delay = 0 }) => {
 // Icon button with ripple + hover
 const IconBtn = ({ onClick, disabled, title, children, variant = "ghost", style = {} }) => {
     const base = {
-        display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px",
-        borderRadius: 8, fontSize: ".75rem", fontWeight: 600, cursor: "pointer",
+        display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px",
+        borderRadius: 8, fontSize: ".8rem", fontWeight: 700, cursor: "pointer",
         border: "1px solid transparent", transition: "all 0.18s ease",
         outline: "none", ...style,
     };
     const variants = {
-        ghost: { background: "#f1f5f9", color: "#374151", borderColor: "#e2e8f0" },
+        ghost: { background: "#f3f4f6", color: "#111827", borderColor: "#d1d5db" },
         primary: { background: "#2563eb", color: "#fff", borderColor: "#2563eb" },
-        success: { background: "#166534", color: "#fff", borderColor: "#166534" },
-        danger: { background: "#fee2e2", color: "#991b1b", borderColor: "#fecaca" },
+        success: { background: "#15803d", color: "#fff", borderColor: "#15803d" },
+        danger: { background: "#fee2e2", color: "#7f1d1d", borderColor: "#fca5a5" },
     };
     return (
         <button
@@ -137,7 +137,7 @@ const IconBtn = ({ onClick, disabled, title, children, variant = "ghost", style 
             disabled={disabled}
             title={title}
             style={{ ...base, ...variants[variant], opacity: disabled ? 0.6 : 1 }}
-            onMouseEnter={e => { if (!disabled) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.12)"; } }}
+            onMouseEnter={e => { if (!disabled) { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.14)"; } }}
             onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
             onMouseDown={e => { if (!disabled) e.currentTarget.style.transform = "scale(0.96)"; }}
             onMouseUp={e => { if (!disabled) e.currentTarget.style.transform = ""; }}
@@ -154,19 +154,19 @@ const AnimSelect = ({ value, onChange, children, minWidth = 120 }) => (
             value={value}
             onChange={onChange}
             style={{
-                appearance: "none", padding: "7px 32px 7px 12px",
-                borderRadius: 8, border: "1px solid #e2e8f0",
-                background: "#fff", fontSize: ".8rem", fontWeight: 500,
-                color: "#1e293b", cursor: "pointer", minWidth,
+                appearance: "none", padding: "8px 34px 8px 13px",
+                borderRadius: 8, border: "1.5px solid #d1d5db",
+                background: "#fff", fontSize: ".85rem", fontWeight: 600,
+                color: "#111827", cursor: "pointer", minWidth,
                 transition: "border-color 0.18s, box-shadow 0.18s",
                 outline: "none",
             }}
-            onFocus={e => { e.target.style.borderColor = "#3b82f6"; e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.12)"; }}
-            onBlur={e => { e.target.style.borderColor = "#e2e8f0"; e.target.style.boxShadow = "none"; }}
+            onFocus={e => { e.target.style.borderColor = "#3b82f6"; e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.14)"; }}
+            onBlur={e => { e.target.style.borderColor = "#d1d5db"; e.target.style.boxShadow = "none"; }}
         >
             {children}
         </select>
-        <FiChevronDown size={13} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none" }} />
+        <FiChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
     </div>
 );
 
@@ -316,27 +316,27 @@ const PayrollMgmt = () => {
 
                 .pr-panel {
                     background: #fff;
-                    border: 1px solid #e2e8f0;
+                    border: 1px solid #d1d5db;
                     border-radius: 14px;
-                    padding: 1.35rem;
+                    padding: 1.45rem;
                     margin-bottom: 1.25rem;
                     transition: box-shadow 0.2s ease;
                 }
 
                 .pr-panel:hover {
-                    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+                    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
                 }
 
                 .pr-panel-title {
-                    font-size: .78rem;
-                    font-weight: 700;
-                    color: #1e293b;
+                    font-size: .85rem;
+                    font-weight: 800;
+                    color: #111827;
                     text-transform: uppercase;
                     letter-spacing: .6px;
                     margin-bottom: 1rem;
                     display: flex;
                     align-items: center;
-                    gap: .5rem;
+                    gap: .55rem;
                 }
 
                 .pr-panel-title svg {
@@ -357,21 +357,21 @@ const PayrollMgmt = () => {
                 /* Table */
                 .pr-table { border-collapse: collapse; }
                 .pr-table th {
-                    background: #f8fafc;
-                    font-size: .7rem;
+                    background: #f3f4f6;
+                    font-size: .76rem;
                     text-transform: uppercase;
                     letter-spacing: .5px;
-                    color: #64748b;
-                    font-weight: 700;
-                    border-bottom: 1px solid #e2e8f0;
-                    padding: .65rem .85rem;
+                    color: #374151;
+                    font-weight: 800;
+                    border-bottom: 1.5px solid #d1d5db;
+                    padding: .75rem .9rem;
                     white-space: nowrap;
                 }
                 .pr-table td {
-                    padding: .7rem .85rem;
-                    border-bottom: 1px solid #f1f5f9;
-                    font-size: .83rem;
-                    color: #262729;
+                    padding: .8rem .9rem;
+                    border-bottom: 1px solid #e5e7eb;
+                    font-size: .88rem;
+                    color: #111827;
                     transition: background 0.15s ease;
                 }
                 .pr-table tr:last-child td { border-bottom: none; }
@@ -379,13 +379,13 @@ const PayrollMgmt = () => {
                     transition: background 0.15s ease;
                     cursor: default;
                 }
-                .pr-table tbody tr:hover td { background: #f8fafc; }
-                .pr-table tbody tr.row-hovered td { background: #f0f7ff; }
+                .pr-table tbody tr:hover td { background: #f9fafb; }
+                .pr-table tbody tr.row-hovered td { background: #eff6ff; }
 
                 /* Checkbox */
                 .pr-cb {
-                    width: 15px;
-                    height: 15px;
+                    width: 16px;
+                    height: 16px;
                     cursor: pointer;
                     accent-color: #2563eb;
                     transition: transform 0.15s;
@@ -393,24 +393,28 @@ const PayrollMgmt = () => {
                 .pr-cb:hover { transform: scale(1.15); }
 
                 /* Employee chip */
-                .emp-chip { display: flex; align-items: center; gap: .6rem; }
+                .emp-chip { display: flex; align-items: center; gap: .7rem; }
                 .emp-avatar {
-                    width: 36px; height: 36px; border-radius: 10px;
-                    background: linear-gradient(135deg,#3b82f6,#8b5cf6);
+                    width: 38px; height: 38px; border-radius: 10px;
+                    background: linear-gradient(135deg,#2563eb,#7c3aed);
                     color: #fff; display: grid; place-items: center;
-                    font-size: .72rem; font-weight: 700; flex-shrink: 0;
+                    font-size: .75rem; font-weight: 800; flex-shrink: 0;
                     transition: transform 0.22s ease, box-shadow 0.22s ease;
                 }
                 .pr-table tbody tr:hover .emp-avatar {
                     transform: scale(1.08);
-                    box-shadow: 0 4px 12px rgba(59,130,246,0.35);
+                    box-shadow: 0 4px 14px rgba(37,99,235,0.38);
                 }
-                .emp-name { font-weight: 600; color: #0f172a; font-size: .83rem; }
-                .emp-meta { font-size: .69rem; color: #64748b; }
+                .emp-name { font-weight: 700; color: #0f172a; font-size: .9rem; }
+                .emp-meta { font-size: .75rem; color: #374151; font-weight: 500; margin-top: 1px; }
 
-                /* Action buttons area */
+                /* Action buttons area — always visible, stronger colors */
                 .pr-actions { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: flex-end; }
-                .pr-actions button { opacity: 0; transform: translateX(6px); transition: opacity 0.18s ease, transform 0.18s ease; }
+                .pr-actions button {
+                    opacity: 0.45;
+                    transform: translateX(4px);
+                    transition: opacity 0.18s ease, transform 0.18s ease;
+                }
                 .pr-table tbody tr:hover .pr-actions button,
                 .pr-table tbody tr.row-hovered .pr-actions button {
                     opacity: 1;
@@ -420,23 +424,24 @@ const PayrollMgmt = () => {
                 /* Toast */
                 .toast {
                     position: fixed; bottom: 1.5rem; right: 1.5rem;
-                    padding: .75rem 1.3rem; border-radius: 12px;
-                    font-size: .83rem; font-weight: 600; z-index: 9999;
-                    display: flex; align-items: center; gap: .6rem;
-                    box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+                    padding: .8rem 1.4rem; border-radius: 12px;
+                    font-size: .88rem; font-weight: 700; z-index: 9999;
+                    display: flex; align-items: center; gap: .65rem;
+                    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
                     transition: opacity 0.3s ease, transform 0.3s ease;
                 }
-                .toast.success { background: #166534; color: #fff; }
-                .toast.error   { background: #991b1b; color: #fff; }
+                .toast.success { background: #14532d; color: #fff; }
+                .toast.error   { background: #7f1d1d; color: #fff; }
                 .toast-enter   { opacity: 1; transform: translateY(0); }
                 .toast-exit    { opacity: 0; transform: translateY(14px); }
 
                 /* Gen result banner */
                 .gen-result {
                     background: linear-gradient(90deg, #f0fdf4, #dcfce7);
-                    border: 1px solid #86efac; border-radius: 10px;
-                    padding: .75rem 1rem; font-size: .8rem; color: #166534;
-                    margin-top: .75rem; display: flex; align-items: center; gap: .5rem;
+                    border: 1.5px solid #4ade80; border-radius: 10px;
+                    padding: .8rem 1.1rem; font-size: .85rem; color: #14532d;
+                    margin-top: .85rem; display: flex; align-items: center; gap: .55rem;
+                    font-weight: 600;
                     animation: slideDown 0.3s ease;
                 }
 
@@ -451,9 +456,10 @@ const PayrollMgmt = () => {
 
                 /* Attendance dots */
                 .att-dot {
-                    display: inline-flex; align-items: center; gap: 3px;
-                    padding: 2px 7px; border-radius: 20px; font-size: .71rem;
-                    font-weight: 700; transition: transform 0.18s ease;
+                    display: inline-flex; align-items: center; gap: 4px;
+                    padding: 3px 8px; border-radius: 20px; font-size: .76rem;
+                    font-weight: 800; transition: transform 0.18s ease;
+                    border: 1px solid transparent;
                 }
                 .att-dot:hover { transform: scale(1.1); }
 
@@ -465,8 +471,25 @@ const PayrollMgmt = () => {
 
                 /* Form label */
                 .pr-label {
-                    display: block; font-size: .72rem; font-weight: 600;
-                    color: #64748b; margin-bottom: .3rem; letter-spacing: .3px;
+                    display: flex; align-items: center; gap: 4px;
+                    font-size: .78rem; font-weight: 700;
+                    color: #374151; margin-bottom: .35rem; letter-spacing: .3px;
+                }
+
+                /* Period cell */
+                .period-cell {
+                    display: flex; align-items: center; gap: 6px;
+                    font-size: .86rem; color: #1f2937; font-weight: 500;
+                }
+
+                /* Net salary */
+                .net-salary {
+                    font-weight: 800; font-size: 1rem; color: #111827;
+                }
+
+                /* Deduction */
+                .deduction-val {
+                    color: #b91c1c; font-weight: 700; font-size: .88rem;
                 }
 
                 @media (max-width: 900px) { .pr-stats { grid-template-columns: 1fr 1fr; } }
@@ -477,18 +500,18 @@ const PayrollMgmt = () => {
                 {/* Header */}
                 <div ref={headerRef} className="pr-page-header">
                     <div>
-                        <h1 style={{ display: "flex", alignItems: "center", gap: 10, fontSize: "1.45rem", fontWeight: 800, color: "#0f172a", margin: 0 }}>
+                        <h1 style={{ display: "flex", alignItems: "center", gap: 11, fontSize: "1.55rem", fontWeight: 800, color: "#0f172a", margin: 0 }}>
                             <span style={{
                                 background: "linear-gradient(135deg,#2563eb,#7c3aed)",
-                                color: "#fff", width: 38, height: 38, borderRadius: 10,
+                                color: "#fff", width: 42, height: 42, borderRadius: 11,
                                 display: "grid", placeItems: "center",
-                                boxShadow: "0 4px 14px rgba(37,99,235,0.3)"
+                                boxShadow: "0 4px 16px rgba(37,99,235,0.32)"
                             }}>
-                                <FiCreditCard size={18} />
+                                <FiCreditCard size={20} />
                             </span>
                             Payroll Management
                         </h1>
-                        <p style={{ fontSize: ".83rem", color: "#64748b", margin: ".3rem 0 0 48px" }}>
+                        <p style={{ fontSize: ".88rem", color: "#374151", margin: ".35rem 0 0 53px", fontWeight: 500 }}>
                             Generate payslips, mark salaries as paid, and download records
                         </p>
                     </div>
@@ -499,29 +522,35 @@ const PayrollMgmt = () => {
                     <div className="pr-stats">
                         <StatCard label="Total Payslips" value={stats.total} sub={`${MONTHS[filterMonth - 1]} ${filterYear}`} accent="#3b82f6" Icon={FiUsers} delay={0} />
                         <StatCard label="Paid" value={stats.paid} sub={`₹${(stats.paidAmount || 0).toLocaleString("en-IN")}`} accent="#16a34a" Icon={FiCheckCircle} delay={80} />
-                        <StatCard label="Pending (Draft)" value={stats.draft} sub={`₹${(stats.draftAmount || 0).toLocaleString("en-IN")}`} accent="#f59e0b" Icon={FiClock} delay={160} />
-                        <StatCard label="Total Payable" value={`₹${(stats.totalNet || 0).toLocaleString("en-IN")}`} sub="Gross net salaries" accent="#8b5cf6" Icon={FiTrendingUp} delay={240} />
+                        <StatCard label="Pending (Draft)" value={stats.draft} sub={`₹${(stats.draftAmount || 0).toLocaleString("en-IN")}`} accent="#d97706" Icon={FiClock} delay={160} />
+                        <StatCard label="Total Payable" value={`₹${(stats.totalNet || 0).toLocaleString("en-IN")}`} sub="Gross net salaries" accent="#7c3aed" Icon={FiTrendingUp} delay={240} />
                     </div>
                 )}
 
                 {/* Generate Panel */}
                 <div ref={genPanelRef} className="pr-panel">
                     <p className="pr-panel-title">
-                        <span style={{ background: "#eff6ff", color: "#2563eb", width: 26, height: 26, borderRadius: 6, display: "grid", placeItems: "center" }}>
-                            <FiSettings size={13} />
+                        <span style={{ background: "#dbeafe", color: "#1d4ed8", width: 28, height: 28, borderRadius: 7, display: "grid", placeItems: "center" }}>
+                            <FiSettings size={15} />
                         </span>
                         Generate Payroll
                     </p>
-                    <div style={{ display: "flex", gap: ".75rem", flexWrap: "wrap", alignItems: "flex-end" }}>
+                    <div style={{ display: "flex", gap: ".85rem", flexWrap: "wrap", alignItems: "flex-end" }}>
                         <div>
-                            <label className="pr-label"><FiCalendar size={10} style={{ marginRight: 4 }} />Month</label>
-                            <AnimSelect value={genMonth} onChange={e => setGenMonth(+e.target.value)} minWidth={150}>
+                            <label className="pr-label">
+                                <FiCalendar size={12} color="#374151" />
+                                Month
+                            </label>
+                            <AnimSelect value={genMonth} onChange={e => setGenMonth(+e.target.value)} minWidth={155}>
                                 {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
                             </AnimSelect>
                         </div>
                         <div>
-                            <label className="pr-label"><FiCalendar size={10} style={{ marginRight: 4 }} />Year</label>
-                            <AnimSelect value={genYear} onChange={e => setGenYear(+e.target.value)} minWidth={100}>
+                            <label className="pr-label">
+                                <FiCalendar size={12} color="#374151" />
+                                Year
+                            </label>
+                            <AnimSelect value={genYear} onChange={e => setGenYear(+e.target.value)} minWidth={105}>
                                 {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                             </AnimSelect>
                         </div>
@@ -529,16 +558,16 @@ const PayrollMgmt = () => {
                             variant="primary"
                             onClick={handleGenerate}
                             disabled={generating}
-                            style={{ padding: "8px 18px", fontSize: ".82rem" }}
+                            style={{ padding: "9px 20px", fontSize: ".86rem" }}
                         >
                             {generating ? (
                                 <>
-                                    <FiRefreshCw size={14} className="spin" />
+                                    <FiRefreshCw size={15} className="spin" />
                                     Generating…
                                 </>
                             ) : (
                                 <>
-                                    <FiZap size={14} />
+                                    <FiZap size={15} />
                                     Generate for All Employees
                                 </>
                             )}
@@ -546,7 +575,7 @@ const PayrollMgmt = () => {
                     </div>
                     {genResult && (
                         <div className="gen-result">
-                            <FiCheckCircle size={15} />
+                            <FiCheckCircle size={17} />
                             <strong>{genResult.generated}</strong> payslip(s) generated successfully
                         </div>
                     )}
@@ -556,8 +585,8 @@ const PayrollMgmt = () => {
                 <div ref={tablePanelRef} className="pr-panel">
                     <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: ".75rem", marginBottom: "1rem" }}>
                         <p className="pr-panel-title" style={{ margin: 0 }}>
-                            <span style={{ background: "#f0fdf4", color: "#16a34a", width: 26, height: 26, borderRadius: 6, display: "grid", placeItems: "center" }}>
-                                <FiList size={13} />
+                            <span style={{ background: "#dcfce7", color: "#15803d", width: 28, height: 28, borderRadius: 7, display: "grid", placeItems: "center" }}>
+                                <FiList size={15} />
                             </span>
                             Payroll Records
                         </p>
@@ -566,34 +595,43 @@ const PayrollMgmt = () => {
                                 variant="success"
                                 onClick={handleBulkPaid}
                                 disabled={bulkLoading}
-                                style={{ fontSize: ".78rem", animation: "slideDown 0.2s ease" }}
+                                style={{ fontSize: ".82rem", animation: "slideDown 0.2s ease" }}
                             >
                                 {bulkLoading ? (
-                                    <><FiRefreshCw size={13} className="spin" />Processing…</>
+                                    <><FiRefreshCw size={14} className="spin" />Processing…</>
                                 ) : (
-                                    <><FiCheck size={13} />Mark {selected.size} as Paid</>
+                                    <><FiCheck size={14} />Mark {selected.size} as Paid</>
                                 )}
                             </IconBtn>
                         )}
                     </div>
 
                     {/* Filters */}
-                    <div className="pr-filter-row" style={{ marginBottom: "1.1rem" }}>
+                    <div className="pr-filter-row" style={{ marginBottom: "1.2rem" }}>
                         <div>
-                            <label className="pr-label"><FiCalendar size={10} style={{ marginRight: 4 }} />Month</label>
-                            <AnimSelect value={filterMonth} onChange={e => setFilterMonth(+e.target.value)} minWidth={140}>
+                            <label className="pr-label">
+                                <FiCalendar size={12} color="#374151" />
+                                Month
+                            </label>
+                            <AnimSelect value={filterMonth} onChange={e => setFilterMonth(+e.target.value)} minWidth={145}>
                                 {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
                             </AnimSelect>
                         </div>
                         <div>
-                            <label className="pr-label"><FiCalendar size={10} style={{ marginRight: 4 }} />Year</label>
-                            <AnimSelect value={filterYear} onChange={e => setFilterYear(+e.target.value)} minWidth={100}>
+                            <label className="pr-label">
+                                <FiCalendar size={12} color="#374151" />
+                                Year
+                            </label>
+                            <AnimSelect value={filterYear} onChange={e => setFilterYear(+e.target.value)} minWidth={105}>
                                 {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
                             </AnimSelect>
                         </div>
                         <div>
-                            <label className="pr-label"><FiFilter size={10} style={{ marginRight: 4 }} />Status</label>
-                            <AnimSelect value={filterStatus} onChange={e => setFilterStatus(e.target.value)} minWidth={110}>
+                            <label className="pr-label">
+                                <FiFilter size={12} color="#374151" />
+                                Status
+                            </label>
+                            <AnimSelect value={filterStatus} onChange={e => setFilterStatus(e.target.value)} minWidth={115}>
                                 <option value="">All</option>
                                 <option value="draft">Draft</option>
                                 <option value="paid">Paid</option>
@@ -604,7 +642,7 @@ const PayrollMgmt = () => {
                             onClick={fetchPayrolls}
                             style={{ marginTop: "auto" }}
                         >
-                            <FiRefreshCw size={13} />
+                            <FiRefreshCw size={14} />
                             Refresh
                         </IconBtn>
                     </div>
@@ -617,14 +655,14 @@ const PayrollMgmt = () => {
                             animation: "slideDown 0.3s ease"
                         }}>
                             <div style={{
-                                width: 64, height: 64, borderRadius: "50%",
-                                background: "#f1f5f9", display: "grid",
-                                placeItems: "center", margin: "0 auto .75rem",
+                                width: 68, height: 68, borderRadius: "50%",
+                                background: "#f3f4f6", display: "grid",
+                                placeItems: "center", margin: "0 auto .85rem",
                             }}>
-                                <FiAlertCircle size={28} color="#94a3b8" />
+                                <FiAlertCircle size={30} color="#6b7280" />
                             </div>
-                            <p style={{ fontWeight: 700, color: "#475569", fontSize: ".95rem" }}>No payrolls found</p>
-                            <p style={{ fontSize: ".82rem", color: "#94a3b8", marginTop: ".25rem" }}>
+                            <p style={{ fontWeight: 800, color: "#1f2937", fontSize: "1rem" }}>No payrolls found</p>
+                            <p style={{ fontSize: ".88rem", color: "#6b7280", marginTop: ".3rem", fontWeight: 500 }}>
                                 Generate payroll for {MONTHS[filterMonth - 1]} {filterYear} above
                             </p>
                         </div>
@@ -635,7 +673,7 @@ const PayrollMgmt = () => {
                             <table className="table pr-table" style={{ width: "100%" }}>
                                 <thead>
                                     <tr>
-                                        <th style={{ width: 36 }}>
+                                        <th style={{ width: 38 }}>
                                             <input
                                                 type="checkbox"
                                                 className="pr-cb"
@@ -691,45 +729,46 @@ const PayrollMgmt = () => {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: ".8rem", color: "#475569" }}>
-                                                        <FiCalendar size={11} />
+                                                    <div className="period-cell">
+                                                        <FiCalendar size={13} color="#374151" />
                                                         {MONTHS[(p.month || 1) - 1]} {p.year}
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                                                        <span className="att-dot" style={{ background: "#dcfce7", color: "#166534" }}>
-                                                            <FiCheck size={9} />{p.presentDays ?? 0}P
+                                                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                                                        <span className="att-dot" style={{ background: "#dcfce7", color: "#14532d", borderColor: "#4ade80" }}>
+                                                            <FiCheck size={10} />{p.presentDays ?? 0}P
                                                         </span>
                                                         {p.absentDays > 0 && (
-                                                            <span className="att-dot" style={{ background: "#fee2e2", color: "#dc2626" }}>
-                                                                <FiX size={9} />{p.absentDays}A
+                                                            <span className="att-dot" style={{ background: "#fee2e2", color: "#991b1b", borderColor: "#fca5a5" }}>
+                                                                <FiX size={10} />{p.absentDays}A
                                                             </span>
                                                         )}
                                                         {p.halfDays > 0 && (
-                                                            <span className="att-dot" style={{ background: "#fff7ed", color: "#ea580c" }}>
+                                                            <span className="att-dot" style={{ background: "#fff7ed", color: "#c2410c", borderColor: "#fdba74" }}>
                                                                 {p.halfDays}H
                                                             </span>
                                                         )}
                                                         {p.paidLeave > 0 && (
-                                                            <span className="att-dot" style={{ background: "#eff6ff", color: "#2563eb" }}>
-                                                                {p.paidLeave}
-                                                                PL
+                                                            <span className="att-dot" style={{ background: "#dbeafe", color: "#1d4ed8", borderColor: "#93c5fd" }}>
+                                                                {p.paidLeave}PL
                                                             </span>
                                                         )}
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#475569", fontSize: ".83rem" }}>
-
-                                                        ₹ {p.monthlySalary ? p.monthlySalary.toLocaleString("en-IN") : "—"}
-                                                    </div>
-                                                </td>
-                                                <td style={{ color: "#dc2626", fontWeight: 600, fontSize: ".83rem" }}>
-                                                    {p.deductions > 0 ? `- ₹${p.deductions.toLocaleString("en-IN")}` : <span style={{ color: "#94a3b8" }}>—</span>}
+                                                    <span style={{ color: "#111827", fontWeight: 600, fontSize: ".9rem" }}>
+                                                        ₹{p.monthlySalary ? p.monthlySalary.toLocaleString("en-IN") : "—"}
+                                                    </span>
                                                 </td>
                                                 <td>
-                                                    <span style={{ fontWeight: 800, fontSize: ".95rem", color: "#0f172a" }}>
+                                                    {p.deductions > 0
+                                                        ? <span className="deduction-val">− ₹{p.deductions.toLocaleString("en-IN")}</span>
+                                                        : <span style={{ color: "#9ca3af", fontWeight: 500 }}>—</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <span className="net-salary">
                                                         ₹{(p.netSalary || 0).toLocaleString("en-IN")}
                                                     </span>
                                                 </td>
@@ -740,9 +779,9 @@ const PayrollMgmt = () => {
                                                             variant="ghost"
                                                             title="Download PDF"
                                                             onClick={() => generatePayslipPDF(p)}
-                                                            style={{ fontSize: ".71rem", padding: "5px 10px" }}
+                                                            style={{ fontSize: ".76rem", padding: "6px 11px" }}
                                                         >
-                                                            <FiDownload size={12} />
+                                                            <FiDownload size={13} />
                                                             PDF
                                                         </IconBtn>
                                                         {p.status === "draft" && (
@@ -751,19 +790,19 @@ const PayrollMgmt = () => {
                                                                     variant="success"
                                                                     onClick={() => handleMarkPaid(p._id)}
                                                                     disabled={markingId === p._id}
-                                                                    style={{ fontSize: ".71rem", padding: "5px 10px" }}
+                                                                    style={{ fontSize: ".76rem", padding: "6px 11px" }}
                                                                 >
                                                                     {markingId === p._id
-                                                                        ? <FiRefreshCw size={12} className="spin" />
-                                                                        : <><FiCheck size={12} />Paid</>}
+                                                                        ? <FiRefreshCw size={13} className="spin" />
+                                                                        : <><FiCheck size={13} />Paid</>}
                                                                 </IconBtn>
                                                                 <IconBtn
                                                                     variant="danger"
                                                                     onClick={() => handleDelete(p._id)}
                                                                     title="Delete draft"
-                                                                    style={{ fontSize: ".71rem", padding: "5px 9px" }}
+                                                                    style={{ fontSize: ".76rem", padding: "6px 10px" }}
                                                                 >
-                                                                    <FiTrash2 size={12} />
+                                                                    <FiTrash2 size={13} />
                                                                 </IconBtn>
                                                             </>
                                                         )}
@@ -783,8 +822,8 @@ const PayrollMgmt = () => {
             {toast && (
                 <div className={`toast ${toast.type} ${toastVisible ? "toast-enter" : "toast-exit"}`}>
                     {toast.type === "success"
-                        ? <FiCheckCircle size={16} />
-                        : <FiAlertCircle size={16} />}
+                        ? <FiCheckCircle size={17} />
+                        : <FiAlertCircle size={17} />}
                     {toast.msg}
                 </div>
             )}

@@ -44,7 +44,7 @@ const DEPARTMENT_DESIGNATIONS = {
         "Email Marketing Analyst", "Senior Email Marketing Executive", "Email Marketing Specialist",
         "CRM Executive", "Sales Executive", "Senior Sales Executive", "Email Marketing Lead",
         "Sales Lead", "Email Marketing Manager", "Sales Manager", "Senior Sales Manager",
-        "Business Development Manager", "Sales Head",
+        "Business Development Manager", "Business Development Executive", "Sales Head",
     ],
     "Development": [
         "Development Intern", "Trainee Developer", "Junior Frontend Developer",

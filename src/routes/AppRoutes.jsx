@@ -44,11 +44,14 @@ import EmployeeLeaves from "../pages/hr/EmployeeLeaves";
 import Celebrations from "../components/common/Celebrations";
 import ManagerSalesReports from "../pages/manager/ManagerSalesReports";
 import ManagerDailyReport from "../pages/manager/ManagerDailyReport";
+import HRAITraining from "../components/ai/HRAITraining";
+import BDESalesReport from "../pages/bde-bdm/BDESalesReport";
+
 
 // ─────────────────────────────────────────────
 //  Protected route
 // ─────────────────────────────────────────────
-const Protected = ({ children, allowedRoles }) => {
+const Protected = ({ children, allowedRoles, allowedDesignations }) => {
     const { user } = useContext(AuthContext);
 
     if (!user) return <Navigate to="/login" replace />;
@@ -58,6 +61,14 @@ const Protected = ({ children, allowedRoles }) => {
         // Redirect to their correct home
         if (user.role === "hr") return <Navigate to="/hr" replace />;
         if (user.role === "tl") return <Navigate to="/tl" replace />;
+        if (user.role === "manager") return <Navigate to="/manager" replace />;
+        return <Navigate to="/employee" replace />;
+    }
+
+    if (
+        allowedDesignations &&
+        !allowedDesignations.includes(user.designation)
+    ) {
         return <Navigate to="/employee" replace />;
     }
 
@@ -123,6 +134,22 @@ const AppRoutes = () => (
         <Route path="/tl/attendance" element={<Protected allowedRoles={["tl"]}><Attendance /></Protected>} />
 
 
+        {/* BDE - BDM  */}
+
+        <Route
+            path="/sales-reports"
+            element={
+                <Protected
+                    allowedRoles={["employee"]}
+                    allowedDesignations={[
+                        "Business Development Executive",
+                        "Business Development Manager"
+                    ]}
+                >
+                    <BDESalesReport />
+                </Protected>
+            }
+        />
 
 
         {/* ── HR ROUTES ── */}
@@ -138,6 +165,7 @@ const AppRoutes = () => (
         <Route path="/hr/scan-logs" element={<Protected allowedRoles={["hr"]}><ScanLogsPage /></Protected>} />
         <Route path="/hr/employee-leave" element={<Protected allowedRoles={["hr"]}><EmployeeLeaves /></Protected>} />
         <Route path="/hr/upcoming-events" element={<Protected allowedRoles={["hr"]}><Celebrations /></Protected>} />
+        <Route path="/hr/ai-training" element={<Protected allowedRoles={["hr"]}><HRAITraining /></Protected>} />
 
 
 

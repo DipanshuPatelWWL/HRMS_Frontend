@@ -43,19 +43,17 @@ const HRHoliday = () => {
         setIsLoading(true);
         try {
             if (editingId) {
-                await axios.put(
-                    `http://localhost:5000/api/holidays/${editingId}`,
-                    { date, name: holidayName },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                await API.put(`/holidays/${editingId}`, {
+                    date,
+                    name: holidayName,
+                });
                 showMessage("Holiday updated successfully", "success");
                 setEditingId(null);
             } else {
-                await axios.post(
-                    "http://localhost:5000/api/holidays",
-                    { date, name: holidayName },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                await API.post("/holidays", {
+                    date,
+                    name: holidayName,
+                });
                 showMessage("Holiday added successfully", "success");
             }
             setHolidayName("");
@@ -70,9 +68,7 @@ const HRHoliday = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/api/holidays/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            await API.delete(`/holidays/${id}`);
             showMessage("Holiday removed", "info");
             fetchHolidays();
         } catch (err) {

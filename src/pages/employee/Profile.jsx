@@ -1,7 +1,7 @@
 import { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import API from "../../services/api";
+import API, { BASE_URL } from "../../services/api";
 
 // react-icons — lucide set
 import {
@@ -320,11 +320,20 @@ export default function Profile() {
     const { user, setUser } = useContext(AuthContext);
     const fileRef = useRef(null);
 
-    const BASE_URL = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:5000";
-    const initials = user?.name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U";
+    const initials = user?.name
+        ?.split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "U";
+
     const getAvatarSrc = () => {
         if (!user?.avatar) return null;
-        if (user.avatar.startsWith("http")) return user.avatar;
+
+        if (user.avatar.startsWith("http")) {
+            return user.avatar;
+        }
+
         return `${BASE_URL}${user.avatar}`;
     };
 
