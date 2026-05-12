@@ -47,7 +47,6 @@ import ManagerDailyReport from "../pages/manager/ManagerDailyReport";
 import HRAITraining from "../components/ai/HRAITraining";
 import BDESalesReport from "../pages/bde-bdm/BDESalesReport";
 
-
 // ─────────────────────────────────────────────
 //  Protected route
 // ─────────────────────────────────────────────
