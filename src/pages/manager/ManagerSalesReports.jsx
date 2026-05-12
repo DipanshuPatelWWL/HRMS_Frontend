@@ -1,29 +1,92 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import API from '../../services/api'
+import {
+    FiSearch, FiRefreshCw, FiCheck, FiX, FiSend,
+    FiBarChart2, FiClock, FiCheckCircle, FiXCircle,
+    FiChevronLeft, FiChevronRight, FiFileText, FiAlertCircle,
+    FiActivity, FiInfo,
+} from 'react-icons/fi'
 
 const C = {
-    indigo: '#4f46e5', indigoDark: '#4338ca', indigoLight: '#eef2ff', indigoBorder: '#c7d2fe',
-    red: '#ef4444', redDark: '#dc2626', redLight: '#fef2f2', redBorder: '#fca5a5',
-    emerald: '#059669', emeraldLight: '#ecfdf5', emeraldBorder: '#6ee7b7',
-    blue: '#2563eb', blueLight: '#eff6ff', blueBorder: '#93c5fd', amber: '#d97706',
+    indigo: '#4f46e5', indigoDark: '#3730a3', indigoLight: '#eef2ff', indigoBorder: '#a5b4fc',
+    red: '#dc2626', redDark: '#b91c1c', redLight: '#fef2f2', redBorder: '#fca5a5',
+    emerald: '#047857', emeraldLight: '#ecfdf5', emeraldBorder: '#6ee7b7',
+    blue: '#1d4ed8', blueLight: '#eff6ff', blueBorder: '#93c5fd', amber: '#b45309',
+    amberLight: '#fffbeb', amberBorder: '#fcd34d',
     slate50: '#f8fafc', slate100: '#f1f5f9', slate200: '#e2e8f0', slate300: '#cbd5e1',
-    slate400: '#94a3b8', slate500: '#64748b', slate600: '#475569', slate700: '#334155',
-    slate800: '#1e293b', white: '#ffffff', pageBg: '#f1f3f9',
+    slate400: '#64748b', slate500: '#475569', slate600: '#334155', slate700: '#1e293b',
+    slate800: '#0f172a', slate900: '#020617', white: '#ffffff', pageBg: '#f1f3f9',
+    text: '#0f172a',
+    textSub: '#334155',
+    textMuted: '#64748b',
 }
 
 const STATUS = {
-    draft: { label: 'Draft', color: '#64748b', bg: '#f1f5f9' },
-    sent_to_manager: { label: 'Pending', color: '#2563eb', bg: '#eff6ff' },
-    approved: { label: 'Approved', color: '#059669', bg: '#ecfdf5' },
-    rejected: { label: 'Rejected', color: '#ef4444', bg: '#fef2f2' },
+    draft: { label: 'Draft', color: '#334155', bg: '#f1f5f9' },
+    pending_review: { label: 'Pending Review', color: '#1d4ed8', bg: '#eff6ff' },
+    approved: { label: 'Approved', color: '#047857', bg: '#ecfdf5' },
+    rejected: { label: 'Rejected', color: '#b91c1c', bg: '#fef2f2' },
+}
+
+const STAGES = {
+    new: { label: 'New', color: '#334155', bg: '#f1f5f9' },
+    assigned: { label: 'Assigned', color: '#4f46e5', bg: '#eef2ff' },
+    contacted: { label: 'Contacted', color: '#0d9488', bg: '#f0fdfa' },
+    meeting_scheduled: { label: 'Meeting Scheduled', color: '#7c3aed', bg: '#f5f3ff' },
+    proposal_sent: { label: 'Proposal Sent', color: '#b45309', bg: '#fffbeb' },
+    negotiation: { label: 'Negotiation', color: '#ea580c', bg: '#fff7ed' },
+    won: { label: 'Won', color: '#047857', bg: '#ecfdf5' },
+    lost: { label: 'Lost', color: '#b91c1c', bg: '#fef2f2' },
+    on_hold: { label: 'On Hold', color: '#64748b', bg: '#f1f5f9' },
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50]
+
 const AVATAR_COLORS = ['#7c3aed', '#4f46e5', '#2563eb', '#db2777', '#d97706', '#0d9488', '#e11d48']
 const getAvatarColor = (name = '') => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length]
 const getInitials = (name = '') => name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+
+/* ─── Global Styles ── */
+const globalStyles = `
+    @keyframes spin    { to { transform: rotate(360deg); } }
+    @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes modalIn { from{transform:scale(0.96) translateY(10px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
+    @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+    * { box-sizing: border-box; }
+    .report-row { cursor: pointer; transition: background 0.15s; }
+    .report-row:hover td { background: #f0f4ff !important; }
+    .action-btn { transition: all 0.18s ease !important; }
+    .action-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
+    .stat-card { transition: all 0.2s ease; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important; }
+    .refresh-btn:hover { background: #f1f5f9 !important; }
+    input:focus, select:focus, textarea:focus { outline: none; }
+    @media (max-width: 768px) {
+        .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
+        .toolbar { flex-direction: column !important; align-items: stretch !important; }
+        .toolbar-search { width: 100% !important; }
+        .toolbar-select { width: 100% !important; }
+        .toolbar-right { justify-content: space-between !important; }
+        .table-wrapper { font-size: 12px !important; }
+        .modal-grid { grid-template-columns: 1fr !important; }
+        .modal-grid > * { grid-column: span 1 !important; }
+        .modal-box { max-width: 98vw !important; margin: 8px !important; }
+        .modal-footer-btns { flex-direction: column !important; }
+        .modal-footer-btns button { flex: unset !important; width: 100% !important; }
+        .pagination-wrap { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+        .send-modal-box { width: 96vw !important; padding: 16px !important; }
+        .page-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+        .tab-bar { overflow-x: auto !important; }
+    }
+    @media (max-width: 480px) {
+        .stats-grid { grid-template-columns: 1fr !important; }
+        .stat-value { font-size: 28px !important; }
+    }
+`
 
 /* ─── Toast ── */
 const Toast = ({ message, type, visible }) => {
@@ -31,14 +94,14 @@ const Toast = ({ message, type, visible }) => {
     return (
         <div style={{
             position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
-            padding: '14px 20px', borderRadius: 12,
-            background: type === 'error' ? C.red : C.emerald,
-            color: C.white, fontSize: 14, fontWeight: 600,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+            padding: '13px 18px', borderRadius: 12,
+            background: type === 'error' ? C.redDark : C.emerald,
+            color: C.white, fontSize: 13, fontWeight: 700,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.22)',
             display: 'flex', alignItems: 'center', gap: 10,
-            animation: 'slideUp 0.3s ease', maxWidth: 340,
+            animation: 'slideUp 0.3s ease', maxWidth: 340, left: 'auto',
         }}>
-            <span style={{ fontSize: 16 }}>{type === 'error' ? '✕' : '✓'}</span>
+            {type === 'error' ? <FiXCircle size={16} /> : <FiCheckCircle size={16} />}
             {message}
         </div>
     )
@@ -53,8 +116,23 @@ const StatusBadge = ({ status, size = 'sm' }) => {
             borderRadius: size === 'lg' ? 8 : 6,
             background: s.bg, color: s.color,
             fontSize: size === 'lg' ? 13 : 12,
-            fontWeight: 700, whiteSpace: 'nowrap',
-            display: 'inline-block',
+            fontWeight: 800, whiteSpace: 'nowrap',
+            display: 'inline-block', letterSpacing: '0.02em',
+        }}>
+            {s.label}
+        </span>
+    )
+}
+
+/* ─── StageBadge ── */
+const StageBadge = ({ stage }) => {
+    const s = STAGES[stage] || STAGES.new
+    return (
+        <span style={{
+            padding: '4px 10px', borderRadius: 6,
+            background: s.bg, color: s.color,
+            fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
+            display: 'inline-block', letterSpacing: '0.02em',
         }}>
             {s.label}
         </span>
@@ -62,26 +140,28 @@ const StatusBadge = ({ status, size = 'sm' }) => {
 }
 
 /* ─── StatCard ── */
-const StatCard = ({ label, value, topColor, loading, active, onClick }) => (
+const StatCard = ({ label, value, topColor, loading, active, onClick, icon: Icon }) => (
     <div
+        className="stat-card"
         onClick={onClick}
         style={{
-            background: C.white, borderRadius: 16, padding: '22px 24px',
+            background: C.white, borderRadius: 16, padding: '20px 22px',
             borderTop: `4px solid ${topColor}`,
-            borderRight: `1px solid ${active ? topColor : C.slate100}`,
-            borderBottom: `1px solid ${active ? topColor : C.slate100}`,
-            borderLeft: `1px solid ${active ? topColor : C.slate100}`,
-            boxShadow: active ? `0 0 0 3px ${topColor}33` : '0 1px 4px rgba(0,0,0,0.06)',
+            border: `1px solid ${active ? topColor : C.slate200}`,
+            borderTopColor: topColor,
+            boxShadow: active ? `0 0 0 3px ${topColor}33, 0 4px 16px rgba(0,0,0,0.08)` : '0 1px 4px rgba(0,0,0,0.06)',
             cursor: onClick ? 'pointer' : 'default',
-            transition: 'all 0.2s',
         }}
     >
-        <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.slate400, marginBottom: 8, marginTop: 0 }}>
-            {label}
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.textMuted, margin: 0 }}>
+                {label}
+            </p>
+            {Icon && <Icon size={18} color={topColor} />}
+        </div>
         {loading
-            ? <div style={{ width: 60, height: 40, borderRadius: 8, background: C.slate100, animation: 'pulse 1.5s ease infinite' }} />
-            : <p style={{ fontSize: 40, fontWeight: 900, color: C.slate800, margin: 0, lineHeight: 1 }}>{value}</p>
+            ? <div style={{ width: 60, height: 36, borderRadius: 8, background: C.slate100, animation: 'pulse 1.5s ease infinite' }} />
+            : <p className="stat-value" style={{ fontSize: 34, fontWeight: 900, color: C.slate800, margin: 0, lineHeight: 1 }}>{value}</p>
         }
     </div>
 )
@@ -89,156 +169,289 @@ const StatCard = ({ label, value, topColor, loading, active, onClick }) => (
 /* ─── Skeleton Row ── */
 const SkeletonRow = () => (
     <tr style={{ borderBottom: `1px solid ${C.slate50}` }}>
-        {[80, 100, 220, 130, 110, 100, 130].map((w, i) => (
-            <td key={i} style={{ padding: '18px 24px' }}>
-                <div style={{ height: 14, width: w, borderRadius: 6, background: C.slate100, animation: 'pulse 1.5s ease infinite' }} />
+        {[60, 90, 200, 110, 100, 90, 120, 110].map((w, i) => (
+            <td key={i} style={{ padding: '16px 20px' }}>
+                <div style={{ height: 13, width: w, borderRadius: 6, background: C.slate100, animation: 'pulse 1.5s ease infinite' }} />
             </td>
         ))}
     </tr>
 )
 
-/* ─── Detail Modal ── */
-const DetailModal = ({ open, report, onClose }) => {
+/* ─── Input Style Helper ── */
+const useInputFocus = () => {
+    const [focused, setFocused] = useState(false)
+    return { focused, onFocus: () => setFocused(true), onBlur: () => setFocused(false) }
+}
+
+const inputStyle = (focused, error) => ({
+    width: '100%', padding: '10px 13px', borderRadius: 9, resize: 'none',
+    border: `1.5px solid ${error ? C.redBorder : focused ? C.indigo : C.slate300}`,
+    boxShadow: focused ? `0 0 0 3px ${error ? '#fee2e2' : C.indigoLight}` : 'none',
+    fontSize: 14, color: C.text, fontFamily: 'inherit',
+    outline: 'none', transition: 'border-color 0.2s, box-shadow 0.25s',
+    background: C.white,
+})
+
+/* ─── Detail Modal (tabbed: Details + Timeline) ── */
+const DetailModal = ({ open, report, onClose, showToast }) => {
+    const [activeTab, setActiveTab] = useState('details')
+    const [timeline, setTimeline] = useState([])
+    const [timelineLoading, setTimelineLoading] = useState(false)
+
+    useEffect(() => {
+        if (open && report) {
+            setActiveTab('details')
+            setTimeline([])
+        }
+    }, [open, report])
+
+    useEffect(() => {
+        if (activeTab === 'timeline' && report) fetchTimeline()
+    }, [activeTab])
+
+    const fetchTimeline = async () => {
+        setTimelineLoading(true)
+        try {
+            const { data } = await API.get(`/leadTimeline/${report._id}`)
+            setTimeline(data.timeline || [])
+        } catch (err) {
+            showToast('Failed to load timeline', 'error')
+        } finally { setTimelineLoading(false) }
+    }
+
     if (!open || !report) return null
 
-    const status = STATUS[report.status] || STATUS.draft
-    const isRejected = report.status === 'rejected'
-    const isApproved = report.status === 'approved'
+    const status = STATUS[report.review_status] || STATUS.draft
+    const isRejected = report.review_status === 'rejected'
+    const isApproved = report.review_status === 'approved'
+
+    const TABS = [
+        { key: 'details', label: 'Details', icon: FiInfo },
+        { key: 'timeline', label: 'Timeline', icon: FiActivity },
+    ]
 
     const Detail = ({ label, value, fullWidth }) => (
-        <div style={{
-            gridColumn: fullWidth ? 'span 2' : 'span 1',
-            display: 'flex', flexDirection: 'column', gap: 4,
-        }}>
-            <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.slate400 }}>
+        <div style={{ gridColumn: fullWidth ? 'span 2' : 'span 1', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.textMuted }}>
                 {label}
             </span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: C.slate800, wordBreak: 'break-word' }}>
+            <span style={{ fontSize: 14, fontWeight: 600, color: C.text, wordBreak: 'break-word', lineHeight: 1.5 }}>
                 {value || '—'}
             </span>
         </div>
     )
 
     return (
-        <div
-            onClick={onClose}
-            style={{
-                position: 'fixed', inset: 0, zIndex: 60,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
-                background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(6px)',
-            }}
-        >
-            <div
-                onClick={e => e.stopPropagation()}
-                style={{
-                    background: C.white, borderRadius: 20, width: '100%', maxWidth: 560,
-                    maxHeight: '92vh', overflowY: 'auto',
-                    boxShadow: '0 32px 80px rgba(15,23,42,0.25)',
-                    animation: 'modalIn 0.2s ease',
-                }}
-            >
-                {/* ── Header ── */}
-                <div style={{
-                    padding: '22px 28px 18px',
-                    borderBottom: `1px solid ${C.slate100}`,
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div onClick={onClose} style={{
+            position: 'fixed', inset: 0, zIndex: 60,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+            background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(6px)',
+            animation: 'fadeIn 0.18s ease',
+        }}>
+            <div onClick={e => e.stopPropagation()} className="modal-box" style={{
+                background: C.white, borderRadius: 20, width: '100%', maxWidth: 580,
+                maxHeight: '92vh', overflowY: 'auto',
+                boxShadow: '0 32px 80px rgba(15,23,42,0.28)',
+                animation: 'modalIn 0.22s ease',
+            }}>
+                {/* Header */}
+                <div style={{ padding: '20px 26px 16px', borderBottom: `1px solid ${C.slate100}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{
-                            width: 48, height: 48, borderRadius: '50%',
-                            background: getAvatarColor(report.client_name),
+                            width: 46, height: 46, borderRadius: '50%', background: getAvatarColor(report.client_name),
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: C.white, fontSize: 16, fontWeight: 800, flexShrink: 0,
-                        }}>
-                            {getInitials(report.client_name)}
-                        </div>
+                            color: C.white, fontSize: 15, fontWeight: 800, flexShrink: 0,
+                        }}>{getInitials(report.client_name)}</div>
                         <div>
-                            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: C.slate800 }}>
-                                {report.client_name}
-                            </h2>
-                            <p style={{ margin: '2px 0 0', fontSize: 13, color: C.slate400 }}>
-                                {report.client_email}
-                            </p>
+                            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: C.text }}>{report.client_name}</h2>
+                            <p style={{ margin: '2px 0 0', fontSize: 12, color: C.textMuted }}>{report.client_email}</p>
                         </div>
                     </div>
                     <button onClick={onClose} style={{
-                        width: 32, height: 32, borderRadius: 8,
-                        border: `1px solid ${C.slate200}`, background: C.white,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', fontSize: 14, color: C.slate500, fontWeight: 700, flexShrink: 0,
-                    }}>✕</button>
+                        width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.slate200}`,
+                        background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', color: C.textSub, flexShrink: 0,
+                    }}><FiX size={14} /></button>
                 </div>
 
-                {/* ── Status Banner ── */}
-                <div style={{
-                    margin: '20px 28px 0',
-                    padding: '14px 18px',
-                    borderRadius: 12,
-                    background: status.bg,
-                    border: `1px solid ${isRejected ? C.redBorder : isApproved ? C.emeraldBorder : C.blueBorder}`,
-                    display: 'flex', alignItems: 'center', gap: 12,
-                }}>
-                    <span style={{ fontSize: 20 }}>
-                        {isApproved ? '✅' : isRejected ? '❌' : '🕐'}
-                    </span>
-                    <div>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: status.color }}>
-                            {isApproved ? 'This report has been approved'
-                                : isRejected ? 'This report has been rejected'
-                                    : 'This report is pending review'}
-                        </p>
-                        {report.action_date && (
-                            <p style={{ margin: '2px 0 0', fontSize: 12, color: status.color, opacity: 0.7 }}>
-                                {fmtDate(report.action_date)}
-                            </p>
-                        )}
-                    </div>
-                    <div style={{ marginLeft: 'auto' }}>
-                        <StatusBadge status={report.status} size="lg" />
-                    </div>
+                {/* Tabs */}
+                <div className="tab-bar" style={{ display: 'flex', gap: 2, padding: '12px 26px 0', borderBottom: `1px solid ${C.slate100}` }}>
+                    {TABS.map(tab => {
+                        const Icon = tab.icon
+                        const active = activeTab === tab.key
+                        return (
+                            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                padding: '8px 14px', borderRadius: '8px 8px 0 0',
+                                border: 'none', borderBottom: active ? `2px solid ${C.indigo}` : '2px solid transparent',
+                                background: active ? C.indigoLight : 'transparent',
+                                color: active ? C.indigo : C.textMuted,
+                                fontSize: 13, fontWeight: active ? 800 : 600,
+                                cursor: 'pointer', fontFamily: 'inherit',
+                                transition: 'all 0.15s', whiteSpace: 'nowrap',
+                            }}>
+                                <Icon size={13} />
+                                {tab.label}
+                            </button>
+                        )
+                    })}
                 </div>
 
-                {/* ── Reject Reason Box ── */}
-                {isRejected && report.reject_reason && (
-                    <div style={{
-                        margin: '12px 28px 0',
-                        padding: '14px 18px',
-                        borderRadius: 12,
-                        background: C.redLight,
-                        border: `1px solid ${C.redBorder}`,
-                    }}>
-                        <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.redDark }}>
-                            Rejection Reason
-                        </p>
-                        <p style={{ margin: 0, fontSize: 14, color: C.redDark, lineHeight: 1.6 }}>
-                            {report.reject_reason}
-                        </p>
-                    </div>
-                )}
+                {/* Tab Content */}
+                <div style={{ padding: '20px 26px 24px' }}>
 
-                {/* ── Details Grid ── */}
-                <div style={{
-                    padding: '20px 28px 28px',
-                    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px 24px',
-                }}>
-                    <Detail label="Report Date" value={fmtDate(report.date || report.createdAt)} />
-                    <Detail label="Marketer" value={report.marketer} />
-                    <Detail label="Service" value={report.services} />
-                    <Detail label="Country" value={report.country} />
-                    {report.message && (
-                        <Detail label="Notes / Message" value={report.message} fullWidth />
+                    {/* ── Details Tab ── */}
+                    {activeTab === 'details' && (
+                        <div>
+                            {/* Status Banner */}
+                            <div style={{
+                                marginBottom: 16, padding: '13px 16px', borderRadius: 12, background: status.bg,
+                                border: `1px solid ${isRejected ? C.redBorder : isApproved ? C.emeraldBorder : C.blueBorder}`,
+                                display: 'flex', alignItems: 'center', gap: 12,
+                            }}>
+                                <span style={{ fontSize: 18 }}>{isApproved ? '✅' : isRejected ? '❌' : '🕐'}</span>
+                                <div style={{ flex: 1 }}>
+                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: status.color }}>
+                                        {isApproved ? 'This report has been approved' : isRejected ? 'This report has been rejected' : 'This report is pending review'}
+                                    </p>
+                                    {report.action_date && (
+                                        <p style={{ margin: '2px 0 0', fontSize: 12, color: status.color, opacity: 0.75 }}>
+                                            {fmtDate(report.action_date)}
+                                        </p>
+                                    )}
+                                </div>
+                                <StatusBadge status={report.review_status} size="lg" />
+                            </div>
+
+                            {/* Reject Reason */}
+                            {isRejected && report.reject_reason && (
+                                <div style={{ marginBottom: 16, padding: '13px 16px', borderRadius: 12, background: C.redLight, border: `1px solid ${C.redBorder}` }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                                        <FiAlertCircle size={13} color={C.redDark} />
+                                        <p style={{ margin: 0, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.redDark }}>Rejection Reason</p>
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: 13, color: C.redDark, lineHeight: 1.6, fontWeight: 500 }}>{report.reject_reason}</p>
+                                </div>
+                            )}
+
+                            {/* Details Grid */}
+                            <div className="modal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 22px' }}>
+                                <Detail label="Report Date" value={fmtDate(report.date || report.createdAt)} />
+                                <Detail label="Marketer" value={report.marketer} />
+                                <Detail label="Service" value={report.services} />
+                                <Detail label="Country" value={report.country} />
+
+                                {report.lead_stage && (
+                                    <div style={{ gridColumn: 'span 1', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                        <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.textMuted }}>Lead Stage</span>
+                                        <StageBadge stage={report.lead_stage} />
+                                    </div>
+                                )}
+
+                                {report.assigned_to && (
+                                    <Detail label="Assigned To" value={report.assigned_to?.name} />
+                                )}
+
+                                {report.assigned_to && report.assigned_at && (
+                                    <Detail label="Assigned At" value={fmtDateTime(report.assigned_at)} />
+                                )}
+
+                                {report.assignment_note && (
+                                    <Detail label="Assignment Note" value={report.assignment_note} fullWidth />
+                                )}
+
+                                {report.next_follow_up && (
+                                    <Detail label="Next Follow-Up" value={fmtDate(report.next_follow_up)} />
+                                )}
+
+                                {report.follow_up_count > 0 && (
+                                    <Detail label="Follow-Up Count" value={report.follow_up_count} />
+                                )}
+
+                                {report.message && (
+                                    <Detail label="Notes / Message" value={report.message} fullWidth />
+                                )}
+                            </div>
+
+                            {/* Remarks preview (read-only) */}
+                            {report.remarks?.length > 0 && (
+                                <div style={{ marginTop: 20 }}>
+                                    <p style={{ margin: '0 0 10px', fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: C.textMuted }}>
+                                        Remarks ({report.remarks.length})
+                                    </p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                        {[...report.remarks].reverse().slice(0, 3).map((r, i) => (
+                                            <div key={i} style={{ padding: '10px 13px', borderRadius: 10, background: C.slate50, border: `1px solid ${C.slate200}` }}>
+                                                <p style={{ margin: '0 0 4px', fontSize: 13, color: C.text, fontWeight: 500, lineHeight: 1.5 }}>{r.message}</p>
+                                                <p style={{ margin: 0, fontSize: 11, color: C.textMuted, fontWeight: 600 }}>
+                                                    {r.added_by?.name || '—'} · {fmtDateTime(r.createdAt)}
+                                                </p>
+                                            </div>
+                                        ))}
+                                        {report.remarks.length > 3 && (
+                                            <p style={{ margin: 0, fontSize: 12, color: C.textMuted, fontWeight: 600, textAlign: 'center' }}>
+                                                +{report.remarks.length - 3} more remarks
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ── Timeline Tab ── */}
+                    {activeTab === 'timeline' && (
+                        <div>
+                            {timelineLoading ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <div key={i} style={{ height: 56, borderRadius: 10, background: C.slate100, animation: 'pulse 1.5s ease infinite' }} />
+                                    ))}
+                                </div>
+                            ) : timeline.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px 0', color: C.textMuted }}>
+                                    <div style={{ width: 52, height: 52, borderRadius: 14, background: C.slate100, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                                        <FiActivity size={24} color={C.textMuted} style={{ opacity: 0.5 }} />
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.textSub }}>No timeline events yet</p>
+                                    <p style={{ margin: '4px 0 0', fontSize: 12, color: C.textMuted, fontWeight: 500 }}>Activity on this lead will appear here</p>
+                                </div>
+                            ) : (
+                                <div style={{ position: 'relative', paddingLeft: 24 }}>
+                                    {/* Vertical line */}
+                                    <div style={{
+                                        position: 'absolute', left: 7, top: 8, bottom: 8,
+                                        width: 2, background: C.slate200, borderRadius: 2,
+                                    }} />
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                                        {[...timeline].reverse().map((t, i) => (
+                                            <div key={i} style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                                {/* Dot */}
+                                                <div style={{
+                                                    position: 'absolute', left: -20, top: 4,
+                                                    width: 10, height: 10, borderRadius: '50%',
+                                                    background: i === 0 ? C.indigo : C.slate300,
+                                                    border: `2px solid ${C.white}`,
+                                                    boxShadow: i === 0 ? '0 0 0 2px rgba(79,70,229,0.3)' : 'none',
+                                                }} />
+                                                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.text, lineHeight: 1.4 }}>{t.message}</p>
+                                                <p style={{ margin: 0, fontSize: 11, color: C.textMuted, fontWeight: 500 }}>
+                                                    {t.by?.name || '—'} · {fmtDateTime(t.createdAt)}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
 
-                {/* ── Footer ── */}
-                <div style={{
-                    padding: '0 28px 24px',
-                    display: 'flex', justifyContent: 'flex-end',
-                }}>
+                {/* Footer */}
+                <div style={{ padding: '0 26px 22px', display: 'flex', justifyContent: 'flex-end' }}>
                     <button onClick={onClose} style={{
-                        padding: '10px 28px', borderRadius: 10,
-                        border: `1px solid ${C.slate300}`, background: C.white,
-                        fontSize: 14, fontWeight: 600, color: C.slate600,
+                        padding: '10px 26px', borderRadius: 10, border: `1px solid ${C.slate300}`,
+                        background: C.white, fontSize: 14, fontWeight: 700, color: C.textSub,
                         cursor: 'pointer', fontFamily: 'inherit',
                     }}>Close</button>
                 </div>
@@ -251,7 +464,7 @@ const DetailModal = ({ open, report, onClose }) => {
 const RejectModal = ({ open, onClose, onSubmit, submitting, reportName }) => {
     const [reason, setReason] = useState('')
     const [error, setError] = useState('')
-    const [focused, setFocused] = useState(false)
+    const inp = useInputFocus()
 
     useEffect(() => { if (open) { setReason(''); setError('') } }, [open])
 
@@ -261,82 +474,64 @@ const RejectModal = ({ open, onClose, onSubmit, submitting, reportName }) => {
     }
 
     if (!open) return null
-
     return (
-        <div
-            onClick={onClose}
-            style={{
-                position: 'fixed', inset: 0, zIndex: 70,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
-                background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(6px)',
-            }}
-        >
-            <div onClick={e => e.stopPropagation()} style={{
+        <div onClick={onClose} style={{
+            position: 'fixed', inset: 0, zIndex: 70,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+            background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(6px)',
+            animation: 'fadeIn 0.18s ease',
+        }}>
+            <div onClick={e => e.stopPropagation()} className="modal-box" style={{
                 background: C.white, borderRadius: 20, width: '100%', maxWidth: 460,
-                boxShadow: '0 32px 80px rgba(15,23,42,0.22)', overflow: 'hidden',
+                boxShadow: '0 32px 80px rgba(15,23,42,0.24)', overflow: 'hidden',
+                animation: 'modalIn 0.22s ease',
             }}>
-                <div style={{
-                    padding: '22px 28px 18px', borderBottom: `1px solid ${C.slate100}`,
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                }}>
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                            <div style={{
-                                width: 34, height: 34, borderRadius: 10,
-                                background: C.redLight, display: 'flex', alignItems: 'center',
-                                justifyContent: 'center', fontSize: 16, color: C.redDark, fontWeight: 700,
-                            }}>✕</div>
-                            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: C.slate800 }}>Reject Report</h2>
+                <div style={{ padding: '20px 26px 16px', borderBottom: `1px solid ${C.slate100}`, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 34, height: 34, borderRadius: 10, background: C.redLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <FiXCircle size={18} color={C.redDark} />
                         </div>
-                        {reportName && <p style={{ margin: 0, fontSize: 12, color: C.slate400, paddingLeft: 44 }}>{reportName}</p>}
+                        <div>
+                            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: C.text }}>Reject Report</h2>
+                            {reportName && <p style={{ margin: 0, fontSize: 12, color: C.textMuted }}>{reportName}</p>}
+                        </div>
                     </div>
-                    <button onClick={onClose} style={{
-                        width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.slate200}`,
-                        background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', fontSize: 14, color: C.slate500, fontWeight: 700,
-                    }}>✕</button>
+                    <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.slate200}`, background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.textSub }}>
+                        <FiX size={14} />
+                    </button>
                 </div>
-                <div style={{ padding: '22px 28px' }}>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.slate700, marginBottom: 6 }}>
+                <div style={{ padding: '20px 26px' }}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 8 }}>
                         Rejection Reason <span style={{ color: C.red }}>*</span>
                     </label>
                     <textarea
                         value={reason}
                         onChange={e => { setReason(e.target.value); setError('') }}
-                        onFocus={() => setFocused(true)}
-                        onBlur={() => setFocused(false)}
+                        onFocus={inp.onFocus} onBlur={inp.onBlur}
                         placeholder="Explain why this report is being rejected..."
                         rows={4}
-                        style={{
-                            width: '100%', padding: '11px 14px', borderRadius: 10, resize: 'none',
-                            border: `1px solid ${error ? C.redBorder : focused ? C.indigo : C.slate300}`,
-                            boxShadow: focused ? `0 0 0 3px ${error ? '#fee2e2' : C.indigoLight}` : 'none',
-                            fontSize: 14, color: C.slate800, fontFamily: 'inherit',
-                            outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s, box-shadow 0.2s',
-                        }}
+                        style={inputStyle(inp.focused, error)}
                     />
-                    {error && <p style={{ margin: '5px 0 0', fontSize: 12, color: C.red }}>{error}</p>}
+                    {error && (
+                        <p style={{ margin: '6px 0 0', fontSize: 12, color: C.red, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <FiAlertCircle size={12} /> {error}
+                        </p>
+                    )}
                 </div>
-                <div style={{ display: 'flex', gap: 10, padding: '0 28px 22px' }}>
-                    <button onClick={onClose} disabled={submitting} style={{
+                <div className="modal-footer-btns" style={{ display: 'flex', gap: 10, padding: '0 26px 22px' }}>
+                    <button onClick={onClose} disabled={submitting} className="action-btn" style={{
                         flex: 1, padding: '11px 0', borderRadius: 10, border: `1px solid ${C.slate300}`,
-                        background: C.white, fontSize: 14, fontWeight: 600, color: C.slate600,
+                        background: C.white, fontSize: 14, fontWeight: 700, color: C.textSub,
                         cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: submitting ? 0.6 : 1,
                     }}>Cancel</button>
-                    <button onClick={handleSubmit} disabled={submitting} style={{
+                    <button onClick={handleSubmit} disabled={submitting} className="action-btn" style={{
                         flex: 1, padding: '11px 0', borderRadius: 10, border: 'none',
-                        background: submitting ? C.slate400 : C.redDark, fontSize: 14, fontWeight: 700,
+                        background: submitting ? C.slate300 : C.redDark, fontSize: 14, fontWeight: 800,
                         color: C.white, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                        boxShadow: submitting ? 'none' : '0 4px 14px rgba(220,38,38,0.35)',
+                        boxShadow: submitting ? 'none' : '0 4px 14px rgba(185,28,28,0.35)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'background 0.2s',
                     }}>
-                        {submitting && (
-                            <span style={{
-                                width: 13, height: 13, borderRadius: '50%',
-                                border: '2px solid rgba(255,255,255,0.35)', borderTopColor: C.white,
-                                animation: 'spin 0.7s linear infinite', display: 'inline-block',
-                            }} />
-                        )}
+                        {submitting && <span style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.35)', borderTopColor: C.white, animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />}
                         {submitting ? 'Rejecting...' : 'Submit Rejection'}
                     </button>
                 </div>
@@ -348,12 +543,10 @@ const RejectModal = ({ open, onClose, onSubmit, submitting, reportName }) => {
 /* ─── Pagination ── */
 const Pagination = ({ currentPage, totalPages, pageSize, onPageChange, onPageSizeChange, totalItems }) => {
     if (totalPages <= 1 && totalItems <= PAGE_SIZE_OPTIONS[0]) return null
-
     const getPages = () => {
         const pages = []
-        if (totalPages <= 7) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i)
-        } else {
+        if (totalPages <= 7) { for (let i = 1; i <= totalPages; i++) pages.push(i) }
+        else {
             pages.push(1)
             if (currentPage > 3) pages.push('...')
             for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i)
@@ -362,47 +555,39 @@ const Pagination = ({ currentPage, totalPages, pageSize, onPageChange, onPageSiz
         }
         return pages
     }
-
     const btnBase = {
-        minWidth: 36, height: 36, borderRadius: 8, border: `1px solid ${C.slate200}`,
-        background: C.white, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+        minWidth: 34, height: 34, borderRadius: 8, border: `1px solid ${C.slate200}`,
+        background: C.white, fontSize: 13, fontWeight: 700, cursor: 'pointer',
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'inherit', transition: 'all 0.15s', color: C.slate600,
+        fontFamily: 'inherit', transition: 'all 0.15s', color: C.textSub,
     }
-
     return (
-        <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '14px 24px', borderTop: `1px solid ${C.slate100}`, flexWrap: 'wrap', gap: 12,
-        }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 13, color: C.slate500, whiteSpace: 'nowrap' }}>Rows per page:</span>
+        <div className="pagination-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderTop: `1px solid ${C.slate100}`, flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 13, color: C.textMuted, whiteSpace: 'nowrap', fontWeight: 500 }}>Rows per page:</span>
                 <select value={pageSize} onChange={e => onPageSizeChange(Number(e.target.value))} style={{
-                    padding: '6px 10px', borderRadius: 8, fontSize: 13, fontWeight: 600,
-                    border: `1px solid ${C.slate200}`, background: C.white,
-                    color: C.slate700, cursor: 'pointer', outline: 'none', fontFamily: 'inherit',
+                    padding: '6px 10px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                    border: `1px solid ${C.slate200}`, background: C.white, color: C.text, cursor: 'pointer', outline: 'none', fontFamily: 'inherit',
                 }}>
                     {PAGE_SIZE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
-                <span style={{ fontSize: 13, color: C.slate400, whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 13, color: C.textMuted, whiteSpace: 'nowrap' }}>
                     {((currentPage - 1) * pageSize) + 1}–{Math.min(currentPage * pageSize, totalItems)} of {totalItems}
                 </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
                     style={{ ...btnBase, opacity: currentPage === 1 ? 0.4 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}>
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
+                    <FiChevronLeft size={14} />
                 </button>
                 {getPages().map((p, i) =>
                     p === '...' ? (
-                        <span key={`e-${i}`} style={{ minWidth: 36, textAlign: 'center', color: C.slate400, fontSize: 13 }}>…</span>
+                        <span key={`e-${i}`} style={{ minWidth: 34, textAlign: 'center', color: C.textMuted, fontSize: 13 }}>…</span>
                     ) : (
                         <button key={p} onClick={() => onPageChange(p)} style={{
                             ...btnBase,
                             background: currentPage === p ? C.indigo : C.white,
-                            color: currentPage === p ? C.white : C.slate600,
+                            color: currentPage === p ? C.white : C.textSub,
                             border: `1px solid ${currentPage === p ? C.indigo : C.slate200}`,
                             boxShadow: currentPage === p ? '0 2px 8px rgba(79,70,229,0.3)' : 'none',
                         }}>{p}</button>
@@ -410,10 +595,113 @@ const Pagination = ({ currentPage, totalPages, pageSize, onPageChange, onPageSiz
                 )}
                 <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
                     style={{ ...btnBase, opacity: currentPage === totalPages ? 0.4 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}>
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    <FiChevronRight size={14} />
                 </button>
+            </div>
+        </div>
+    )
+}
+
+/* ─── Send Modal ── */
+const SendModal = ({ open, reportId, salesUsers, onClose, onSend, showToast }) => {
+    const [selectedUser, setSelectedUser] = useState('')
+    const [note, setNote] = useState('')
+    const [sending, setSending] = useState(false)
+    const [error, setError] = useState('')
+    const selectFocus = useInputFocus()
+    const noteFocus = useInputFocus()
+
+    useEffect(() => { if (open) { setSelectedUser(''); setNote(''); setError('') } }, [open])
+
+    const handleSend = async () => {
+        if (!selectedUser) { setError('Please select a user'); return }
+        setSending(true)
+        try {
+            const { data } = await API.post(`/manager/assign/${reportId}`, { userId: selectedUser, assignment_note: note })
+            showToast('Lead assigned successfully')
+            onSend(data.lead)
+            onClose()
+        } catch (err) {
+            showToast(err.response?.data?.message || 'Failed to send report', 'error')
+        } finally { setSending(false) }
+    }
+
+    if (!open) return null
+    return (
+        <div onClick={onClose} style={{
+            position: 'fixed', inset: 0, zIndex: 80,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+            background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(6px)',
+            animation: 'fadeIn 0.18s ease',
+        }}>
+            <div onClick={e => e.stopPropagation()} className="send-modal-box" style={{
+                background: C.white, borderRadius: 20, width: 460,
+                boxShadow: '0 32px 80px rgba(15,23,42,0.24)', overflow: 'hidden',
+                animation: 'modalIn 0.22s ease',
+            }}>
+                <div style={{ padding: '20px 26px 16px', borderBottom: `1px solid ${C.slate100}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 34, height: 34, borderRadius: 10, background: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <FiSend size={16} color={C.indigo} />
+                        </div>
+                        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: C.text }}>Assign Lead To BDE / BDM</h2>
+                    </div>
+                    <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.slate200}`, background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.textSub }}>
+                        <FiX size={14} />
+                    </button>
+                </div>
+                <div style={{ padding: '20px 26px' }}>
+                    <div style={{ marginBottom: 16 }}>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 7 }}>
+                            Select BDE / BDM <span style={{ color: C.red }}>*</span>
+                        </label>
+                        <select
+                            value={selectedUser}
+                            onChange={e => { setSelectedUser(e.target.value); setError('') }}
+                            onFocus={selectFocus.onFocus} onBlur={selectFocus.onBlur}
+                            style={{ ...inputStyle(selectFocus.focused, error && !selectedUser), appearance: 'none', cursor: 'pointer' }}
+                        >
+                            <option value="">Select BDE / BDM</option>
+                            {salesUsers.map(u => (
+                                <option key={u._id} value={u._id}>{u.name} ({u.designation || u.role})</option>
+                            ))}
+                        </select>
+                        {error && !selectedUser && (
+                            <p style={{ margin: '6px 0 0', fontSize: 12, color: C.red, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <FiAlertCircle size={12} /> {error}
+                            </p>
+                        )}
+                    </div>
+                    <div>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 7 }}>Assignment Note (optional)</label>
+                        <textarea
+                            placeholder="Add assignment instructions for BDE / BDM..."
+                            value={note}
+                            onChange={e => setNote(e.target.value)}
+                            onFocus={noteFocus.onFocus} onBlur={noteFocus.onBlur}
+                            rows={4}
+                            style={inputStyle(noteFocus.focused, false)}
+                        />
+                    </div>
+                </div>
+                <div className="modal-footer-btns" style={{ display: 'flex', gap: 10, padding: '0 26px 22px' }}>
+                    <button onClick={onClose} disabled={sending} className="action-btn" style={{
+                        flex: 1, padding: '11px 0', borderRadius: 10, border: `1px solid ${C.slate300}`,
+                        background: C.white, fontSize: 14, fontWeight: 700, color: C.textSub,
+                        cursor: sending ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                    }}>Cancel</button>
+                    <button onClick={handleSend} disabled={sending} className="action-btn" style={{
+                        flex: 1, padding: '11px 0', borderRadius: 10, border: 'none',
+                        background: sending ? C.slate300 : C.indigo, fontSize: 14, fontWeight: 800,
+                        color: C.white, cursor: sending ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                        boxShadow: sending ? 'none' : '0 4px 14px rgba(79,70,229,0.35)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    }}>
+                        {sending && <span style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.35)', borderTopColor: C.white, animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />}
+                        <FiSend size={13} />
+                        {sending ? 'Assigning...' : 'Assign Lead'}
+                    </button>
+                </div>
             </div>
         </div>
     )
@@ -427,11 +715,12 @@ const ManagerSalesReports = () => {
     const [search, setSearch] = useState('')
     const [filterStatus, setFilterStatus] = useState('')
     const [searchFocused, setSearchFocused] = useState(false)
-    const [hoveredRow, setHoveredRow] = useState(null)
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(10)
     const [rejectModal, setRejectModal] = useState({ open: false, reportId: null, reportName: '' })
     const [detailModal, setDetailModal] = useState({ open: false, report: null })
+    const [sendModal, setSendModal] = useState({ open: false, reportId: null })
+    const [salesUsers, setSalesUsers] = useState([])
     const [toast, setToast] = useState({ message: '', type: 'success', visible: false })
 
     const showToast = useCallback((message, type = 'success') => {
@@ -442,22 +731,36 @@ const ManagerSalesReports = () => {
     const fetchReports = useCallback(async () => {
         setLoading(true)
         try {
-            const { data } = await API.get('/getManagerLeads')
+            const { data } = await API.get('/manager/leads')
             setReports(data.leads || [])
         } catch (err) {
             showToast(err.response?.data?.message || 'Failed to fetch reports', 'error')
-        } finally {
-            setLoading(false)
-        }
+        } finally { setLoading(false) }
     }, [showToast])
 
+    const fetchSalesUsers = async () => {
+        try {
+            const { data } = await API.get('/users/sales-users')
+            setSalesUsers(data.users || [])
+        } catch (err) { console.log(err) }
+    }
+
+    useEffect(() => { fetchSalesUsers() }, [])
     useEffect(() => { fetchReports() }, [fetchReports])
+
+    // Keep detail modal in sync when reports update
+    useEffect(() => {
+        if (detailModal.open && detailModal.report) {
+            const updated = reports.find(r => r._id === detailModal.report._id)
+            if (updated) setDetailModal(d => ({ ...d, report: updated }))
+        }
+    }, [reports])
 
     const stats = useMemo(() => ({
         total: reports.length,
-        pending: reports.filter(r => r.status === 'sent_to_manager').length,
-        approved: reports.filter(r => r.status === 'approved').length,
-        rejected: reports.filter(r => r.status === 'rejected').length,
+        pending: reports.filter(r => r.review_status === 'pending_review').length,
+        approved: reports.filter(r => r.review_status === 'approved').length,
+        rejected: reports.filter(r => r.review_status === 'rejected').length,
     }), [reports])
 
     const filtered = useMemo(() => {
@@ -469,7 +772,7 @@ const ManagerSalesReports = () => {
                 r.services?.toLowerCase().includes(q) ||
                 r.client_email?.toLowerCase().includes(q) ||
                 r.marketer?.toLowerCase().includes(q)
-            const matchStatus = !filterStatus || r.status === filterStatus
+            const matchStatus = !filterStatus || r.review_status === filterStatus
             return matchSearch && matchStatus
         })
     }, [reports, search, filterStatus])
@@ -479,140 +782,129 @@ const ManagerSalesReports = () => {
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
     const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
-    const handleStatClick = (key) => setFilterStatus(prev => prev === key ? '' : key)
-
-    /* ── Open detail modal (sync with latest report data) ── */
-    const openDetail = (report) => {
-        setDetailModal({ open: true, report })
-    }
-
-    /* ── Keep detail modal in sync when reports update ── */
-    useEffect(() => {
-        if (detailModal.open && detailModal.report) {
-            const updated = reports.find(r => r._id === detailModal.report._id)
-            if (updated) setDetailModal(d => ({ ...d, report: updated }))
-        }
-    }, [reports])
-
     const handleApprove = async (e, id) => {
-        e.stopPropagation()  // don't open detail modal
+        e.stopPropagation()
         setActioningId(id)
         try {
-            const { data } = await API.put(`/updateLeadStatus/${id}`, { status: 'approved' })
-            setReports(prev => prev.map(r => r._id === id ? { ...r, status: 'approved', action_date: data.lead?.action_date } : r))
+            const { data } = await API.put(`/manager/review/${id}`, { review_status: 'approved' })
+            setReports(prev => prev.map(r => r._id === id ? { ...r, review_status: 'approved', action_date: data.lead?.action_date } : r))
             showToast('Report approved successfully')
         } catch (err) {
             showToast(err.response?.data?.message || 'Failed to approve', 'error')
-        } finally {
-            setActioningId(null)
-        }
+        } finally { setActioningId(null) }
     }
 
     const openReject = (e, report) => {
-        e.stopPropagation()  // don't open detail modal
+        e.stopPropagation()
         setRejectModal({ open: true, reportId: report._id, reportName: report.client_name })
     }
 
     const handleRejectSubmit = async (reason) => {
         setActioningId(rejectModal.reportId)
         try {
-            const { data } = await API.put(`/updateLeadStatus/${rejectModal.reportId}`, { status: 'rejected', reject_reason: reason })
+            const { data } = await API.put(`/manager/review/${rejectModal.reportId}`, { review_status: 'rejected', reject_reason: reason })
             setReports(prev => prev.map(r =>
                 r._id === rejectModal.reportId
-                    ? { ...r, status: 'rejected', reject_reason: reason, action_date: data.lead?.action_date }
+                    ? { ...r, review_status: 'rejected', reject_reason: reason, action_date: data.lead?.action_date }
                     : r
             ))
             setRejectModal({ open: false, reportId: null, reportName: '' })
             showToast('Report rejected')
         } catch (err) {
             showToast(err.response?.data?.message || 'Failed to reject', 'error')
-        } finally {
-            setActioningId(null)
-        }
+        } finally { setActioningId(null) }
     }
 
-    const isPending = (r) => r.status === 'sent_to_manager'
+    const isPending = (r) => r.review_status === 'pending_review'
 
     return (
         <DashboardLayout>
-            <style>{`
-                @keyframes spin    { to { transform: rotate(360deg); } }
-                @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.4} }
-                @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-                @keyframes modalIn { from{transform:scale(0.96) translateY(8px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
-                .report-row { cursor: pointer; }
-                .report-row:hover td { background: #f8f9ff !important; }
-            `}</style>
+            <style>{globalStyles}</style>
 
-            <div style={{ minHeight: '100vh', background: C.pageBg, padding: 24, display: 'flex', flexDirection: 'column', gap: 20, boxSizing: 'border-box' }}>
+            <div style={{ minHeight: '100vh', background: C.pageBg, padding: '20px', display: 'flex', flexDirection: 'column', gap: 18, boxSizing: 'border-box' }}>
 
-                {/* Stat Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-                    <StatCard label="Total Reports" value={stats.total} topColor="#3b82f6" loading={loading} active={filterStatus === ''} onClick={() => setFilterStatus('')} />
-                    <StatCard label="Pending" value={stats.pending} topColor="#f59e0b" loading={loading} active={filterStatus === 'sent_to_manager'} onClick={() => handleStatClick('sent_to_manager')} />
-                    <StatCard label="Approved" value={stats.approved} topColor="#10b981" loading={loading} active={filterStatus === 'approved'} onClick={() => handleStatClick('approved')} />
-                    <StatCard label="Rejected" value={stats.rejected} topColor="#ef4444" loading={loading} active={filterStatus === 'rejected'} onClick={() => handleStatClick('rejected')} />
+                {/* ── Page Header ── */}
+                <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, background: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <FiBarChart2 size={20} color={C.white} />
+                        </div>
+                        <div>
+                            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, color: C.text, letterSpacing: '-0.02em' }}>Sales Reports</h1>
+                            <p style={{ margin: 0, fontSize: 12, color: C.textMuted, fontWeight: 500 }}>Review and manage submitted sales reports</p>
+                        </div>
+                    </div>
+                    <span style={{ fontSize: 12, color: C.textMuted, fontWeight: 600, background: C.white, padding: '5px 12px', borderRadius: 20, border: `1px solid ${C.slate200}` }}>
+                        {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </span>
                 </div>
 
-                {/* Main Panel */}
-                <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.slate100}`, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+                {/* ── Stat Cards ── */}
+                <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                    <StatCard label="Total Reports" value={stats.total} topColor="#3b82f6" loading={loading} active={filterStatus === ''} onClick={() => setFilterStatus('')} icon={FiFileText} />
+                    <StatCard label="Pending" value={stats.pending} topColor="#f59e0b" loading={loading} active={filterStatus === 'pending_review'} onClick={() => setFilterStatus(p => p === 'pending_review' ? '' : 'pending_review')} icon={FiClock} />
+                    <StatCard label="Approved" value={stats.approved} topColor="#10b981" loading={loading} active={filterStatus === 'approved'} onClick={() => setFilterStatus(p => p === 'approved' ? '' : 'approved')} icon={FiCheckCircle} />
+                    <StatCard label="Rejected" value={stats.rejected} topColor="#ef4444" loading={loading} active={filterStatus === 'rejected'} onClick={() => setFilterStatus(p => p === 'rejected' ? '' : 'rejected')} icon={FiXCircle} />
+                </div>
+
+                {/* ── Main Panel ── */}
+                <div style={{ background: C.white, borderRadius: 20, border: `1px solid ${C.slate200}`, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
 
                     {/* Toolbar */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 24px', borderBottom: `1px solid ${C.slate100}`, flexWrap: 'wrap' }}>
-                        <div style={{ position: 'relative' }}>
-                            <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: 15 }}>🔍</span>
+                    <div className="toolbar" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px', borderBottom: `1px solid ${C.slate100}`, flexWrap: 'wrap' }}>
+                        <div className="toolbar-search" style={{ position: 'relative', flex: '1 1 40px', minWidth: 200 }}>
+                            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: C.textMuted, display: 'flex' }}>
+                                <FiSearch size={15} />
+                            </span>
                             <input
                                 type="text" placeholder="Search by name, email or country..."
                                 value={search} onChange={e => setSearch(e.target.value)}
                                 onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)}
                                 style={{
-                                    paddingLeft: 38, paddingRight: 16, paddingTop: 10, paddingBottom: 10,
-                                    width: 300, borderRadius: 50,
-                                    border: `1px solid ${searchFocused ? C.indigo : C.slate300}`,
+                                    paddingLeft: 36, paddingRight: 14, paddingTop: 9, paddingBottom: 9,
+                                    width: '100%', borderRadius: 50,
+                                    border: `1.5px solid ${searchFocused ? C.indigo : C.slate300}`,
                                     boxShadow: searchFocused ? `0 0 0 3px ${C.indigoLight}` : 'none',
-                                    fontSize: 14, color: C.slate700, background: C.white,
-                                    outline: 'none', fontFamily: 'inherit', transition: 'all 0.2s',
+                                    fontSize: 13, color: C.text, background: C.white,
+                                    outline: 'none', fontFamily: 'inherit', transition: 'all 0.2s', fontWeight: 500,
                                 }}
                             />
                         </div>
-                        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{
-                            padding: '10px 14px', borderRadius: 8, border: `1px solid ${C.slate300}`,
-                            background: C.white, fontSize: 14, color: C.slate600, outline: 'none',
-                            fontFamily: 'inherit', cursor: 'pointer',
+                        <select className="toolbar-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{
+                            padding: '9px 13px', borderRadius: 9, border: `1.5px solid ${C.slate300}`,
+                            background: C.white, fontSize: 13, color: C.text, outline: 'none',
+                            fontFamily: 'inherit', cursor: 'pointer', fontWeight: 600, flex: '0 0 auto',
                         }}>
-                            <option value="">All</option>
-                            <option value="sent_to_manager">Pending</option>
+                            <option value="">All Status</option>
+                            <option value="pending_review">Pending Review</option>
                             <option value="approved">Approved</option>
                             <option value="rejected">Rejected</option>
                         </select>
-
-                        <div style={{ flex: 1 }} />
-                        <button onClick={fetchReports} disabled={loading} style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 16px', borderRadius: 10,
-                            border: `1px solid ${C.slate200}`, background: C.white, color: C.slate600, fontSize: 13,
-                            fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: loading ? 0.6 : 1,
-                        }}>
-                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                style={{ animation: loading ? 'spin 0.7s linear infinite' : 'none' }}>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Refresh
-                        </button>
-                        <span style={{ fontSize: 14, color: C.slate500, fontWeight: 500, whiteSpace: 'nowrap' }}>
-                            {filtered.length} report{filtered.length !== 1 ? 's' : ''}
-                        </span>
+                        <div className="toolbar-right" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+                            <span style={{ fontSize: 13, color: C.textSub, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                                {filtered.length} report{filtered.length !== 1 ? 's' : ''}
+                            </span>
+                            <button className="refresh-btn action-btn" onClick={fetchReports} disabled={loading} style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 9,
+                                border: `1px solid ${C.slate200}`, background: C.white, color: C.textSub, fontSize: 13,
+                                fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: loading ? 0.6 : 1,
+                            }}>
+                                <FiRefreshCw size={13} style={{ animation: loading ? 'spin 0.7s linear infinite' : 'none' }} />
+                                Refresh
+                            </button>
+                        </div>
                     </div>
 
                     {/* Table */}
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                    <div className="table-wrapper" style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                             <thead>
-                                <tr style={{ borderBottom: `1px solid ${C.slate100}` }}>
-                                    {['SR NO.', 'DATE', 'CLIENT NAME', 'SERVICE', 'COUNTRY', 'STATUS', 'ACTIONS'].map((h, i) => (
+                                <tr style={{ borderBottom: `1px solid ${C.slate100}`, background: C.slate50 }}>
+                                    {['SR.', 'Date', 'Client Name', 'Service', 'Country', 'Priority', 'Status', 'Lead Stage', 'Actions'].map(h => (
                                         <th key={h} style={{
-                                            padding: '12px 24px', textAlign: i === 6 ? 'right' : 'left',
-                                            fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
-                                            color: C.slate400, textTransform: 'uppercase', whiteSpace: 'nowrap',
+                                            padding: '11px 20px', textAlign: 'center',
+                                            fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
+                                            color: C.textSub, textTransform: 'uppercase', whiteSpace: 'nowrap',
                                         }}>{h}</th>
                                     ))}
                                 </tr>
@@ -622,11 +914,13 @@ const ManagerSalesReports = () => {
                                     Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
                                 ) : paginated.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} style={{ padding: '72px 24px', textAlign: 'center' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                                                <div style={{ width: 64, height: 64, borderRadius: 18, background: C.slate100, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>📄</div>
-                                                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.slate500 }}>No reports found</p>
-                                                <p style={{ margin: 0, fontSize: 12, color: C.slate400 }}>
+                                        <td colSpan={9} style={{ padding: '64px 24px', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                                                <div style={{ width: 56, height: 56, borderRadius: 16, background: C.slate100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <FiFileText size={24} color={C.textMuted} />
+                                                </div>
+                                                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.textSub }}>No reports found</p>
+                                                <p style={{ margin: 0, fontSize: 12, color: C.textMuted }}>
                                                     {filterStatus ? 'Try clearing the filter' : 'Reports sent by employees will appear here'}
                                                 </p>
                                             </div>
@@ -637,96 +931,111 @@ const ManagerSalesReports = () => {
                                         const pending = isPending(report)
                                         const actioning = actioningId === report._id
                                         const srNo = (currentPage - 1) * pageSize + idx + 1
-
                                         return (
-                                            <tr
-                                                key={report._id}
-                                                className="report-row"
-                                                onClick={() => openDetail(report)}
-                                                onMouseEnter={() => setHoveredRow(report._id)}
-                                                onMouseLeave={() => setHoveredRow(null)}
-                                                style={{ borderBottom: `1px solid ${C.slate50}`, transition: 'background 0.15s' }}
+                                            <tr key={report._id} className="report-row"
+                                                onClick={() => setDetailModal({ open: true, report })}
+                                                style={{ borderBottom: `1px solid ${C.slate50}` }}
                                             >
-                                                <td style={{ padding: '16px 24px' }}>
+                                                <td style={{ padding: '14px 20px' }}>
                                                     <span style={{
                                                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                                        width: 30, height: 30, borderRadius: 8,
-                                                        background: C.slate100, fontSize: 12, fontWeight: 700, color: C.slate500,
-                                                    }}>
-                                                        {String(srNo).padStart(2, '0')}
-                                                    </span>
+                                                        width: 28, height: 28, borderRadius: 7,
+                                                        background: C.slate100, fontSize: 11, fontWeight: 800, color: C.textSub,
+                                                    }}>{String(srNo).padStart(2, '0')}</span>
                                                 </td>
-                                                <td style={{ padding: '16px 24px', color: C.slate600, fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                                <td style={{ padding: '14px 20px', color: C.textSub, fontWeight: 600, whiteSpace: 'nowrap', fontSize: 13 }}>
                                                     {fmtDate(report.date || report.createdAt)}
                                                 </td>
-                                                <td style={{ padding: '16px 24px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                <td style={{ padding: '14px 20px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                         <div style={{
-                                                            width: 40, height: 40, borderRadius: '50%',
+                                                            width: 36, height: 36, borderRadius: '50%',
                                                             background: getAvatarColor(report.client_name),
                                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            color: C.white, fontSize: 14, fontWeight: 700, flexShrink: 0,
-                                                        }}>
-                                                            {getInitials(report.client_name)}
-                                                        </div>
+                                                            color: C.white, fontSize: 12, fontWeight: 800, flexShrink: 0,
+                                                        }}>{getInitials(report.client_name)}</div>
                                                         <div>
-                                                            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.slate800 }}>{report.client_name}</p>
-                                                            <p style={{ margin: 0, fontSize: 12, color: C.slate400 }}>{report.client_email}</p>
+                                                            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: C.text }}>{report.client_name}</p>
+                                                            <p style={{ margin: 0, fontSize: 11, color: C.textMuted, fontWeight: 500 }}>{report.client_email}</p>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td style={{ padding: '16px 24px', color: C.slate600 }}>{report.services || '—'}</td>
-                                                <td style={{ padding: '16px 24px', color: C.slate600 }}>{report.country || '—'}</td>
-                                                <td style={{ padding: '16px 24px' }}>
-                                                    {/* Clean badge only — no reject reason text here */}
-                                                    <StatusBadge status={report.status} />
+                                                <td style={{ padding: '14px 20px', color: C.textSub, fontWeight: 600 }}>{report.services || '—'}</td>
+                                                <td style={{ padding: '14px 20px', color: C.textSub, fontWeight: 600 }}>{report.country || '—'}</td>
+                                                <td style={{ padding: '14px 20px' }}>
+                                                    <span style={{
+                                                        padding: '5px 10px', borderRadius: 6,
+                                                        background: report.priority === 'urgent' ? '#fef2f2' : report.priority === 'high' ? '#fff7ed' : '#f8fafc',
+                                                        color: report.priority === 'urgent' ? '#dc2626' : report.priority === 'high' ? '#ea580c' : '#475569',
+                                                        fontSize: 11, fontWeight: 800, textTransform: 'uppercase',
+                                                    }}>
+                                                        {report.priority || 'medium'}
+                                                    </span>
                                                 </td>
-                                                <td style={{ padding: '16px 24px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+                                                <td style={{ padding: '14px 20px' }}>
+                                                    <StatusBadge status={report.review_status} />
+                                                </td>
+                                                <td style={{ padding: '14px 20px', textAlign: 'center' }}>
+                                                    {report.lead_stage
+                                                        ? <StageBadge stage={report.lead_stage} />
+                                                        : <span style={{ fontSize: 12, color: C.textMuted }}>—</span>
+                                                    }
+                                                </td>
+                                                <td style={{ padding: '14px 20px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
                                                         {pending ? (
                                                             <>
-                                                                <button
-                                                                    onClick={(e) => handleApprove(e, report._id)}
-                                                                    disabled={actioning}
-                                                                    style={{
-                                                                        display: 'inline-flex', alignItems: 'center', gap: 5,
-                                                                        padding: '6px 14px', borderRadius: 8,
-                                                                        border: `1px solid ${C.emeraldBorder}`,
-                                                                        background: actioning ? C.slate100 : C.emeraldLight,
-                                                                        color: actioning ? C.slate400 : C.emerald,
-                                                                        fontSize: 12, fontWeight: 700,
-                                                                        cursor: actioning ? 'not-allowed' : 'pointer',
-                                                                        fontFamily: 'inherit', transition: 'all 0.15s',
-                                                                    }}
-                                                                >
+                                                                <button className="action-btn" onClick={e => handleApprove(e, report._id)} disabled={actioning} style={{
+                                                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                                                    padding: '6px 12px', borderRadius: 7,
+                                                                    border: `1px solid ${C.emeraldBorder}`,
+                                                                    background: actioning ? C.slate100 : C.emeraldLight,
+                                                                    color: actioning ? C.textMuted : C.emerald,
+                                                                    fontSize: 12, fontWeight: 800, cursor: actioning ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                                                                }}>
                                                                     {actioning
                                                                         ? <span style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${C.slate300}`, borderTopColor: C.emerald, animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
-                                                                        : <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
+                                                                        : <FiCheck size={12} strokeWidth={3} />
                                                                     }
                                                                     Approve
                                                                 </button>
-                                                                <button
-                                                                    onClick={(e) => openReject(e, report)}
-                                                                    disabled={actioning}
-                                                                    style={{
-                                                                        display: 'inline-flex', alignItems: 'center', gap: 5,
-                                                                        padding: '6px 14px', borderRadius: 8,
-                                                                        border: `1px solid ${C.redBorder}`,
-                                                                        background: actioning ? C.slate100 : C.redLight,
-                                                                        color: actioning ? C.slate400 : C.redDark,
-                                                                        fontSize: 12, fontWeight: 700,
-                                                                        cursor: actioning ? 'not-allowed' : 'pointer',
-                                                                        fontFamily: 'inherit', transition: 'all 0.15s',
-                                                                    }}
-                                                                >
-                                                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                                <button className="action-btn" onClick={e => openReject(e, report)} disabled={actioning} style={{
+                                                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                                                    padding: '6px 12px', borderRadius: 7,
+                                                                    border: `1px solid ${C.redBorder}`,
+                                                                    background: actioning ? C.slate100 : C.redLight,
+                                                                    color: actioning ? C.textMuted : C.redDark,
+                                                                    fontSize: 12, fontWeight: 800, cursor: actioning ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                                                                }}>
+                                                                    <FiX size={12} strokeWidth={3} />
                                                                     Reject
                                                                 </button>
                                                             </>
                                                         ) : (
-                                                            <span style={{ fontSize: 12, color: C.slate400, fontStyle: 'italic' }}>
-                                                                {report.status === 'approved' ? '✓ Approved' : '✕ Rejected'}
+                                                            <span style={{ fontSize: 12, color: report.review_status === 'approved' ? C.emerald : C.redDark, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                {report.review_status === 'approved' ? <FiCheckCircle size={12} /> : <FiXCircle size={12} />}
+                                                                {report.review_status === 'approved' ? 'Approved' : 'Rejected'}
                                                             </span>
+                                                        )}
+
+                                                        {report.review_status === 'approved' && !report.assigned_to && (
+                                                            <button className="action-btn" onClick={e => { e.stopPropagation(); setSendModal({ open: true, reportId: report._id }) }} style={{
+                                                                display: 'inline-flex', alignItems: 'center', gap: 5,
+                                                                padding: '6px 12px', borderRadius: 7, border: 'none',
+                                                                background: C.indigo, color: C.white,
+                                                                fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                                                                boxShadow: '0 2px 8px rgba(79,70,229,0.3)',
+                                                            }}>
+                                                                <FiSend size={11} />
+                                                                Send
+                                                            </button>
+                                                        )}
+
+                                                        {report.assigned_to && (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '4px 8px', borderRadius: 6, background: '#ecfdf5' }}>
+                                                                <span style={{ fontSize: 10, fontWeight: 800, color: '#047857', textTransform: 'uppercase' }}>Assigned To</span>
+                                                                <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{report.assigned_to?.name}</span>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </td>
@@ -743,20 +1052,18 @@ const ManagerSalesReports = () => {
                             currentPage={currentPage} totalPages={totalPages}
                             pageSize={pageSize} totalItems={filtered.length}
                             onPageChange={setCurrentPage}
-                            onPageSizeChange={(s) => { setPageSize(s); setCurrentPage(1) }}
+                            onPageSizeChange={s => { setPageSize(s); setCurrentPage(1) }}
                         />
                     )}
                 </div>
             </div>
 
-            {/* Detail Modal */}
             <DetailModal
                 open={detailModal.open}
                 report={detailModal.report}
                 onClose={() => setDetailModal({ open: false, report: null })}
+                showToast={showToast}
             />
-
-            {/* Reject Modal */}
             <RejectModal
                 open={rejectModal.open}
                 onClose={() => !actioningId && setRejectModal({ open: false, reportId: null, reportName: '' })}
@@ -764,7 +1071,14 @@ const ManagerSalesReports = () => {
                 submitting={!!actioningId}
                 reportName={rejectModal.reportName}
             />
-
+            <SendModal
+                open={sendModal.open}
+                reportId={sendModal.reportId}
+                salesUsers={salesUsers}
+                onClose={() => setSendModal({ open: false, reportId: null })}
+                onSend={(updatedLead) => setReports(prev => prev.map(r => r._id === updatedLead._id ? updatedLead : r))}
+                showToast={showToast}
+            />
             <Toast message={toast.message} type={toast.type} visible={toast.visible} />
         </DashboardLayout>
     )

@@ -239,14 +239,34 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <NavItem to="/employee/tasks" label="Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
-                        <NavItem to="/employee/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
 
                         {
-                            user.role === "employee" && user.department === "Sales" && (
+                            user.role === "employee" && user.department === "Sales" && user.designation !== "Business Development Manager" && user.designation !== "Business Development Executive" && (
                                 <NavItem to="/employee/sales-reports" label="Sales Report" iconKey="profile" onClick={onClose} collapsed={collapsed} />
 
                             )
                         }
+
+                        <div>
+                            {/* BDE - BDM  */}
+                            {
+                                user.department === "Sales" &&
+                                (
+                                    user.designation === "Business Development Manager" ||
+                                    user.designation === "Business Development Executive"
+                                ) && (
+                                    <NavItem
+                                        to="/sales-reports"
+                                        label="Sales Report"
+                                        iconKey="profile"
+                                        onClick={onClose}
+                                        collapsed={collapsed}
+                                    />
+                                )
+                            }
+                        </div>
+
+                        <NavItem to="/employee/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                     </div>
                 )}
 
@@ -275,6 +295,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         </div>
                     </>
                 )}
+
 
                 {/* HR */}
                 {user?.role === "hr" && (
