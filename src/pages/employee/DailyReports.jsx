@@ -29,6 +29,20 @@ const globalStyles = `
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    @keyframes rowSlideIn {
+        from { opacity: 0; transform: translateX(-12px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes countUp {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .emp-row { transition: background 0.18s, transform 0.15s; }
+    .emp-row:hover { background: rgba(79,70,229,0.06) !important; transform: translateX(2px); }
+    .emp-action-btn { transition: all 0.15s; }
+    .emp-action-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .emp-stat-card { transition: transform 0.2s, box-shadow 0.2s; }
+    .emp-stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important; }
 `;
 
 // ── Normalize a backend report → add fileName + filePreview ──────────────────
@@ -53,13 +67,21 @@ function Badge({ status }) {
     return (
         <span style={{
             display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "2px 10px", borderRadius: 9999, fontSize: 12, fontWeight: 600,
+            padding: "3px 10px", borderRadius: 9999, fontSize: 12, fontWeight: 700,
             textTransform: "capitalize",
             backgroundColor: isPending ? "#fffbeb" : "#f0fdf4",
-            color: isPending ? "#d97706" : "#16a34a",
+            color: isPending ? "#b45309" : "#15803d",
             border: `1px solid ${isPending ? "#fde68a" : "#bbf7d0"}`,
         }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: isPending ? "#f59e0b" : "#22c55e" }} />
+            {isPending ? (
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                    <circle cx="4" cy="4" r="3" fill="#f59e0b" />
+                </svg>
+            ) : (
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                    <circle cx="4" cy="4" r="3" fill="#22c55e" />
+                </svg>
+            )}
             {status}
         </span>
     );
@@ -67,18 +89,24 @@ function Badge({ status }) {
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, color, active, onClick, loading }) {
-    const borderColors = { blue: "#3b82f6", amber: "#fbbf24", green: "#22c55e" };
+    const palette = {
+        blue: { border: "#3b82f6", bg: active ? "#eff6ff" : "#fff", shadow: "rgba(59,130,246,0.18)" },
+        amber: { border: "#f59e0b", bg: active ? "#fffbeb" : "#fff", shadow: "rgba(245,158,11,0.18)" },
+        green: { border: "#22c55e", bg: active ? "#f0fdf4" : "#fff", shadow: "rgba(34,197,94,0.18)" },
+    };
+    const p = palette[color];
     return (
-        <div style={{
-            backgroundColor: "#ffffff", borderRadius: 12,
-            boxShadow: active ? "0 0 0 2px #818cf8, 0 0 0 3px #ffffff" : "0 1px 3px rgba(0,0,0,0.08)",
-            border: "1px solid #f3f4f6", borderTop: `4px solid ${borderColors[color]}`,
-            padding: 24, flex: 1, minWidth: 0, cursor: "pointer", transition: "box-shadow 0.2s",
+        <div className="emp-stat-card" style={{
+            backgroundColor: p.bg, borderRadius: 14,
+            boxShadow: active ? `0 0 0 2px ${p.border}, 0 8px 24px ${p.shadow}` : "0 1px 4px rgba(0,0,0,0.07)",
+            border: `1px solid ${active ? p.border : "#f3f4f6"}`,
+            borderTop: `4px solid ${p.border}`,
+            padding: 24, flex: 1, minWidth: 0, cursor: "pointer",
         }} onClick={onClick}>
-            <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#9ca3af", margin: "0 0 4px" }}>{label}</p>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", color: "#6b7280", margin: "0 0 8px" }}>{label}</p>
             {loading
                 ? <div style={{ width: 64, height: 40, borderRadius: 8, backgroundColor: "#f3f4f6", animation: "pulse 1.5s ease-in-out infinite" }} />
-                : <p style={{ fontSize: 36, fontWeight: 700, color: "#1f2937", margin: 0 }}>{value}</p>
+                : <p style={{ fontSize: 40, fontWeight: 900, color: "#0f172a", margin: 0, lineHeight: 1, animation: "countUp 0.4s ease" }}>{value}</p>
             }
         </div>
     );
@@ -1303,12 +1331,18 @@ export default function DailyReports() {
         <DashboardLayout>
             <style>{globalStyles}</style>
 
-            <div style={{ minHeight: "100vh", backgroundColor: "#f9fafb", padding: 24, fontFamily: "sans-serif" }}>
-
+            <div style={{ minHeight: "100vh", backgroundColor: "#f1f5f9", padding: 24, fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
                 {/* Header */}
                 <div style={{ marginBottom: 24 }}>
-                    <h1 style={{ fontSize: 24, fontWeight: 700, color: "#1f2937", margin: 0 }}>Daily Report</h1>
-                    <p style={{ fontSize: 14, color: "#9ca3af", marginTop: 2, marginBottom: 0 }}>Submit and track your daily task reports</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#0f172a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <svg width="18" height="18" fill="none" stroke="#ffffff" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h5l5 5v11a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", margin: 0, letterSpacing: "-0.02em" }}>Daily Reports</h1>
+                    </div>
+                    <p style={{ fontSize: 13, color: "#64748b", marginTop: 0, marginBottom: 0, paddingLeft: 46 }}>Submit and track your daily task reports</p>
                 </div>
 
                 {/* Stat Cards */}
@@ -1383,43 +1417,49 @@ export default function DailyReports() {
                                     <tbody>
                                         {pageSlice.map((r, i) => (
                                             <tr key={r._id} onClick={() => setDetailRow(r)}
-                                                style={{ borderBottom: "1px solid #f9fafb", cursor: "pointer", transition: "background-color 0.15s" }}
-                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "rgba(238,242,255,0.4)"}
-                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                                className="emp-row"
+                                                style={{ borderBottom: "1px solid #f1f5f9", cursor: "pointer", animation: `rowSlideIn 0.25s ease ${i * 0.04}s both` }}
                                             >
-                                                <td style={{ padding: "14px 20px", color: "#9ca3af", fontWeight: 500 }}>{(safePage - 1) * PER_PAGE + i + 1}</td>
-                                                <td style={{ padding: "14px 20px", fontWeight: 500, color: "#374151" }}>{r.task_name}</td>
-                                                <td style={{ padding: "14px 20px", color: "#6b7280" }}>{r.day}</td>
-                                                <td style={{ padding: "14px 20px", color: "#6b7280" }}>{fmt(r.date)}</td>
+                                                <td style={{ padding: "14px 20px" }}>
+                                                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 7, backgroundColor: "#f1f5f9", fontSize: 11, fontWeight: 800, color: "#475569" }}>
+                                                        {String((safePage - 1) * PER_PAGE + i + 1).padStart(2, "0")}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: "14px 20px", fontWeight: 700, color: "#0f172a" }}>{r.task_name}</td>
+                                                <td style={{ padding: "14px 20px", color: "#334155", fontWeight: 500 }}>{r.day}</td>
+                                                <td style={{ padding: "14px 20px", color: "#334155", fontWeight: 500 }}>{fmt(r.date)}</td>
                                                 <td style={{ padding: "14px 20px" }}><Badge status={r.status} /></td>
                                                 <td style={{ padding: "14px 20px" }} onClick={(e) => e.stopPropagation()}>
                                                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                                                         <button onClick={(e) => openEdit(e, r)} disabled={r.sent}
+                                                            className="emp-action-btn"
+                                                            title={r.sent ? "Cannot edit a sent report" : "Edit report"}
                                                             style={{
                                                                 display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, border: "1px solid", cursor: r.sent ? "not-allowed" : "pointer",
-                                                                borderColor: r.sent ? "#e5e7eb" : "#c7d2fe",
-                                                                color: r.sent ? "#d1d5db" : "#4f46e5",
-                                                                backgroundColor: r.sent ? "#f9fafb" : "#eef2ff",
+                                                                borderColor: r.sent ? "#e2e8f0" : "#c7d2fe",
+                                                                color: r.sent ? "#cbd5e1" : "#4f46e5",
+                                                                backgroundColor: r.sent ? "#f8fafc" : "#eef2ff",
                                                             }}>
                                                             <svg style={{ width: 12, height: 12 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                             </svg>
-                                                            Edit
+                                                            {r.sent ? "Locked" : "Edit"}
                                                         </button>
 
                                                         {r.sent ? (
-                                                            <span style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, border: "1px solid #bbf7d0", color: "#16a34a", backgroundColor: "#f0fdf4" }}>
-                                                                <svg style={{ width: 12, height: 12 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                                            <span style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700, border: "1px solid #bbf7d0", color: "#15803d", backgroundColor: "#f0fdf4" }}>
+                                                                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                                                 </svg>
                                                                 Sent
                                                             </span>
                                                         ) : (
                                                             <button onClick={(e) => handleSend(e, r._id)} disabled={sendingId === r._id}
-                                                                style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, border: "1px solid #bfdbfe", color: "#2563eb", backgroundColor: "#eff6ff", cursor: "pointer", opacity: sendingId === r._id ? 0.5 : 1 }}>
+                                                                className="emp-action-btn"
+                                                                style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, border: "1px solid #bfdbfe", color: "#1d4ed8", backgroundColor: "#eff6ff", cursor: "pointer", opacity: sendingId === r._id ? 0.5 : 1 }}>
                                                                 {sendingId === r._id
                                                                     ? <span style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid #93c5fd", borderTopColor: "#2563eb", animation: "spin 0.7s linear infinite", display: "inline-block" }} />
-                                                                    : <svg style={{ width: 12, height: 12 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    : <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                                                     </svg>
                                                                 }

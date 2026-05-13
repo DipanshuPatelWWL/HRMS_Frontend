@@ -1012,10 +1012,11 @@ const ManagerSalesReports = () => {
                                                                 </button>
                                                             </>
                                                         ) : (
-                                                            <span style={{ fontSize: 12, color: report.review_status === 'approved' ? C.emerald : C.redDark, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                {report.review_status === 'approved' ? <FiCheckCircle size={12} /> : <FiXCircle size={12} />}
-                                                                {report.review_status === 'approved' ? 'Approved' : 'Rejected'}
-                                                            </span>
+                                                            // <span style={{ fontSize: 12, color: report.review_status === 'approved' ? C.emerald : C.redDark, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                            //     {report.review_status === 'approved' ? <FiCheckCircle size={12} /> : <FiXCircle size={12} />}
+                                                            //     {report.review_status === 'approved' ? 'Approved' : 'Rejected'}
+                                                            // </span>
+                                                            ""
                                                         )}
 
                                                         {report.review_status === 'approved' && !report.assigned_to && (

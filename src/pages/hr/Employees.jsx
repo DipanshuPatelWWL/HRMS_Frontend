@@ -131,42 +131,63 @@ const FieldError = ({ error, touched }) => {
 // ─────────────────────────────────────────────
 //  Badges
 // ─────────────────────────────────────────────
+const ROLE_ICON = {
+    hr: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>,
+    manager: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>,
+    tl: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+    superadmin: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+    employee: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z" /></svg>,
+};
+
 const RoleBadge = ({ role }) => {
     const r = role?.toLowerCase();
     const styles = {
-        hr: { bg: "#ede9fe", color: "#3b0764", border: "#8a74ee" },
-        manager: { bg: "#fef3c7", color: "#451a03", border: "#e6cc67" },
-        tl: { bg: "#dbeafe", color: "#1e3a8a", border: "#589bec" },
-        superadmin: { bg: "#fee2e2", color: "#450a0a", border: "#fecaca" },
-        employee: { bg: "#f0fdf4", color: "#052e16", border: "#37e674" },
+        hr: { bg: "#f0e7ff", color: "#5b21b6", border: "#c4b5fd" },
+        manager: { bg: "#fff7e0", color: "#92400e", border: "#fcd34d" },
+        tl: { bg: "#e0f0ff", color: "#1e40af", border: "#93c5fd" },
+        superadmin: { bg: "#ffe4e4", color: "#991b1b", border: "#fca5a5" },
+        employee: { bg: "#e8faf0", color: "#065f46", border: "#6ee7b7" },
     };
     const s = styles[r] || styles.employee;
     return (
         <span style={{
-            background: s.bg, color: s.color, border: `1px solid ${s.border}`,
-            padding: "3px 10px", borderRadius: "6px", fontSize: ".72rem",
-            minWidth: "80px", textAlign: "center", fontWeight: 700, display: "inline-block"
+            background: s.bg, color: s.color,
+            border: `1px solid ${s.border}`,
+            padding: "3px 9px 3px 7px", borderRadius: "20px",
+            fontSize: ".7rem", fontWeight: 700,
+            display: "inline-flex", alignItems: "center", gap: "4px",
+            letterSpacing: ".2px",
+            whiteSpace: "nowrap",
         }}>
+            {ROLE_ICON[r] || ROLE_ICON.employee}
             {getRoleLabel(role)}
         </span>
     );
 };
 
+const STATUS_ICON = {
+    active: <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" /></svg>,
+    inactive: <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10" /></svg>,
+    terminated: <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>,
+};
+
 const StatusBadge = ({ status }) => {
     const styles = {
-        active: { bg: "#dcfce7", color: "#052e16", border: "#46dd7b" },
-        inactive: { bg: "#fef3c7", color: "#451a03", border: "#e0c762" },
-        terminated: { bg: "#fee2e2", color: "#450a0a", border: "#db5252" },
+        active: { bg: "#dcfce7", color: "#15803d", border: "#86efac" },
+        inactive: { bg: "#fef9c3", color: "#a16207", border: "#fde047" },
+        terminated: { bg: "#fee2e2", color: "#b91c1c", border: "#fca5a5" },
     };
     const s = styles[status] || styles.active;
     return (
         <span style={{
-            background: s.bg, color: s.color, border: `1px solid ${s.border}`,
-            padding: "4px 12px", borderRadius: "6px", fontSize: ".73rem",
-            fontWeight: 700, textTransform: "capitalize", display: "inline-flex",
-            alignItems: "center", gap: "5px"
+            background: s.bg, color: s.color,
+            border: `1px solid ${s.border}`,
+            padding: "3px 9px 3px 7px", borderRadius: "20px",
+            fontSize: ".7rem", fontWeight: 700,
+            display: "inline-flex", alignItems: "center", gap: "5px",
+            textTransform: "capitalize", letterSpacing: ".2px",
         }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: s.color, display: "inline-block" }} />
+            {STATUS_ICON[status] || STATUS_ICON.active}
             {status}
         </span>
     );
@@ -245,33 +266,59 @@ const FormFields = ({ form, onChange }) => {
 
             {form._isAdd && (
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </svg>
                         Phone Number
-                        <span style={{ fontSize: ".72rem", color: "#1e293b", fontWeight: 500, marginLeft: 6 }}>
-                            (with country code — e.g. 919876543210)
-                        </span>
                     </label>
-                    <input
-                        name="phone"
-                        className="input"
-                        placeholder="919876543210"
-                        type="text"
-                        value={form.phone}
-                        onChange={(e) => {
-                            const val = e.target.value.replace(/\D/g, "");
-                            onChange({ target: { name: "phone", value: val } });
-                        }}
-                        maxLength={12}
-                        style={{ fontFamily: "monospace", letterSpacing: "1px" }}
-                    />
+                    <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: "8px", overflow: "hidden", background: "#fff" }}>
+                        <div style={{
+                            padding: "0 12px", height: "42px", display: "flex", alignItems: "center", gap: "6px",
+                            background: "#f1f5f9", borderRight: "1px solid var(--border)",
+                            fontSize: ".85rem", fontWeight: 700, color: "#0f172a", flexShrink: 0,
+                        }}>
+                            🇮🇳 +91
+                        </div>
+                        <input
+                            name="phone"
+                            placeholder="9876543210"
+                            type="text"
+                            value={form.phone ? form.phone.replace(/^91/, "") : ""}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                                onChange({ target: { name: "phone", value: val ? "91" + val : "" } });
+                            }}
+                            maxLength={10}
+                            style={{
+                                flex: 1, border: "none", outline: "none", padding: "0 12px",
+                                height: "42px", fontFamily: "monospace", letterSpacing: "1px",
+                                fontSize: ".9rem", background: "transparent", color: "#0f172a",
+                            }}
+                        />
+                        {form.phone && (
+                            <div style={{ paddingRight: 10, display: "flex", alignItems: "center" }}>
+                                {form.phone.replace(/^91/, "").length === 10
+                                    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg>
+                                    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                                }
+                            </div>
+                        )}
+                    </div>
                     <span style={{
-                        fontSize: ".72rem", marginTop: "4px", display: "block",
-                        color: form.phone && form.phone.length !== 12 ? "#dc2626" : "#1e293b",
+                        fontSize: ".72rem", marginTop: "4px", display: "flex", alignItems: "center", gap: 4,
+                        color: form.phone && form.phone.replace(/^91/, "").length !== 10 ? "#dc2626" : "#16a34a",
                         fontWeight: 500
                     }}>
-                        {form.phone && form.phone.length !== 12
-                            ? `❌ Must be 12 digits (91 + 10 digits) — currently ${form.phone.length} digits`
-                            : "📱 Format: 91XXXXXXXXXX (country code 91 + 10 digit number)"
+                        {form.phone && form.phone.replace(/^91/, "").length !== 10
+                            ? <>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                                {`Enter ${10 - (form.phone.replace(/^91/, "").length)} more digit(s)`}
+                            </>
+                            : <>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg>
+                                Valid mobile number
+                            </>
                         }
                     </span>
                 </div>
@@ -671,10 +718,34 @@ const BankDetailsTab = ({ employeeId }) => {
 //  Icons & Confirm Config
 // ─────────────────────────────────────────────
 const Icons = {
-    delete: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>,
-    terminate: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>,
-    deactivate: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>,
-    activate: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>,
+    delete: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6" /><path d="M14 11v6" />
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+        </svg>
+    ),
+    terminate: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+    ),
+    deactivate: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <rect x="9" y="8" width="2" height="8" rx="1" />
+            <rect x="13" y="8" width="2" height="8" rx="1" />
+        </svg>
+    ),
+    activate: (
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polygon points="10 8 16 12 10 16 10 8" />
+        </svg>
+    ),
 };
 
 const CONFIRM_CONFIG = {
@@ -708,9 +779,18 @@ const CONFIRM_CONFIG = {
 //  Edit Modal Tabs
 // ─────────────────────────────────────────────
 const EDIT_TABS = [
-    { key: "basic", label: "Basic Info", icon: "👤" },
-    { key: "govid", label: "Government ID", icon: "🪪" },
-    { key: "bank", label: "Bank Details", icon: "🏦" },
+    {
+        key: "basic", label: "Basic Info",
+        icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>,
+    },
+    {
+        key: "govid", label: "Gov. ID",
+        icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /><path d="M7 15h4" /><path d="M15 15h2" /></svg>,
+    },
+    {
+        key: "bank", label: "Bank",
+        icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><line x1="12" y1="15" x2="12" y2="17" /></svg>,
+    },
 ];
 
 // ─────────────────────────────────────────────
@@ -1233,7 +1313,7 @@ const Employees = () => {
 
             <div className="emp-root">
                 <div className="page-header">
-                    <h1 style={{ color: "#0f172a" }}>{isTL ? "👥 My Team" : "👥 Employees"}</h1>
+                    <h1 style={{ color: "#0f172a" }}>{isTL ? "My Team" : "Employees"}</h1>
                     <p style={{ color: "#1e293b", fontWeight: 500 }}>
                         {isTL ? "View your team members" : "Manage your team members and their information"}
                     </p>
@@ -1248,15 +1328,65 @@ const Employees = () => {
                 )}
 
                 {/* ── Stats ── */}
-                <div className="emp-stat-card">
-                    <div className="stat-item">
-                        <div className="stat-value">{isTL ? tlTeamMembers.length : employees.length}</div>
-                        <div className="stat-label">{isTL ? "Team Members" : "Total Employees"}</div>
-                    </div>
-                    <div className="stat-item">
-                        <div className="stat-value">{(isTL ? tlTeamMembers : employees).filter(e => e.status === "active").length}</div>
-                        <div className="stat-label">Active</div>
-                    </div>
+                <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                    gap: ".85rem",
+                    marginBottom: "1.25rem",
+                }}>
+                    {[
+                        {
+                            label: isTL ? "Team Members" : "Total Employees",
+                            value: isTL ? tlTeamMembers.length : employees.length,
+                            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+                            accent: "#2563eb", bg: "#eff6ff", border: "#bfdbfe",
+                        },
+                        {
+                            label: "Active",
+                            value: (isTL ? tlTeamMembers : employees).filter(e => e.status === "active").length,
+                            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>,
+                            accent: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0",
+                        },
+                        {
+                            label: "Inactive",
+                            value: (isTL ? tlTeamMembers : employees).filter(e => e.status === "inactive").length,
+                            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><line x1="10" y1="15" x2="10" y2="9" /><line x1="14" y1="15" x2="14" y2="9" /></svg>,
+                            accent: "#d97706", bg: "#fffbeb", border: "#fde68a",
+                        },
+                        {
+                            label: "Terminated",
+                            value: (isTL ? tlTeamMembers : employees).filter(e => e.status === "terminated").length,
+                            icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>,
+                            accent: "#dc2626", bg: "#fff1f2", border: "#fecdd3",
+                        },
+                    ].map(stat => (
+                        <div key={stat.label} style={{
+                            background: stat.bg,
+                            border: `1px solid ${stat.border}`,
+                            borderRadius: "12px",
+                            padding: ".9rem 1.1rem",
+                            display: "flex", alignItems: "center", gap: ".85rem",
+                        }}>
+                            <div style={{
+                                width: 40, height: 40, borderRadius: "10px",
+                                background: "#fff",
+                                border: `1px solid ${stat.border}`,
+                                display: "grid", placeItems: "center",
+                                color: stat.accent, flexShrink: 0,
+                                boxShadow: "0 1px 3px rgba(0,0,0,.06)",
+                            }}>
+                                {stat.icon}
+                            </div>
+                            <div>
+                                <div style={{ fontSize: "1.55rem", fontWeight: 800, color: stat.accent, lineHeight: 1 }}>
+                                    {stat.value}
+                                </div>
+                                <div style={{ fontSize: ".72rem", color: "#374151", fontWeight: 600, marginTop: ".2rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
+                                    {stat.label}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
                 <div className="card">
@@ -1272,29 +1402,63 @@ const Employees = () => {
                     )}
 
                     <div className="emp-toolbar">
-                        <input
-                            className="input emp-search"
-                            placeholder="🔍 Search by name, email or ID..."
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            style={{ color: "#0f172a" }}
-                        />
+                        <div style={{ position: "relative", flex: 1, minWidth: 180, maxWidth: 360 }}>
+                            <span style={{
+                                position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)",
+                                color: "#94a3b8", pointerEvents: "none", display: "flex",
+                            }}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </span>
+                            <input
+                                className="input"
+                                placeholder="Search by name, email or ID…"
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                style={{ color: "#0f172a", paddingLeft: "34px", width: "100%" }}
+                            />
+                            {search && (
+                                <button onClick={() => setSearch("")} style={{
+                                    position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)",
+                                    background: "#e2e8f0", border: "none", borderRadius: "50%",
+                                    width: 18, height: 18, cursor: "pointer", display: "grid", placeItems: "center",
+                                    color: "#64748b", padding: 0,
+                                }}>
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
                         <div className="emp-toolbar-right">
-                            <span className="emp-count-badge">
-                                {filtered.length} {filtered.length === 1
-                                    ? (isTL ? "member" : "employee")
-                                    : (isTL ? "members" : "employees")}
+                            <span className="emp-count-badge" style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "center" }}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 4, flexShrink: 0 }}>
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                </svg>
+                                {filtered.length} {filtered.length === 1 ? (isTL ? "member" : "employee") : (isTL ? "members" : "employees")}
                             </span>
                             {(isHR || isManager) && (
                                 <>
-                                    <button className="btn btn-primary" onClick={openAdd}>
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                                    <button className="btn btn-primary" onClick={openAdd} style={{ gap: "6px" }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                            <line x1="8" y1="12" x2="16" y2="12" />
                                         </svg>
                                         Add Employee
                                     </button>
-                                    <button className="btn btn-ghost" onClick={openAssignModal} style={{ border: "1px solid #e5e7eb", color: "#0f172a", fontWeight: 600 }}>
-                                        👥 Assign Team
+                                    <button className="btn btn-ghost" onClick={openAssignModal} style={{
+                                        border: "1px solid #e2e8f0", color: "#374151", fontWeight: 600, gap: "6px"
+                                    }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                            <circle cx="9" cy="7" r="4" />
+                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                        </svg>
+                                        Assign Team
                                     </button>
                                 </>
                             )}
@@ -1306,26 +1470,40 @@ const Employees = () => {
                     )}
 
                     {!loading && filtered.length === 0 && (
-                        <div className="empty-state">
-                            <div className="empty-state-icon">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <div style={{ textAlign: "center", padding: "3.5rem 1rem" }}>
+                            <div style={{
+                                width: 72, height: 72, margin: "0 auto 1.25rem",
+                                background: "linear-gradient(135deg, #f1f5f9, #e2e8f0)",
+                                borderRadius: "20px",
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                boxShadow: "0 4px 12px rgba(0,0,0,.06)",
+                            }}>
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                     <circle cx="9" cy="7" r="4" />
                                     <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                 </svg>
                             </div>
-                            <p style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a", marginBottom: ".5rem" }}>
+                            <p style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a", marginBottom: ".4rem" }}>
                                 {isTL ? "No team members found" : "No employees found"}
                             </p>
-                            <p style={{ fontSize: ".875rem", color: "#1e293b", fontWeight: 500 }}>
+                            <p style={{ fontSize: ".85rem", color: "#64748b", fontWeight: 500, maxWidth: 280, margin: "0 auto" }}>
                                 {search
-                                    ? "Try adjusting your search"
+                                    ? <>No results for <strong style={{ color: "#0f172a" }}>"{search}"</strong> — try a different term</>
                                     : isTL
                                         ? "No team members are currently assigned to you"
                                         : "Get started by adding your first employee"
                                 }
                             </p>
+                            {!search && !isTL && (isHR || isManager) && (
+                                <button className="btn btn-primary" onClick={openAdd} style={{ marginTop: "1.25rem", gap: "6px" }}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                        <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg>
+                                    Add First Employee
+                                </button>
+                            )}
                         </div>
                     )}
 
@@ -1345,8 +1523,8 @@ const Employees = () => {
                                         <th>Employee</th>
                                         <th className="emp-col-hide">ID</th>
                                         <th className="emp-col-hide">Email</th>
-                                        <th>Role</th>
-                                        <th>Status</th>
+                                        <th style={{ whiteSpace: "nowrap" }}>Role</th>
+                                        <th style={{ whiteSpace: "nowrap" }}>Status</th>
                                         <th style={{ textAlign: "right" }}>Actions</th>
                                     </tr>
                                 </thead>
@@ -1375,22 +1553,44 @@ const Employees = () => {
                                                 {e.employeeId || "—"}
                                             </td>
                                             <td className="emp-col-hide" style={{ color: "#0f172a", fontWeight: 500 }}>{e.email}</td>
-                                            <td><RoleBadge role={e.role} /></td>
-                                            <td><StatusBadge status={e.status} /></td>
+                                            <td style={{ whiteSpace: "nowrap" }}><RoleBadge role={e.role} /></td>
+                                            <td style={{ whiteSpace: "nowrap" }}><StatusBadge status={e.status} /></td>
                                             <td>
-                                                <div className="emp-actions" style={{ justifyContent: "flex-end" }}>
-                                                    <button className="btn btn-ghost btn-sm btn-icon" title="Edit employee" onClick={() => openEdit(e)}>
-                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                                <div style={{ display: "flex", gap: ".4rem", justifyContent: "flex-end", alignItems: "center" }}>
+                                                    <button
+                                                        title="Edit employee"
+                                                        onClick={() => openEdit(e)}
+                                                        style={{
+                                                            display: "inline-flex", alignItems: "center", gap: "5px",
+                                                            padding: "5px 11px", borderRadius: "8px", border: "1px solid #e2e8f0",
+                                                            background: "#fff", color: "#374151", fontWeight: 600,
+                                                            fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
+                                                        }}
+                                                        onMouseEnter={ev => { ev.currentTarget.style.background = "#f8fafc"; ev.currentTarget.style.borderColor = "#cbd5e1"; }}
+                                                        onMouseLeave={ev => { ev.currentTarget.style.background = "#fff"; ev.currentTarget.style.borderColor = "#e2e8f0"; }}
+                                                    >
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                                            <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                                                         </svg>
-                                                        <span>Edit</span>
+                                                        Edit
                                                     </button>
                                                     <button
-                                                        className="btn btn-sm"
-                                                        style={{ background: "#b32b2b", color: "#fff", border: "none" }}
+                                                        title="Delete employee"
                                                         onClick={() => setConfirm({ type: "delete", employee: e })}
+                                                        style={{
+                                                            display: "inline-flex", alignItems: "center", gap: "5px",
+                                                            padding: "5px 11px", borderRadius: "8px", border: "1px solid #fecaca",
+                                                            background: "#fff1f2", color: "#dc2626", fontWeight: 600,
+                                                            fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
+                                                        }}
+                                                        onMouseEnter={ev => { ev.currentTarget.style.background = "#fee2e2"; }}
+                                                        onMouseLeave={ev => { ev.currentTarget.style.background = "#fff1f2"; }}
                                                     >
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                                            <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" />
+                                                            <path d="M10 11v6" /><path d="M14 11v6" />
+                                                            <path d="M9 6V4h6v2" />
+                                                        </svg>
                                                         Delete
                                                     </button>
                                                 </div>
@@ -1410,8 +1610,25 @@ const Employees = () => {
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
                             <div>
-                                <span className="modal-title" style={{ color: "#0f172a" }}>➕ Add New Employee</span>
-                                <p style={{ fontSize: ".8rem", color: "#1e293b", marginTop: "4px", fontWeight: 500 }}>Fill in the details below</p>
+                                <span className="modal-title" style={{ color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
+                                    <span style={{
+                                        width: 28, height: 28, borderRadius: "8px",
+                                        background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                                        display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                                    }}>
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                            <circle cx="12" cy="7" r="4" />
+                                            <line x1="12" y1="1" x2="12" y2="4" />
+                                            <line x1="19" y1="8" x2="22" y2="8" />
+                                            <line x1="19" y1="11" x2="22" y2="11" />
+                                        </svg>
+                                    </span>
+                                    Add New Employee
+                                </span>
+                                <p style={{ fontSize: ".8rem", color: "#1e293b", marginTop: "0px", fontWeight: 500, paddingLeft: "36px" }}>
+                                    Fill in the details below
+                                </p>
                             </div>
                             <button className="btn btn-ghost btn-icon" onClick={() => setAddModal(false)}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1450,14 +1667,31 @@ const Employees = () => {
                             </button>
                         </div>
 
-                        <div className="edit-tabs">
+                        <div style={{
+                            display: "flex", gap: ".35rem",
+                            borderBottom: "2px solid #f1f5f9",
+                            marginBottom: "1.25rem",
+                            paddingBottom: "2px",
+                            overflowX: "auto",
+                        }}>
                             {EDIT_TABS.map(tab => (
                                 <button
                                     key={tab.key}
-                                    className={`edit-tab-btn ${editTab === tab.key ? "active" : ""}`}
                                     onClick={() => setEditTab(tab.key)}
+                                    style={{
+                                        display: "flex", alignItems: "center", gap: "6px",
+                                        padding: "7px 14px",
+                                        border: "none", borderRadius: "8px 8px 0 0",
+                                        cursor: "pointer", fontWeight: 600, fontSize: ".8rem",
+                                        whiteSpace: "nowrap", transition: "all .15s",
+                                        borderBottom: editTab === tab.key ? "2px solid var(--primary)" : "2px solid transparent",
+                                        marginBottom: "-2px",
+                                        background: editTab === tab.key ? "#eff6ff" : "transparent",
+                                        color: editTab === tab.key ? "var(--primary)" : "#64748b",
+                                    }}
                                 >
-                                    {tab.icon} {tab.label}
+                                    <span style={{ opacity: editTab === tab.key ? 1 : 0.7 }}>{tab.icon}</span>
+                                    {tab.label}
                                 </button>
                             ))}
                         </div>
@@ -1467,44 +1701,90 @@ const Employees = () => {
                                 <div style={{ display: "flex", flexDirection: "column", gap: ".85rem" }}>
                                     <FormFields form={form} onChange={handleChange} />
                                     <div>
-                                        <p className="quick-actions-label" style={{ color: "#0f172a" }}>Quick Actions</p>
-                                        <div className="quick-actions-bar">
+                                        <p style={{ fontSize: ".7rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".6px", marginBottom: ".5rem" }}>
+                                            Quick Actions
+                                        </p>
+                                        <div style={{
+                                            display: "grid",
+                                            gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
+                                            gap: ".45rem",
+                                            padding: ".75rem",
+                                            background: "#f8fafc",
+                                            borderRadius: "10px",
+                                            border: "1px solid #e2e8f0",
+                                        }}>
                                             {(editEmp.role === "employee" || editEmp.role === "tl") && (
                                                 <button
-                                                    className="btn btn-sm"
-                                                    style={{ background: "#ede9fe", color: "#3b0764", border: "1px solid #ddd6fe", fontWeight: 700 }}
                                                     onClick={() => { setEditTarget(null); handleViewSalary(editEmp); }}
+                                                    style={{
+                                                        display: "flex", alignItems: "center", gap: "6px",
+                                                        padding: "7px 11px", borderRadius: "8px",
+                                                        background: "#f5f0ff", color: "#6d28d9",
+                                                        border: "1px solid #ddd6fe", fontWeight: 600,
+                                                        fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
+                                                    }}
+                                                    onMouseEnter={ev => ev.currentTarget.style.background = "#ede9fe"}
+                                                    onMouseLeave={ev => ev.currentTarget.style.background = "#f5f0ff"}
                                                 >
-                                                    💰 View Salary
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                                        <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                                    </svg>
+                                                    View Salary
                                                 </button>
                                             )}
                                             {editEmp.status !== "terminated" && (
                                                 <button
-                                                    className="btn btn-sm"
-                                                    style={{
-                                                        background: editEmp.status === "active" ? "#fef3c7" : "#dcfce7",
-                                                        color: editEmp.status === "active" ? "#451a03" : "#052e16",
-                                                        border: "1px solid #e5e7eb", fontWeight: 700
-                                                    }}
                                                     onClick={() => setConfirm({ type: editEmp.status === "active" ? "deactivate" : "activate", employee: editEmp })}
+                                                    style={{
+                                                        display: "flex", alignItems: "center", gap: "6px",
+                                                        padding: "7px 11px", borderRadius: "8px",
+                                                        background: editEmp.status === "active" ? "#fffbeb" : "#f0fdf4",
+                                                        color: editEmp.status === "active" ? "#92400e" : "#065f46",
+                                                        border: `1px solid ${editEmp.status === "active" ? "#fde68a" : "#bbf7d0"}`,
+                                                        fontWeight: 600, fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
+                                                    }}
                                                 >
-                                                    {editEmp.status === "active" ? "⏸ Deactivate" : "▶ Activate"}
+                                                    {editEmp.status === "active"
+                                                        ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
+                                                        : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                                                    }
+                                                    {editEmp.status === "active" ? "Deactivate" : "Activate"}
                                                 </button>
                                             )}
                                             <button
-                                                className="btn btn-sm"
-                                                style={{ background: "#fee2e2", color: "#450a0a", border: "1px solid #fecaca", fontWeight: 700 }}
                                                 onClick={() => setConfirm({ type: "terminate", employee: editEmp })}
                                                 disabled={editEmp.status === "terminated"}
+                                                style={{
+                                                    display: "flex", alignItems: "center", gap: "6px",
+                                                    padding: "7px 11px", borderRadius: "8px",
+                                                    background: "#fff1f2", color: "#be123c",
+                                                    border: "1px solid #fecdd3", fontWeight: 600,
+                                                    fontSize: ".78rem", cursor: editEmp.status === "terminated" ? "not-allowed" : "pointer",
+                                                    opacity: editEmp.status === "terminated" ? 0.5 : 1, transition: "all .15s",
+                                                }}
                                             >
-                                                🚫 Terminate
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                                    <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+                                                </svg>
+                                                Terminate
                                             </button>
                                             <button
-                                                className="btn btn-sm"
-                                                style={{ background: "#a51414", color: "#fff", border: "none", fontWeight: 700 }}
                                                 onClick={() => setConfirm({ type: "delete", employee: editEmp })}
+                                                style={{
+                                                    display: "flex", alignItems: "center", gap: "6px",
+                                                    padding: "7px 11px", borderRadius: "8px",
+                                                    background: "#dc2626", color: "#fff",
+                                                    border: "none", fontWeight: 600,
+                                                    fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
+                                                }}
+                                                onMouseEnter={ev => ev.currentTarget.style.background = "#b91c1c"}
+                                                onMouseLeave={ev => ev.currentTarget.style.background = "#dc2626"}
                                             >
-                                                🗑 Delete
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                                    <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" />
+                                                    <path d="M10 11v6" /><path d="M14 11v6" /><path d="M9 6V4h6v2" />
+                                                </svg>
+                                                Delete
                                             </button>
                                         </div>
                                     </div>

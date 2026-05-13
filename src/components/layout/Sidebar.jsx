@@ -13,6 +13,10 @@ import {
     MdBarChart,
     MdEventAvailable,
     MdSensors,
+    MdEvent,
+    MdPsychology,
+    MdTrendingUp,
+    MdAssignment,
 } from "react-icons/md";
 import {
     FaUserAlt,
@@ -122,6 +126,10 @@ const ICON_MAP = {
     helpdeskMgmt: MdHeadsetMic,
     myAttendance: MdEventNote,
     scanLogs: MdSensors,
+    upcomingEvents: MdEvent,        // calendar-style event icon for "Upcoming Events"
+    aiTraining: MdPsychology,       // brain/AI icon for "AI Training"
+    salesReport: MdTrendingUp,      // trending chart icon for "Sales Report"
+    dailyReport: MdAssignment,      // clipboard/document icon for "Daily Report"
 };
 
 /**
@@ -235,7 +243,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <NavItem to="/employee/holidays" label="Holiday Calendar" iconKey="holiday" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/leave" label="Leave" iconKey="leave" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/attendance-correction" label="Attendance Correction" iconKey="attendanceCorrection" onClick={onClose} collapsed={collapsed} />
-                        <NavItem to="/employee/daily-report" label="Daily Report" iconKey="attendanceCorrection" onClick={onClose} collapsed={collapsed} />
+                        <NavItem to="/employee/daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/payroll" label="Payroll" iconKey="payroll" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/tasks" label="Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
@@ -243,7 +251,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
 
                         {
                             user.role === "employee" && user.department === "Sales" && user.designation !== "Business Development Manager" && user.designation !== "Business Development Executive" && (
-                                <NavItem to="/employee/sales-reports" label="Sales Report" iconKey="profile" onClick={onClose} collapsed={collapsed} />
+                                <NavItem to="/employee/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
 
                             )
                         }
@@ -259,7 +267,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                                     <NavItem
                                         to="/sales-reports"
                                         label="Sales Report"
-                                        iconKey="profile"
+                                        iconKey="salesReport"
                                         onClick={onClose}
                                         collapsed={collapsed}
                                     />
@@ -309,8 +317,8 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/holidays" label="Holiday Management" iconKey="holidayMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/scan-logs" label="Scan Logs" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/hr/upcoming-events" label="Upcoming Events" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/hr/ai-training" label="AI Training" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/ai-training" label="AI Training" iconKey="aiTraining" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>
@@ -335,10 +343,10 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager-holidays" label="Holiday Management" iconKey="holidayMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-scan-logs" label="Scan Logs" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/manager-view-task" label="View Tasks" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/manager/upcoming-events" label="Upcoming Events" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/manager-sales-reports" label="Sales Report" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/manager-daily-report" label="Daily Report" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager-view-task" label="View Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager-sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager-daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>
