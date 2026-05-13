@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from "react";
-import API from "../../services/api";
+import API, { BASE_URL } from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
 
@@ -758,22 +758,22 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
         <div className="hr-backdrop" onClick={onClose}>
             <style>
                 {`/* ── Spinner ── */
-                .spinner {
-                    width: 14px; height: 14px;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    border-top-color: white;
-                    border-radius: 50%;
-                    display: inline-block;
-                    animation: spin 0.6s linear infinite;
-                    margin-right: 6px;
-                }`}
+            .spinner {
+                width: 14px; height: 14px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-top-color: white;
+                border-radius: 50%;
+                display: inline-block;
+                animation: spin 0.6s linear infinite;
+                margin-right: 6px;
+            }`}
             </style>
             <div className="hr-modal" onClick={(e) => e.stopPropagation()}>
 
                 {/* Header */}
                 <div className="hr-modal-header">
                     <div style={{ flex: 1, paddingRight: 12 }}>
-                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: ".72rem", color: "#9CA3AF", marginBottom: 4 }}>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: ".72rem", color: "#4B5563", fontWeight: 600, marginBottom: 4 }}>
                             {ticket.ticketId}
                         </div>
                         <div className="hr-modal-title">{ticket.title}</div>
@@ -797,7 +797,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                             <Icon d={icons.user} size={11} />
                             {ticket.user.name}
                             {ticket.user.employeeId && (
-                                <span style={{ opacity: .7 }}>· {ticket.user.employeeId}</span>
+                                <span style={{ opacity: .85, fontWeight: 600 }}>· {ticket.user.employeeId}</span>
                             )}
                         </span>
                     )}
@@ -810,18 +810,52 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                 </div>
 
                 {/* Description */}
-                <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "#9CA3AF", marginBottom: 8 }}>
+                <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "#374151", marginBottom: 8 }}>
                     Description
                 </div>
                 <div className="hr-desc-block">{ticket.description}</div>
 
+
+                {/* Attachments */}
+                {ticket.attachments?.length > 0 && (
+                    <>
+                        <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "#374151", marginBottom: 8 }}>
+                            Attachments ({ticket.attachments.length})
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                            {ticket.attachments.map((att, i) => (
+                                <a
+                                    key={i}
+                                    href={`${BASE_URL}${att.url}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                        display: "block", width: 80, height: 80,
+                                        borderRadius: 8, overflow: "hidden",
+                                        border: "1px solid #E8EBF0", flexShrink: 0,
+                                        transition: "transform .15s",
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.04)"}
+                                    onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                                >
+                                    <img
+                                        src={`${BASE_URL}${att.url}`}
+                                        alt={att.originalName}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                    />
+                                </a>
+                            ))}
+                        </div>
+                    </>
+                )}
+
                 {/* ── HR Controls ── */}
                 <div className="hr-controls">
-                    <div className="hr-controls-title">HR Actions</div>
+                    <div className="hr-controls-title" style={{ color: "#4B5563" }}>HR Actions</div>
                     <div className="hr-controls-row">
                         {/* Status */}
                         <div className="hr-ctrl-group">
-                            <div className="hr-ctrl-label">Status</div>
+                            <div className="hr-ctrl-label" style={{ color: "#374151" }}>Status</div>
                             <select
                                 className="hr-ctrl-select"
                                 value={newStatus}
@@ -836,7 +870,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
 
                         {/* Assignee */}
                         <div className="hr-ctrl-group">
-                            <div className="hr-ctrl-label">Assign To</div>
+                            <div className="hr-ctrl-label" style={{ color: "#374151" }}>Assign To</div>
                             <select
                                 className="hr-ctrl-select"
                                 value={newAssignee}
@@ -878,6 +912,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                         background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 8,
                         padding: "10px 14px", fontSize: ".8rem", color: "#15803D",
                         display: "flex", alignItems: "center", gap: 6, marginBottom: 16,
+                        fontWeight: 600,
                     }}>
                         <Icon d={icons.check} size={14} color="#15803D" />
                         Resolved on {formatDate(ticket.resolvedAt)}
@@ -886,25 +921,25 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                 )}
 
                 {/* Conversation */}
-                <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "#9CA3AF", marginBottom: 10 }}>
+                <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "#374151", marginBottom: 10 }}>
                     Conversation ({ticket.replies?.length || 0})
                 </div>
 
                 <div className="hr-replies">
                     {(!ticket.replies || ticket.replies.length === 0) && (
-                        <div className="hr-no-replies">No replies yet.</div>
+                        <div className="hr-no-replies" style={{ color: "#6B7280", fontWeight: 600 }}>No replies yet.</div>
                     )}
                     {ticket.replies?.map((r) => {
                         const isStaff = r.isStaff;
                         const name = r.sentBy?.name || "Unknown";
-                        const bg = isStaff ? "#6366F1" : "#9CA3AF";
+                        const bg = isStaff ? "#6366F1" : "#6B7280";
                         return (
                             <div key={r._id} className={`hr-reply-bubble ${isStaff ? "staff" : ""}`}>
                                 <div className="hr-bubble-avatar" style={{ background: bg }}>
                                     {initials(name)}
                                 </div>
                                 <div className="hr-bubble-content">
-                                    <div className="hr-bubble-name">
+                                    <div className="hr-bubble-name" style={{ color: "#374151", fontWeight: 600 }}>
                                         {name}
                                         {isStaff && (
                                             <span style={{ marginLeft: 5, background: "#EEF2FF", color: "#4338CA", padding: "1px 5px", borderRadius: 4, fontSize: ".65rem", fontWeight: 700 }}>
@@ -913,7 +948,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                                         )}
                                     </div>
                                     <div className="hr-bubble-text">{r.message}</div>
-                                    <div className="hr-bubble-time">{timeAgo(r.createdAt)}</div>
+                                    <div className="hr-bubble-time" style={{ color: "#6B7280" }}>{timeAgo(r.createdAt)}</div>
                                 </div>
                             </div>
                         );
@@ -924,12 +959,12 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                 {/* Reply input */}
                 {isClosed ? (
                     <div style={{
-                        textAlign: "center", padding: "14px", background: "#F9FAFB",
-                        borderRadius: 10, color: "#9CA3AF", fontSize: ".82rem",
+                        textAlign: "center", padding: "14px", background: "#F3F4F6",
+                        borderRadius: 10, color: "#4B5563", fontSize: ".82rem", fontWeight: 600,
                         display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        borderTop: "1px solid #F3F4F6", paddingTop: 16, marginTop: 4,
+                        borderTop: "1px solid #E5E7EB", paddingTop: 16, marginTop: 4,
                     }}>
-                        <Icon d={icons.lock} size={14} color="#9CA3AF" /> This ticket is closed
+                        <Icon d={icons.lock} size={14} color="#4B5563" /> This ticket is closed
                     </div>
                 ) : (
                     <div className="hr-reply-row">
@@ -951,7 +986,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

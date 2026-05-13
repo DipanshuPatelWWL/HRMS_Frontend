@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from "react";
-import API from "../../services/api";
+import API, { BASE_URL } from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 
 /* ─── Icons ──────────────────────────────────────────────────────────────── */
@@ -596,6 +596,72 @@ const css = `
     border: 1px solid #F3F4F6;
 }
 
+/* attachments */
+.hd-file-drop {
+    border: 2px dashed #E8EBF0;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border .15s, background .15s;
+    background: #FAFAFA;
+    position: relative;
+}
+.hd-file-drop:hover { border-color: #6366F1; background: #F5F3FF; }
+.hd-file-drop input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+.hd-file-drop-text {
+    font-size: .8rem;
+    color: #9CA3AF;
+    font-weight: 500;
+    pointer-events: none;
+}
+.hd-file-drop-text span {
+    color: #6366F1;
+    font-weight: 700;
+}
+.hd-previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+.hd-preview-item {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #E8EBF0;
+    flex-shrink: 0;
+}
+.hd-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.hd-preview-remove {
+    position: absolute;
+    top: 3px; right: 3px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.55);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    padding: 0;
+}
+
 /* toast */
 .hd-toast {
     position: fixed;
@@ -693,10 +759,24 @@ const RaiseModal = ({ onClose, onCreated }) => {
     const [form, setForm] = useState({
         title: "", description: "", category: "other", priority: "medium",
     });
+    const [files, setFiles] = useState([]);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
 
     const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+    const handleFileChange = (e) => {
+        const picked = Array.from(e.target.files).slice(0, 4);
+        setFiles((prev) => {
+            const merged = [...prev, ...picked];
+            return merged.slice(0, 4);
+        });
+        e.target.value = "";
+    };
+
+    const removeFile = (index) => {
+        setFiles((prev) => prev.filter((_, i) => i !== index));
+    };
 
     const handleSubmit = async () => {
         if (!form.title.trim() || !form.description.trim()) {
@@ -706,7 +786,17 @@ const RaiseModal = ({ onClose, onCreated }) => {
         try {
             setSubmitting(true);
             setError("");
-            const res = await API.post("/tickets", form);
+
+            const fd = new FormData();
+            fd.append("title", form.title.trim());
+            fd.append("description", form.description.trim());
+            fd.append("category", form.category);
+            fd.append("priority", form.priority);
+            files.forEach((f) => fd.append("attachments", f));
+
+            const res = await API.post("/tickets", fd, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
             onCreated(res.data.ticket);
             onClose();
         } catch (err) {
@@ -777,6 +867,45 @@ const RaiseModal = ({ onClose, onCreated }) => {
                             <option value="critical">Critical</option>
                         </select>
                     </div>
+                </div>
+
+                {/* Attachments */}
+                <div className="hd-form-group">
+                    <label className="hd-label">
+                        Attachments
+                        <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#9CA3AF", marginLeft: 6 }}>
+                            (images only · max 4)
+                        </span>
+                    </label>
+                    <div className="hd-file-drop">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleFileChange}
+                            disabled={files.length >= 4}
+                        />
+                        <div className="hd-file-drop-text">
+                            <span>Click to upload</span> or drag & drop
+                            <div style={{ fontSize: ".72rem", marginTop: 3 }}>PNG, JPG, WEBP up to 5MB each</div>
+                        </div>
+                    </div>
+                    {files.length > 0 && (
+                        <div className="hd-previews">
+                            {files.map((f, i) => (
+                                <div key={i} className="hd-preview-item">
+                                    <img src={URL.createObjectURL(f)} alt={f.name} />
+                                    <button
+                                        className="hd-preview-remove"
+                                        onClick={() => removeFile(i)}
+                                        type="button"
+                                    >
+                                        <Icon d={icons.close} size={10} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {error && (
@@ -912,6 +1041,32 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                     Description
                 </div>
                 <div className="hd-desc-block">{ticket.description}</div>
+
+                {/* Attachments */}
+                {ticket.attachments?.length > 0 && (
+                    <>
+                        <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "#9CA3AF", marginBottom: 8 }}>
+                            Attachments ({ticket.attachments.length})
+                        </div>
+                        <div className="hd-previews" style={{ marginBottom: 16 }}>
+                            {ticket.attachments.map((att, i) => (
+                                <a
+                                    key={i}
+                                    href={`${BASE_URL}${att.url}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: "block", borderRadius: 8, overflow: "hidden", border: "1px solid #E8EBF0", width: 72, height: 72, flexShrink: 0 }}
+                                >
+                                    <img
+                                        src={`${BASE_URL}${att.url}`}
+                                        alt={att.originalName}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                    />
+                                </a>
+                            ))}
+                        </div>
+                    </>
+                )}
 
                 {/* Resolved info */}
                 {isResolved && ticket.resolvedAt && (
