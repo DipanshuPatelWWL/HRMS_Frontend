@@ -364,6 +364,7 @@ const DetailModal = ({ open, report, onClose, showToast }) => {
                                 <Detail label="Marketer" value={report.marketer} />
                                 <Detail label="Service" value={report.services} />
                                 <Detail label="Country" value={report.country} />
+                                <Detail label="Client Phone" value={report.client_phone} />
 
                                 {report.lead_stage && (
                                     <div style={{ gridColumn: 'span 1', display: 'flex', flexDirection: 'column', gap: 4 }}>

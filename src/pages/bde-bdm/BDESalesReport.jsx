@@ -492,6 +492,7 @@ const DetailModal = ({ open, lead, onClose, onLeadUpdated, showToast }) => {
                                 <Detail label="Report Date" value={fmtDate(lead.date || lead.createdAt)} />
                                 <Detail label="Service" value={lead.services} />
                                 <Detail label="Country" value={lead.country} />
+                                <Detail label="Client Phone" value={lead.client_phone} />
                                 <Detail label="Priority" value={lead.priority ? lead.priority.charAt(0).toUpperCase() + lead.priority.slice(1) : '—'} />
                                 <Detail label="Assigned By" value={lead.assigned_by?.name} />
                                 <Detail label="Assigned At" value={fmtDateTime(lead.assigned_at)} />
