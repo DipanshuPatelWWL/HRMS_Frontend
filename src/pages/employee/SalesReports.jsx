@@ -70,6 +70,7 @@ const EMPTY_FORM = {
     date: new Date().toISOString().split('T')[0],
     client_name: '',
     client_email: '',
+    client_phone: '',
     services: '',
     country: '',
     message: '',
@@ -256,6 +257,7 @@ const ReportModal = ({ open, onClose, onSave, editData, saving }) => {
         const e = {}
         if (!form.client_name.trim()) e.client_name = 'Client name is required'
         if (!form.client_email.trim()) e.client_email = 'Email is required'
+        if (!form.client_phone.trim()) e.client_phone = 'Phone is required'
         if (!form.services) e.services = 'Please select a service'
         if (!form.country) e.country = 'Please select a country'
         setErrors(e)
@@ -330,6 +332,11 @@ const ReportModal = ({ open, onClose, onSave, editData, saving }) => {
                         <input type="email" style={fs('client_email', errors.client_email)} placeholder="client@company.com"
                             value={form.client_email} onChange={set('client_email')}
                             onFocus={() => setFocused('client_email')} onBlur={() => setFocused(null)} />
+                    </FormField>
+                    <FormField label="Client Phone" required error={errors.client_phone}>
+                        <input type="email" style={fs('client_phone', errors.client_phone)} placeholder="9832678499"
+                            value={form.client_phone} onChange={set('client_phone')}
+                            onFocus={() => setFocused('client_phone')} onBlur={() => setFocused(null)} />
                     </FormField>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -443,6 +450,7 @@ const DetailModal = ({ open, onClose, report }) => {
         { label: 'Priority', value: report.priority || 'Medium', Icon: Zap },
         // { label: 'Lead Stage', value: report.lead_stage || 'New', Icon: TrendingUp },
         { label: 'Lead Source', value: report.lead_source || 'Website', Icon: Link },
+        { label: ' Client Phone', value: report.client_phone || 'Phone', Icon: Link },
     ]
 
     return (
@@ -481,6 +489,15 @@ const DetailModal = ({ open, onClose, report }) => {
                                 {report.client_name}
                             </p>
                             <p style={{ margin: 0, fontSize: 11, color: C.ink400 }}>{report.client_email}</p>
+                        </div>
+                        <div style={{
+                            width: 42, height: 42, borderRadius: '50%',
+                            background: getAvatarGrad(report.client_name),
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: C.white, fontSize: 14, fontWeight: 800, flexShrink: 0,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        }}>
+                            {getInitials(report.client_phone)}
                         </div>
                     </div>
                     <button onClick={onClose} style={{
