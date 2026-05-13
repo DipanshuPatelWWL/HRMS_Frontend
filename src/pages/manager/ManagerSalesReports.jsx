@@ -5,8 +5,11 @@ import {
     FiSearch, FiRefreshCw, FiCheck, FiX, FiSend,
     FiBarChart2, FiClock, FiCheckCircle, FiXCircle,
     FiChevronLeft, FiChevronRight, FiFileText, FiAlertCircle,
-    FiActivity, FiInfo,
+    FiActivity, FiInfo, FiDownload, FiFilter, FiCalendar,
 } from 'react-icons/fi'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const C = {
     indigo: '#4f46e5', indigoDark: '#3730a3', indigoLight: '#eef2ff', indigoBorder: '#a5b4fc',
@@ -40,6 +43,27 @@ const STAGES = {
     lost: { label: 'Lost', color: '#b91c1c', bg: '#fef2f2' },
     on_hold: { label: 'On Hold', color: '#64748b', bg: '#f1f5f9' },
 }
+
+const LEAD_STAGE_OPTIONS = [
+    { value: '', label: 'All Stages' },
+    { value: 'new', label: 'New' },
+    { value: 'assigned', label: 'Assigned' },
+    { value: 'contacted', label: 'Contacted' },
+    { value: 'meeting_scheduled', label: 'Meeting Scheduled' },
+    { value: 'proposal_sent', label: 'Proposal Sent' },
+    { value: 'negotiation', label: 'Negotiation' },
+    { value: 'won', label: 'Won' },
+    { value: 'lost', label: 'Lost' },
+    { value: 'on_hold', label: 'On Hold' },
+]
+
+const DATE_PRESETS = [
+    { value: '', label: 'All Time' },
+    { value: 'this_week', label: 'This Week' },
+    { value: 'this_month', label: 'This Month' },
+    { value: 'this_year', label: 'This Year' },
+    { value: 'custom', label: 'Custom Range' },
+]
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50]
 
@@ -707,6 +731,311 @@ const SendModal = ({ open, reportId, salesUsers, onClose, onSend, showToast }) =
     )
 }
 
+
+const DownloadModal = ({ open, onClose, reports, salesUsers }) => {
+    const [format, setFormat] = useState('excel')
+    const [employeeFilter, setEmployeeFilter] = useState('')
+    const [stageFilter, setStageFilter] = useState('')
+    const [datePreset, setDatePreset] = useState('')
+    const [customFrom, setCustomFrom] = useState('')
+    const [customTo, setCustomTo] = useState('')
+    const [downloading, setDownloading] = useState(false)
+
+    useEffect(() => {
+        if (open) {
+            setFormat('excel')
+            setEmployeeFilter('')
+            setStageFilter('')
+            setDatePreset('')
+            setCustomFrom('')
+            setCustomTo('')
+        }
+    }, [open])
+
+    const getDateRange = () => {
+        const now = new Date()
+        if (datePreset === 'this_week') {
+            const day = now.getDay()
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1)
+            const from = new Date(now.setDate(diff))
+            from.setHours(0, 0, 0, 0)
+            return { from, to: new Date() }
+        }
+        if (datePreset === 'this_month') {
+            const from = new Date(now.getFullYear(), now.getMonth(), 1)
+            return { from, to: new Date() }
+        }
+        if (datePreset === 'this_year') {
+            const from = new Date(now.getFullYear(), 0, 1)
+            return { from, to: new Date() }
+        }
+        if (datePreset === 'custom' && customFrom && customTo) {
+            const from = new Date(customFrom)
+            from.setHours(0, 0, 0, 0)
+            const to = new Date(customTo)
+            to.setHours(23, 59, 59, 999)
+            return { from, to }
+        }
+        return null
+    }
+
+    const applyFilters = () => {
+        let result = [...reports]
+        if (employeeFilter) {
+            result = result.filter(r => r.created_by?._id === employeeFilter || r.created_by === employeeFilter)
+        }
+        if (stageFilter) {
+            result = result.filter(r => r.lead_stage === stageFilter)
+        }
+        const range = getDateRange()
+        if (range) {
+            result = result.filter(r => {
+                const d = new Date(r.date || r.createdAt)
+                return d >= range.from && d <= range.to
+            })
+        }
+        return result
+    }
+
+    const buildRows = (data) => data.map((r, i) => ({
+        'SR.': i + 1,
+        'Date': fmtDate(r.date || r.createdAt),
+        'Client Name': r.client_name || '—',
+        'Client Email': r.client_email || '—',
+        'Phone': r.client_phone || '—',
+        'Company': r.company_name || '—',
+        'Service': r.services || '—',
+        'Country': r.country || '—',
+        'Budget': r.budget || 0,
+        'Lead Source': r.lead_source || '—',
+        'Priority': r.priority || '—',
+        'Review Status': STATUS[r.review_status]?.label || r.review_status || '—',
+        'Lead Stage': STAGES[r.lead_stage]?.label || r.lead_stage || '—',
+        'Marketer': r.marketer || '—',
+        'Created By': r.created_by?.name || '—',
+        'Assigned To': r.assigned_to?.name || '—',
+        'Assigned At': r.assigned_at ? fmtDate(r.assigned_at) : '—',
+        'Next Follow-Up': r.next_follow_up ? fmtDate(r.next_follow_up) : '—',
+        'Follow-Up Count': r.follow_up_count || 0,
+        'Message': r.message || '—',
+        'Reject Reason': r.reject_reason || '—',
+    }))
+
+    const handleDownload = async () => {
+        setDownloading(true)
+        try {
+            const filtered = applyFilters()
+            if (filtered.length === 0) {
+                alert('No records match the selected filters.')
+                setDownloading(false)
+                return
+            }
+            const rows = buildRows(filtered)
+            const filename = `sales_leads_${new Date().toISOString().slice(0, 10)}`
+
+            if (format === 'excel') {
+                const ws = XLSX.utils.json_to_sheet(rows)
+                // Column widths
+                ws['!cols'] = Object.keys(rows[0]).map(k => ({ wch: Math.max(k.length, 14) }))
+                const wb = XLSX.utils.book_new()
+                XLSX.utils.book_append_sheet(wb, ws, 'Sales Leads')
+                XLSX.writeFile(wb, `${filename}.xlsx`)
+            } else {
+                const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
+
+                // Title
+                doc.setFontSize(14)
+                doc.setFont('helvetica', 'bold')
+                doc.setTextColor(30, 41, 59)
+                doc.text('Sales Leads Report', 14, 14)
+
+                // Subtitle / filters applied
+                doc.setFontSize(8)
+                doc.setFont('helvetica', 'normal')
+                doc.setTextColor(100, 116, 139)
+                const subtitle = [
+                    `Generated: ${fmtDate(new Date())}`,
+                    employeeFilter ? `Employee: ${salesUsers.find(u => u._id === employeeFilter)?.name || employeeFilter}` : null,
+                    stageFilter ? `Stage: ${STAGES[stageFilter]?.label || stageFilter}` : null,
+                    datePreset ? `Period: ${DATE_PRESETS.find(d => d.value === datePreset)?.label}` : null,
+                    `Total: ${filtered.length} records`,
+                ].filter(Boolean).join('   |   ')
+                doc.text(subtitle, 14, 20)
+
+                // Columns to show in PDF (keep it readable in landscape A4)
+                const pdfCols = [
+                    'SR.', 'Date', 'Client Name', 'Service', 'Country',
+                    'Priority', 'Review Status', 'Lead Stage', 'Created By', 'Assigned To',
+                ]
+                const head = [pdfCols]
+                const body = rows.map(r => pdfCols.map(c => r[c] ?? '—'))
+
+                autoTable(doc, {
+                    head,
+                    body,
+                    startY: 24,
+                    styles: { fontSize: 7.5, cellPadding: 3, textColor: [15, 23, 42] },
+                    headStyles: {
+                        fillColor: [79, 70, 229],
+                        textColor: 255,
+                        fontStyle: 'bold',
+                        fontSize: 8,
+                    },
+                    alternateRowStyles: { fillColor: [241, 245, 249] },
+                    columnStyles: { 0: { cellWidth: 10 }, 2: { cellWidth: 32 } },
+                    margin: { left: 14, right: 14 },
+                })
+
+                doc.save(`${filename}.pdf`)
+            }
+            onClose()
+        } catch (err) {
+            console.error(err)
+            alert('Download failed. Please try again.')
+        } finally {
+            setDownloading(false)
+        }
+    }
+
+    if (!open) return null
+
+    const labelStyle = { display: 'block', fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }
+    const selectBase = {
+        width: '100%', padding: '9px 12px', borderRadius: 9,
+        border: `1.5px solid ${C.slate300}`, background: C.white,
+        fontSize: 13, color: C.text, outline: 'none',
+        fontFamily: 'inherit', cursor: 'pointer', fontWeight: 500,
+    }
+
+    return (
+        <div onClick={onClose} style={{
+            position: 'fixed', inset: 0, zIndex: 90,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+            background: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(6px)',
+            animation: 'fadeIn 0.18s ease',
+        }}>
+            <div onClick={e => e.stopPropagation()} style={{
+                background: C.white, borderRadius: 20, width: '100%', maxWidth: 500,
+                boxShadow: '0 32px 80px rgba(15,23,42,0.24)', overflow: 'hidden',
+                animation: 'modalIn 0.22s ease',
+            }}>
+                {/* Header */}
+                <div style={{ padding: '20px 26px 16px', borderBottom: `1px solid ${C.slate100}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <FiDownload size={17} color={C.indigo} />
+                        </div>
+                        <div>
+                            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: C.text }}>Download Report</h2>
+                            <p style={{ margin: 0, fontSize: 11, color: C.textMuted }}>{reports.length} total records available</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${C.slate200}`, background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.textSub }}>
+                        <FiX size={14} />
+                    </button>
+                </div>
+
+                <div style={{ padding: '20px 26px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                    {/* Format toggle */}
+                    <div>
+                        <label style={labelStyle}>Export Format</label>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            {[{ v: 'excel', label: '📊 Excel (.xlsx)' }, { v: 'pdf', label: '📄 PDF (.pdf)' }].map(opt => (
+                                <button key={opt.v} onClick={() => setFormat(opt.v)} style={{
+                                    flex: 1, padding: '10px 0', borderRadius: 9, cursor: 'pointer',
+                                    border: `2px solid ${format === opt.v ? C.indigo : C.slate200}`,
+                                    background: format === opt.v ? C.indigoLight : C.white,
+                                    color: format === opt.v ? C.indigo : C.textSub,
+                                    fontSize: 13, fontWeight: 800, fontFamily: 'inherit',
+                                    transition: 'all 0.15s',
+                                }}>{opt.label}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Employee filter */}
+                    <div>
+                        <label style={labelStyle}><FiFilter size={11} style={{ marginRight: 4 }} />Filter by Employee</label>
+                        <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} style={selectBase}>
+                            <option value="">All Employees</option>
+                            {salesUsers.map(u => (
+                                <option key={u._id} value={u._id}>{u.name} ({u.designation || u.role || 'Sales'})</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Lead stage filter */}
+                    <div>
+                        <label style={labelStyle}><FiFilter size={11} style={{ marginRight: 4 }} />Filter by Lead Stage</label>
+                        <select value={stageFilter} onChange={e => setStageFilter(e.target.value)} style={selectBase}>
+                            {LEAD_STAGE_OPTIONS.map(o => (
+                                <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Date range */}
+                    <div>
+                        <label style={labelStyle}><FiCalendar size={11} style={{ marginRight: 4 }} />Date Range</label>
+                        <select value={datePreset} onChange={e => setDatePreset(e.target.value)} style={{ ...selectBase, marginBottom: datePreset === 'custom' ? 10 : 0 }}>
+                            {DATE_PRESETS.map(o => (
+                                <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                        </select>
+                        {datePreset === 'custom' && (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
+                                <div>
+                                    <label style={{ ...labelStyle, fontSize: 11, color: C.textMuted }}>From</label>
+                                    <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                                        style={{ ...selectBase, cursor: 'default' }} />
+                                </div>
+                                <div>
+                                    <label style={{ ...labelStyle, fontSize: 11, color: C.textMuted }}>To</label>
+                                    <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                                        style={{ ...selectBase, cursor: 'default' }} />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Preview count */}
+                    <div style={{ padding: '10px 14px', borderRadius: 10, background: C.slate50, border: `1px solid ${C.slate200}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 12, color: C.textMuted, fontWeight: 600 }}>Records matching filters</span>
+                        <span style={{ fontSize: 15, fontWeight: 900, color: C.indigo }}>{applyFilters().length}</span>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div style={{ display: 'flex', gap: 10, padding: '0 26px 22px' }}>
+                    <button onClick={onClose} disabled={downloading} style={{
+                        flex: 1, padding: '11px 0', borderRadius: 10, border: `1px solid ${C.slate300}`,
+                        background: C.white, fontSize: 14, fontWeight: 700, color: C.textSub,
+                        cursor: downloading ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                    }}>Cancel</button>
+                    <button onClick={handleDownload} disabled={downloading} className="action-btn" style={{
+                        flex: 1, padding: '11px 0', borderRadius: 10, border: 'none',
+                        background: downloading ? C.slate300 : C.indigo,
+                        fontSize: 14, fontWeight: 800, color: C.white,
+                        cursor: downloading ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                        boxShadow: downloading ? 'none' : '0 4px 14px rgba(79,70,229,0.35)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    }}>
+                        {downloading
+                            ? <span style={{ width: 13, height: 13, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.35)', borderTopColor: C.white, animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+                            : <FiDownload size={14} />
+                        }
+                        {downloading ? 'Generating...' : `Download ${format === 'excel' ? 'Excel' : 'PDF'}`}
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+
+
+
 /* ─── Main ── */
 const ManagerSalesReports = () => {
     const [reports, setReports] = useState([])
@@ -722,6 +1051,7 @@ const ManagerSalesReports = () => {
     const [sendModal, setSendModal] = useState({ open: false, reportId: null })
     const [salesUsers, setSalesUsers] = useState([])
     const [toast, setToast] = useState({ message: '', type: 'success', visible: false })
+    const [downloadModal, setDownloadModal] = useState(false)
 
     const showToast = useCallback((message, type = 'success') => {
         setToast({ message, type, visible: true })
@@ -880,10 +1210,7 @@ const ManagerSalesReports = () => {
                             <option value="approved">Approved</option>
                             <option value="rejected">Rejected</option>
                         </select>
-                        <div className="toolbar-right" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
-                            <span style={{ fontSize: 13, color: C.textSub, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                {filtered.length} report{filtered.length !== 1 ? 's' : ''}
-                            </span>
+                        <div className="toolbar-right" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 20 }}>
                             <button className="refresh-btn action-btn" onClick={fetchReports} disabled={loading} style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 9,
                                 border: `1px solid ${C.slate200}`, background: C.white, color: C.textSub, fontSize: 13,
@@ -891,6 +1218,16 @@ const ManagerSalesReports = () => {
                             }}>
                                 <FiRefreshCw size={13} style={{ animation: loading ? 'spin 0.7s linear infinite' : 'none' }} />
                                 Refresh
+                            </button>
+                            <button className="action-btn" onClick={() => setDownloadModal(true)} disabled={loading || reports.length === 0} style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 6, padding: '9px 14px', borderRadius: 9,
+                                border: 'none', background: C.indigo, color: C.white, fontSize: 13,
+                                fontWeight: 700, cursor: (loading || reports.length === 0) ? 'not-allowed' : 'pointer',
+                                fontFamily: 'inherit', opacity: (loading || reports.length === 0) ? 0.5 : 1,
+                                boxShadow: '0 2px 8px rgba(79,70,229,0.3)',
+                            }}>
+                                <FiDownload size={13} />
+                                Download
                             </button>
                         </div>
                     </div>
@@ -1079,6 +1416,12 @@ const ManagerSalesReports = () => {
                 onClose={() => setSendModal({ open: false, reportId: null })}
                 onSend={(updatedLead) => setReports(prev => prev.map(r => r._id === updatedLead._id ? updatedLead : r))}
                 showToast={showToast}
+            />
+            <DownloadModal
+                open={downloadModal}
+                onClose={() => setDownloadModal(false)}
+                reports={reports}
+                salesUsers={salesUsers}
             />
             <Toast message={toast.message} type={toast.type} visible={toast.visible} />
         </DashboardLayout>
