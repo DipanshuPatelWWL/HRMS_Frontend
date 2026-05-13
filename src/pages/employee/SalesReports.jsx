@@ -124,6 +124,12 @@ const labelStyle = {
 
 /* ─── Global Keyframes ───────────────────────────────────────────────────────── */
 const GLOBAL_CSS = `
+* {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+}
 @keyframes spin    { to { transform: rotate(360deg) } }
 @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.45} }
 @keyframes slideUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
@@ -736,6 +742,59 @@ const SalesReports = () => {
     const [pageSize, setPageSize] = useState(10)
     const [detailReport, setDetailReport] = useState(null)
     const [toast, setToast] = useState({ message: '', type: 'success', visible: false })
+
+
+    useEffect(() => {
+        const noContext = (e) => e.preventDefault()
+        const noSelect = (e) => e.preventDefault()
+        const noDevTools = (e) => {
+            if (
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c', 'K', 'k'].includes(e.key)) ||
+                (e.ctrlKey && ['U', 'u'].includes(e.key)) ||
+                (e.ctrlKey && ['S', 's'].includes(e.key))
+            ) {
+                e.preventDefault()
+                e.stopPropagation()
+                return false
+            }
+        }
+
+        document.addEventListener('contextmenu', noContext)
+        document.addEventListener('copy', noSelect)
+        document.addEventListener('cut', noSelect)
+        document.addEventListener('selectstart', noSelect)
+        document.addEventListener('keydown', noDevTools)
+
+        document.body.style.userSelect = 'none'
+        document.body.style.webkitUserSelect = 'none'
+        document.body.style.msUserSelect = 'none'
+        document.body.style.mozUserSelect = 'none'
+
+        const devToolsInterval = setInterval(() => {
+            const threshold = 160
+            if (
+                window.outerWidth - window.innerWidth > threshold ||
+                window.outerHeight - window.innerHeight > threshold
+            ) {
+                document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:18px;font-family:sans-serif;color:#ef4444;">⚠️ DevTools detected. Please close DevTools to continue.</div>'
+            }
+        }, 1000)
+
+        return () => {
+            document.removeEventListener('contextmenu', noContext)
+            document.removeEventListener('copy', noSelect)
+            document.removeEventListener('cut', noSelect)
+            document.removeEventListener('selectstart', noSelect)
+            document.removeEventListener('keydown', noDevTools)
+            clearInterval(devToolsInterval)
+            document.body.style.userSelect = ''
+            document.body.style.webkitUserSelect = ''
+            document.body.style.msUserSelect = ''
+            document.body.style.mozUserSelect = ''
+        }
+    }, [])
+
 
     const showToast = useCallback((message, type = 'success') => {
         setToast({ message, type, visible: true })
