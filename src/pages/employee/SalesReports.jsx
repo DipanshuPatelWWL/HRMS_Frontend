@@ -369,6 +369,7 @@ const ReportModal = ({ open, onClose, onSave, editData, saving }) => {
                         <select style={fs('lead_source', false)} value={form.lead_source} onChange={set('lead_source')}
                             onFocus={() => setFocused('lead_source')} onBlur={() => setFocused(null)}>
                             <option value="website">Website</option>
+                            <option value="google">Google</option>
                             <option value="facebook">Facebook</option>
                             <option value="linkedin">LinkedIn</option>
                             <option value="instagram">Instagram</option>
