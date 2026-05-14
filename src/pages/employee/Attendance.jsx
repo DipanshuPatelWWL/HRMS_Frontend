@@ -277,6 +277,7 @@ const Attendance = () => {
     const [holidays, setHolidays] = useState([]);
     const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
     const [viewYear, setViewYear] = useState(now.getFullYear());
+    const [monthlySummary, setMonthlySummary] = useState(null);
 
     const todayDay = now.getDate();
     const todayMonth = now.getMonth() + 1;
@@ -301,12 +302,11 @@ const Attendance = () => {
     };
 
     const fetchMonthly = async (m, y) => {
-        try { const r = await API.get(`/attendance/monthly?month=${m}&year=${y}`); setMonthly(r.data.data || []); }
-        catch { /* silent */ }
-    };
-
-    const fetchHolidays = async (m, y) => {
-        try { const r = await API.get(`/holidays?month=${m}&year=${y}`); setHolidays(r.data.holidays || []); }
+        try {
+            const r = await API.get(`/attendance/monthly?month=${m}&year=${y}`);
+            setMonthly(r.data.data || []);
+            setMonthlySummary(r.data.summary || null);
+        }
         catch { /* silent */ }
     };
 
@@ -352,6 +352,11 @@ const Attendance = () => {
             window.removeEventListener("focus", onFocus);
         };
     }, []);
+
+    const fetchHolidays = async (m, y) => {
+        try { const r = await API.get(`/holidays?month=${m}&year=${y}`); setHolidays(r.data.holidays || []); }
+        catch { /* silent */ }
+    };
 
     useEffect(() => {
         fetchMonthly(viewMonth, viewYear);
@@ -695,6 +700,87 @@ const Attendance = () => {
                         </div>
                     </div>
 
+                    {/* WORK SUMMARY */}
+                    {monthlySummary && (
+                        <div style={{
+                            background: "#fff",
+                            border: "1px solid #E8EBF0",
+                            borderRadius: 14,
+                            padding: "16px 22px",
+                            marginBottom: 24,
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                            gap: 12,
+                        }}>
+                            {/* Section label */}
+                            <div style={{ gridColumn: "1 / -1", marginBottom: 4 }}>
+                                <span style={{
+                                    fontSize: ".68rem", fontWeight: 700,
+                                    textTransform: "uppercase", letterSpacing: ".6px",
+                                    color: "#374151", display: "flex", alignItems: "center", gap: 6,
+                                }}>
+                                    <Icon d={icons.clock} size={12} color="#6B7280" />
+                                    Work Summary — {MONTHS[viewMonth - 1]} {viewYear}
+                                </span>
+                            </div>
+
+                            {/* Total Hours */}
+                            <div style={{ background: "#F0FDF4", borderRadius: 10, padding: "12px 14px", border: "1px solid #BBF7D0" }}>
+                                <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "#15803D", marginBottom: 6 }}>
+                                    Total Hours
+                                </p>
+                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "#111318", letterSpacing: "-1px", lineHeight: 1 }}>
+                                    {Math.floor(monthlySummary.totalWorkHours)}
+                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "#6B7280", letterSpacing: 0 }}>
+                                        h {Math.round((monthlySummary.totalWorkHours % 1) * 60)}m
+                                    </span>
+                                </p>
+                                <p style={{ fontSize: ".72rem", color: "#15803D", marginTop: 4, fontWeight: 500 }}>
+                                    across {monthlySummary.workedDays} working days
+                                </p>
+                            </div>
+
+                            {/* Avg Daily Hours */}
+                            <div style={{ background: "#EFF6FF", borderRadius: 10, padding: "12px 14px", border: "1px solid #BFDBFE" }}>
+                                <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "#1D4ED8", marginBottom: 6 }}>
+                                    Avg / Day
+                                </p>
+                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "#111318", letterSpacing: "-1px", lineHeight: 1 }}>
+                                    {Math.floor(monthlySummary.avgDailyHours)}
+                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "#6B7280", letterSpacing: 0 }}>
+                                        h {Math.round((monthlySummary.avgDailyHours % 1) * 60)}m
+                                    </span>
+                                </p>
+                                <p style={{ fontSize: ".72rem", color: "#1D4ED8", marginTop: 4, fontWeight: 500 }}>
+                                    average per worked day
+                                </p>
+                            </div>
+
+                            {/* Total Late Minutes */}
+                            <div style={{
+                                background: monthlySummary.totalLateMinutes > 0 ? "#FFF7ED" : "#F0FDF4",
+                                borderRadius: 10, padding: "12px 14px",
+                                border: `1px solid ${monthlySummary.totalLateMinutes > 0 ? "#FED7AA" : "#BBF7D0"}`,
+                            }}>
+                                <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: monthlySummary.totalLateMinutes > 0 ? "#C2410C" : "#15803D", marginBottom: 6 }}>
+                                    Total Late
+                                </p>
+                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "#111318", letterSpacing: "-1px", lineHeight: 1 }}>
+                                    {monthlySummary.totalLateMinutes}
+                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "#6B7280", letterSpacing: 0 }}>
+                                        {" "}min
+                                    </span>
+                                </p>
+                                <p style={{ fontSize: ".72rem", color: monthlySummary.totalLateMinutes > 0 ? "#C2410C" : "#15803D", marginTop: 4, fontWeight: 500 }}>
+                                    {monthlySummary.totalLateMinutes > 0
+                                        ? `across ${lateDays} late day${lateDays !== 1 ? "s" : ""}`
+                                        : "no late arrivals"}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+
                     {/* CHART + CALENDAR */}
                     <div className="bottom-grid">
 
@@ -905,7 +991,7 @@ const Attendance = () => {
 
 
                                                 <td style={{ fontFamily: "'DM Mono',monospace", fontSize: ".78rem", color: "#4B5563" }}>
-                                                    {item.workHours ? `${formatWorkHours(item.workHours)}h` : "—"}
+                                                    {item.workHours ? formatWorkHours(item.workHours) : "—"}
                                                 </td>
 
 

@@ -3,33 +3,19 @@ import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import socket from "../../socket";
 
-/* ─── Icons ──────────────────────────────────────────────────────────────── */
-const Icon = ({ d, size = 16, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-        stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-        <path d={d} />
-    </svg>
+/* ─── Tabler Icon ────────────────────────────────────────────────────────── */
+const TI = ({ name, size = 16, style = {} }) => (
+    <i
+        className={`ti ti-${name}`}
+        style={{ fontSize: size, lineHeight: 1, display: "inline-flex", alignItems: "center", ...style }}
+        aria-hidden="true"
+    />
 );
-
-const icons = {
-    bell: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0",
-    pin: "M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z M12 7v.01 M12 11v.01",
-    alert: "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01",
-    check: "M20 6L9 17l-5-5",
-    close: "M18 6L6 18M6 6l12 12",
-    calendar: "M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
-    user: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
-    filter: "M22 3H2l8 9.46V19l4 2v-8.54L22 3z",
-    refresh: "M23 4v6h-6 M1 20v-6h6 M3.51 9a9 9 0 0 1 14.85-3.36L23 10 M1 14l4.64 4.36A9 9 0 0 0 20.49 15",
-    eye: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
-    tag: "M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z M7 7h.01",
-    clock: "M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z M12 6v6l4 2",
-    inbox: "M22 12h-6l-2 3h-4l-2-3H2 M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z",
-};
 
 /* ─── Styles ─────────────────────────────────────────────────────────────── */
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
 
 .an-root *,
 .an-root *::before,
@@ -37,8 +23,8 @@ const css = `
 
 .an-root {
     font-family: 'DM Sans', sans-serif;
-    background: #F4F6FA;
-    color: #1A1D23;
+    background: #f8f7ff;
+    color: #0F1117;
     min-height: 100vh;
     width: 100%;
     overflow-x: hidden;
@@ -57,11 +43,11 @@ const css = `
     font-size: clamp(1.2rem, 4vw, 1.6rem);
     font-weight: 700;
     letter-spacing: -.5px;
-    color: #111318;
+    color: #0F1117;
 }
 .an-header p {
     font-size: clamp(.75rem, 2.5vw, .825rem);
-    color: #818898;
+    color: #4B5563;
     margin-top: 2px;
 }
 
@@ -71,10 +57,10 @@ const css = `
     gap: 6px;
     padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 14px);
     border-radius: 9px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #9CA3AF;
     background: #fff;
     font-size: clamp(.75rem, 2.5vw, .82rem);
-    color: #6B7280;
+    color: #1F2937;
     cursor: pointer;
     font-family: inherit;
     transition: all .15s;
@@ -82,9 +68,10 @@ const css = `
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     flex-shrink: 0;
+    font-weight: 500;
 }
-.an-refresh-btn:hover { background: #F9FAFB; border-color: #D1D5DB; }
-.an-refresh-btn:active { background: #F3F4F6; }
+.an-refresh-btn:hover { background: #F3F4F6; border-color: #6B7280; }
+.an-refresh-btn:active { background: #E5E7EB; }
 
 /* ── Stats ── */
 .an-stats {
@@ -92,9 +79,6 @@ const css = `
     grid-template-columns: repeat(3, 1fr);
     gap: clamp(8px, 2vw, 14px);
     margin-bottom: clamp(16px, 3vw, 24px);
-}
-@media (max-width: 480px) {
-    .an-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
 }
 @media (max-width: 320px) {
     .an-stats { grid-template-columns: 1fr; }
@@ -104,7 +88,7 @@ const css = `
     background: #fff;
     border-radius: clamp(10px, 2.5vw, 14px);
     padding: clamp(12px, 3vw, 18px) clamp(14px, 3vw, 20px);
-    border: 1px solid #E8EBF0;
+    border: 1.5px solid #D1D5DB;
     position: relative;
     overflow: hidden;
 }
@@ -115,16 +99,16 @@ const css = `
     height: 3px;
     border-radius: 14px 14px 0 0;
 }
-.an-stat.blue::before   { background: linear-gradient(90deg,#60A5FA,#3B82F6); }
-.an-stat.red::before    { background: linear-gradient(90deg,#F87171,#EF4444); }
-.an-stat.green::before  { background: linear-gradient(90deg,#4ADE80,#22C55E); }
+.an-stat.blue::before   { background: #2563EB; }
+.an-stat.red::before    { background: #DC2626; }
+.an-stat.green::before  { background: #16A34A; }
 
 .an-stat-label {
     font-size: clamp(.6rem, 2vw, .72rem);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .7px;
-    color: #9CA3AF;
+    color: #374151;
     margin-bottom: 6px;
     white-space: nowrap;
     overflow: hidden;
@@ -134,7 +118,7 @@ const css = `
     font-size: clamp(1.5rem, 5vw, 2.2rem);
     font-weight: 700;
     letter-spacing: -1.5px;
-    color: #111318;
+    color: #0F1117;
     line-height: 1;
 }
 
@@ -147,18 +131,16 @@ const css = `
     align-items: center;
     width: 100%;
 }
-.an-filters-icon { flex-shrink: 0; }
+.an-filters-icon { flex-shrink: 0; color: #374151; }
 
 .an-search {
     padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 12px);
     border-radius: 8px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #9CA3AF;
     background: #fff;
-    font-size: clamp(13px, 3vw, .82rem);
-    /* Prevent iOS zoom */
     font-size: max(16px, clamp(13px, 3vw, 13px));
     font-family: inherit;
-    color: #374151;
+    color: #111827;
     outline: none;
     flex: 1;
     min-width: 120px;
@@ -168,22 +150,23 @@ const css = `
 @media (min-width: 768px) {
     .an-search { font-size: .82rem; }
 }
-.an-search:focus { border-color: #6366F1; }
+.an-search:focus { border-color: #4338CA; }
+.an-search::placeholder { color: #6B7280; }
 
 .an-select {
     padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 12px);
     border-radius: 8px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #9CA3AF;
     background: #fff;
     font-size: max(16px, clamp(13px, 3vw, 13px));
     font-family: inherit;
-    color: #374151;
+    color: #111827;
     cursor: pointer;
     outline: none;
     transition: border .15s;
     appearance: none;
     -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236366F1' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234338CA' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
     padding-right: 28px;
@@ -192,15 +175,15 @@ const css = `
 @media (min-width: 768px) {
     .an-select { font-size: .82rem; }
 }
-.an-select:focus { border-color: #6366F1; }
+.an-select:focus { border-color: #4338CA; }
 
 .an-clear-btn {
     padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2.5vw, 12px);
     border-radius: 8px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #9CA3AF;
     background: #fff;
     font-size: clamp(.74rem, 2.5vw, .8rem);
-    color: #6B7280;
+    color: #1F2937;
     cursor: pointer;
     font-family: inherit;
     display: flex;
@@ -210,9 +193,10 @@ const css = `
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     flex-shrink: 0;
+    font-weight: 500;
 }
-.an-clear-btn:hover { background: #F9FAFB; }
-.an-clear-btn:active { background: #F3F4F6; }
+.an-clear-btn:hover { background: #F3F4F6; border-color: #6B7280; }
+.an-clear-btn:active { background: #E5E7EB; }
 
 /* ── Announcement list ── */
 .an-list {
@@ -225,7 +209,7 @@ const css = `
 .an-card {
     background: #fff;
     border-radius: clamp(10px, 2.5vw, 14px);
-    border: 1px solid #E8EBF0;
+    border: 1.5px solid #D1D5DB;
     padding: clamp(14px, 3.5vw, 20px) clamp(14px, 4vw, 22px);
     cursor: pointer;
     transition: all .18s;
@@ -236,14 +220,14 @@ const css = `
     -webkit-tap-highlight-color: transparent;
 }
 .an-card:hover {
-    border-color: #C7D2FE;
-    box-shadow: 0 4px 20px rgba(99,102,241,.07);
+    border-color: #6366F1;
+    box-shadow: 0 4px 20px rgba(99,102,241,.09);
     transform: translateY(-1px);
 }
 .an-card:active { transform: none; box-shadow: none; }
-.an-card.unread   { border-left: 3px solid #6366F1; }
-.an-card.pinned   { border-top: 2px solid #F59E0B; }
-.an-card.important { background: linear-gradient(135deg, #fff 0%, #FFFBEB 100%); }
+.an-card.unread   { border-left: 3px solid #4338CA; }
+.an-card.pinned   { border-top: 2px solid #B45309; }
+.an-card.important { background: #FFFBEB; }
 
 /* ── Banners ── */
 .an-pinned-banner,
@@ -257,8 +241,8 @@ const css = `
     letter-spacing: .7px;
     margin-bottom: 8px;
 }
-.an-pinned-banner    { color: #D97706; }
-.an-important-banner { color: #DC2626; }
+.an-pinned-banner    { color: #92400E; }
+.an-important-banner { color: #991B1B; }
 
 /* ── Card top ── */
 .an-card-top {
@@ -272,7 +256,7 @@ const css = `
 .an-card-title {
     font-size: clamp(.88rem, 3vw, 1rem);
     font-weight: 600;
-    color: #111318;
+    color: #111827;
     line-height: 1.35;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -284,7 +268,7 @@ const css = `
 .an-card-time {
     font-family: 'DM Mono', monospace;
     font-size: clamp(.64rem, 2vw, .72rem);
-    color: #9CA3AF;
+    color: #4B5563;
     white-space: nowrap;
     flex-shrink: 0;
     padding-top: 2px;
@@ -292,7 +276,7 @@ const css = `
 
 .an-card-body {
     font-size: clamp(.8rem, 2.5vw, .85rem);
-    color: #6B7280;
+    color: #374151;
     line-height: 1.6;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -321,7 +305,7 @@ const css = `
 .an-unread-dot {
     width: 8px; height: 8px;
     border-radius: 50%;
-    background: #6366F1;
+    background: #4338CA;
     flex-shrink: 0;
     margin-top: 5px;
 }
@@ -337,12 +321,12 @@ const css = `
     font-weight: 600;
     white-space: nowrap;
 }
-.chip-blue    { background: #EFF6FF; color: #1D4ED8; }
-.chip-purple  { background: #EEF2FF; color: #4338CA; }
-.chip-gray    { background: #F3F4F6; color: #4B5563; }
-.chip-amber   { background: #FFFBEB; color: #92400E; }
-.chip-green   { background: #F0FDF4; color: #15803D; }
-.chip-red     { background: #FFF1F2; color: #BE123C; }
+.chip-blue    { background: #DBEAFE; color: #1E3A8A; border: 1px solid #BFDBFE; }
+.chip-purple  { background: #EDE9FE; color: #3730A3; border: 1px solid #DDD6FE; }
+.chip-gray    { background: #F3F4F6; color: #1F2937; border: 1px solid #D1D5DB; }
+.chip-amber   { background: #FEF3C7; color: #78350F; border: 1px solid #FDE68A; }
+.chip-green   { background: #DCFCE7; color: #14532D; border: 1px solid #BBF7D0; }
+.chip-red     { background: #FFE4E6; color: #881337; border: 1px solid #FECDD3; }
 
 /* ── Read badge ── */
 .an-read-badge {
@@ -350,7 +334,7 @@ const css = `
     align-items: center;
     gap: 4px;
     font-size: clamp(.64rem, 2vw, .72rem);
-    color: #9CA3AF;
+    color: #374151;
     font-weight: 500;
     white-space: nowrap;
     flex-shrink: 0;
@@ -362,29 +346,31 @@ const css = `
     padding: clamp(2rem, 8vw, 4rem) clamp(1rem, 4vw, 2rem);
     background: #fff;
     border-radius: 14px;
-    border: 1px solid #E8EBF0;
-    color: #9CA3AF;
+    border: 1.5px solid #D1D5DB;
+    color: #374151;
 }
 .an-empty-icon {
     width: 56px; height: 56px;
     border-radius: 16px;
     background: #F3F4F6;
+    border: 1.5px solid #D1D5DB;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px;
+    color: #374151;
 }
 .an-empty-title {
     font-weight: 600;
-    color: #374151;
+    color: #111827;
     margin-bottom: 6px;
     font-size: clamp(.85rem, 2.5vw, 1rem);
 }
-.an-empty-sub { font-size: clamp(.74rem, 2.5vw, .82rem); }
+.an-empty-sub { font-size: clamp(.74rem, 2.5vw, .82rem); color: #4B5563; }
 
 /* ── Skeleton ── */
 .an-skeleton {
-    background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+    background: linear-gradient(90deg, #E5E7EB 25%, #D1D5DB 50%, #E5E7EB 75%);
     background-size: 200% 100%;
     animation: shimmer 1.4s infinite;
     border-radius: 8px;
@@ -395,7 +381,7 @@ const css = `
 .an-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.48);
+    background: rgba(0,0,0,.55);
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -412,6 +398,7 @@ const css = `
 .an-modal {
     background: #fff;
     border-radius: 20px 20px 0 0;
+    border: 1.5px solid #9CA3AF;
     width: 100%;
     max-width: 100%;
     max-height: 92vh;
@@ -428,12 +415,11 @@ const css = `
     }
 }
 
-/* Modal drag handle — mobile only */
 .an-modal-handle {
     width: 40px;
     height: 4px;
     border-radius: 2px;
-    background: #E5E7EB;
+    background: #9CA3AF;
     margin: 0 auto 16px;
     display: block;
 }
@@ -451,7 +437,7 @@ const css = `
 .an-modal-title {
     font-size: clamp(.95rem, 3.5vw, 1.15rem);
     font-weight: 700;
-    color: #111318;
+    color: #0F1117;
     line-height: 1.35;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -460,7 +446,7 @@ const css = `
 }
 .an-close-btn {
     background: #F3F4F6;
-    border: none;
+    border: 1.5px solid #D1D5DB;
     cursor: pointer;
     width: 36px; height: 36px;
     border-radius: 8px;
@@ -468,12 +454,12 @@ const css = `
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #6B7280;
+    color: #1F2937;
     transition: background .15s;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
-.an-close-btn:hover { background: #E5E7EB; }
+.an-close-btn:hover { background: #E5E7EB; border-color: #9CA3AF; }
 .an-close-btn:active { background: #D1D5DB; }
 
 .an-modal-meta {
@@ -482,13 +468,13 @@ const css = `
     flex-wrap: wrap;
     margin-bottom: 20px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #F3F4F6;
+    border-bottom: 1.5px solid #D1D5DB;
     align-items: center;
 }
 
 .an-modal-body {
     font-size: clamp(.84rem, 2.5vw, .9rem);
-    color: #374151;
+    color: #1F2937;
     line-height: 1.75;
     white-space: pre-wrap;
     margin-bottom: 20px;
@@ -501,13 +487,13 @@ const css = `
     justify-content: space-between;
     align-items: center;
     padding-top: 16px;
-    border-top: 1px solid #F3F4F6;
+    border-top: 1.5px solid #D1D5DB;
     flex-wrap: wrap;
     gap: 10px;
 }
 .an-modal-posted {
     font-size: clamp(.7rem, 2vw, .78rem);
-    color: #9CA3AF;
+    color: #4B5563;
 }
 
 .an-read-btn {
@@ -515,7 +501,7 @@ const css = `
     align-items: center;
     gap: 7px;
     padding: clamp(8px, 2vw, 9px) clamp(14px, 3vw, 18px);
-    background: #6366F1;
+    background: #4338CA;
     color: #fff;
     border: none;
     border-radius: 9px;
@@ -528,10 +514,11 @@ const css = `
     -webkit-tap-highlight-color: transparent;
     min-height: 40px;
 }
-.an-read-btn:hover { background: #4F46E5; }
+.an-read-btn:hover { background: #3730A3; }
 .an-read-btn.done {
-    background: #F0FDF4;
-    color: #15803D;
+    background: #DCFCE7;
+    color: #14532D;
+    border: 1.5px solid #BBF7D0;
     cursor: default;
 }
 
@@ -541,11 +528,11 @@ const css = `
     align-items: center;
     gap: 5px;
     font-size: clamp(.7rem, 2.5vw, .75rem);
-    color: #D97706;
-    background: #FFFBEB;
+    color: #78350F;
+    background: #FEF3C7;
     padding: 6px 10px;
     border-radius: 7px;
-    border: 1px solid #FDE68A;
+    border: 1.5px solid #FCD34D;
     margin-bottom: 14px;
     flex-wrap: wrap;
 }
@@ -557,13 +544,14 @@ const css = `
     right: clamp(12px, 4vw, 24px);
     left: clamp(12px, 4vw, auto);
     z-index: 9999;
-    background: #1A1D23;
-    color: #fff;
+    background: #111827;
+    color: #F9FAFB;
     padding: clamp(10px, 2.5vw, 12px) clamp(14px, 3vw, 20px);
     border-radius: 12px;
+    border: 1px solid #374151;
     font-size: clamp(.8rem, 2.5vw, .85rem);
     font-weight: 500;
-    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -582,7 +570,6 @@ const css = `
     to   { transform: translateY(0);    opacity: 1; }
 }
 
-/* ── Responsive: very small screens ── */
 @media (max-width: 360px) {
     .an-card-meta .an-chip:nth-child(n+3) { display: none; }
     .an-filters-icon { display: none; }
@@ -604,16 +591,16 @@ const formatDate = (d) =>
 
 const roleChip = (role) => {
     const map = {
-        all: { cls: "chip-blue", label: "Everyone" },
-        employee: { cls: "chip-green", label: "Employees" },
-        hr: { cls: "chip-purple", label: "HR" },
-        manager: { cls: "chip-amber", label: "Managers" },
-        tl: { cls: "chip-gray", label: "Team Leads" },
+        all: { cls: "chip-blue", label: "Everyone", icon: "users" },
+        employee: { cls: "chip-green", label: "Employees", icon: "user-check" },
+        hr: { cls: "chip-purple", label: "HR", icon: "heart-handshake" },
+        manager: { cls: "chip-amber", label: "Managers", icon: "briefcase" },
+        tl: { cls: "chip-gray", label: "Team Leads", icon: "award" },
     };
-    const { cls, label } = map[role] || map.all;
+    const { cls, label, icon } = map[role] || map.all;
     return (
         <span className={`an-chip ${cls}`}>
-            <Icon d={icons.tag} size={10} />{label}
+            <TI name={icon} size={11} />{label}
         </span>
     );
 };
@@ -640,7 +627,6 @@ const AnnouncementModal = ({ announcement, onClose, onRead }) => {
 
     useEffect(() => {
         if (!announcement.isRead) handleMarkRead();
-        // Lock scroll on body when modal open
         document.body.style.overflow = "hidden";
         return () => { document.body.style.overflow = ""; };
     }, []);
@@ -651,58 +637,52 @@ const AnnouncementModal = ({ announcement, onClose, onRead }) => {
         <div className="an-backdrop" onClick={onClose}>
             <div className="an-modal" onClick={(e) => e.stopPropagation()}>
 
-                {/* Drag handle (mobile) */}
                 <span className="an-modal-handle" />
 
-                {/* Header */}
                 <div className="an-modal-header">
                     <div className="an-modal-title">{announcement.title}</div>
                     <button className="an-close-btn" onClick={onClose} aria-label="Close">
-                        <Icon d={icons.close} size={16} />
+                        <TI name="x" size={16} />
                     </button>
                 </div>
 
-                {/* Banners */}
                 {announcement.pinned && (
                     <div className="an-pinned-banner">
-                        <Icon d={icons.pin} size={12} color="#D97706" />
+                        <TI name="pin" size={13} style={{ color: "#92400E" }} />
                         Pinned announcement
                     </div>
                 )}
                 {announcement.important && (
                     <div className="an-important-banner">
-                        <Icon d={icons.alert} size={12} color="#DC2626" />
+                        <TI name="alert-triangle" size={13} style={{ color: "#991B1B" }} />
                         Important
                     </div>
                 )}
 
-                {/* Meta */}
                 <div className="an-modal-meta">
                     {roleChip(announcement.targetRole)}
                     <span className="an-chip chip-gray">
-                        <Icon d={icons.user} size={10} />
+                        <TI name="user" size={11} />
                         {announcement.createdBy?.name || "—"}
                     </span>
                     <span className="an-chip chip-gray">
-                        <Icon d={icons.calendar} size={10} />
+                        <TI name="calendar" size={11} />
                         {timeAgo(announcement.createdAt)}
                     </span>
                 </div>
 
-                {/* Expiry warning */}
                 {expiringSoon && (
                     <div className="an-expiry">
-                        <Icon d={icons.clock} size={13} color="#D97706" />
+                        <TI name="clock" size={14} style={{ color: "#78350F" }} />
                         Expires on {formatDate(announcement.expiresAt)}
                     </div>
                 )}
 
-                {/* Body */}
                 <div className="an-modal-body">{announcement.body}</div>
 
-                {/* Footer */}
                 <div className="an-modal-footer">
                     <span className="an-modal-posted">
+                        <TI name="calendar-event" size={13} style={{ marginRight: 4, verticalAlign: -2, color: "#4B5563" }} />
                         Posted {formatDate(announcement.createdAt)}
                     </span>
                     <button
@@ -710,10 +690,10 @@ const AnnouncementModal = ({ announcement, onClose, onRead }) => {
                         onClick={handleMarkRead}
                         disabled={marking || announcement.isRead}
                     >
-                        <Icon
-                            d={icons.check}
-                            size={14}
-                            color={announcement.isRead ? "#15803D" : "#fff"}
+                        <TI
+                            name={announcement.isRead ? "circle-check" : "check"}
+                            size={15}
+                            style={{ color: announcement.isRead ? "#14532D" : "#fff" }}
                         />
                         {announcement.isRead ? "Read" : marking ? "Marking…" : "Mark as read"}
                     </button>
@@ -768,7 +748,7 @@ const Announcements = () => {
                 if (prev.some(a => a._id === newItem._id)) return prev;
                 return [newItem, ...prev];
             });
-            showToast(`📢 ${newItem.title}`);
+            showToast(`New announcement: ${newItem.title}`);
         });
         return () => socket.off("newAnnouncement");
     }, []);
@@ -812,19 +792,19 @@ const Announcements = () => {
     }, [announcements, readFilter, search]);
 
     const statCards = [
-        { label: "Total", value: stats.total, color: "blue" },
-        { label: "Unread", value: stats.unread, color: "red" },
-        { label: "Pinned", value: stats.pinned, color: "green" },
+        { label: "Total", value: stats.total, color: "blue", icon: "layout-list" },
+        { label: "Unread", value: stats.unread, color: "red", icon: "bell" },
+        { label: "Pinned", value: stats.pinned, color: "green", icon: "pin" },
     ];
 
     return (
         <>
             <style>{css}</style>
 
-            {/* Toast */}
             {toast && (
                 <div className="an-toast">
-                    <Icon d={icons.check} size={14} color="#4ADE80" /> {toast}
+                    <TI name="circle-check" size={15} style={{ color: "#4ADE80", flexShrink: 0 }} />
+                    {toast}
                 </div>
             )}
 
@@ -834,11 +814,14 @@ const Announcements = () => {
                     {/* Header */}
                     <div className="an-header">
                         <div>
-                            <h1>Announcements</h1>
+                            <h1>
+                                <TI name="speakerphone" size={22} style={{ marginRight: 8, verticalAlign: -3, color: "#4338CA" }} />
+                                Announcements
+                            </h1>
                             <p>Company notices and updates</p>
                         </div>
                         <button className="an-refresh-btn" onClick={fetchAnnouncements}>
-                            <Icon d={icons.refresh} size={14} /> Refresh
+                            <TI name="refresh" size={15} /> Refresh
                         </button>
                     </div>
 
@@ -855,7 +838,7 @@ const Announcements = () => {
                     {/* Filters */}
                     <div className="an-filters">
                         <span className="an-filters-icon">
-                            <Icon d={icons.filter} size={15} color="#9CA3AF" />
+                            <TI name="filter" size={16} />
                         </span>
 
                         <input
@@ -880,7 +863,7 @@ const Announcements = () => {
                                 className="an-clear-btn"
                                 onClick={() => { setReadFilter("all"); setSearch(""); }}
                             >
-                                <Icon d={icons.close} size={12} /> Clear
+                                <TI name="x" size={13} /> Clear
                             </button>
                         )}
                     </div>
@@ -895,7 +878,7 @@ const Announcements = () => {
                         {!loading && filtered.length === 0 && (
                             <div className="an-empty">
                                 <div className="an-empty-icon">
-                                    <Icon d={icons.inbox} size={24} color="#9CA3AF" />
+                                    <TI name="inbox" size={26} />
                                 </div>
                                 <p className="an-empty-title">No announcements</p>
                                 <p className="an-empty-sub">
@@ -922,13 +905,13 @@ const Announcements = () => {
                                 >
                                     {a?.pinned && (
                                         <div className="an-pinned-banner">
-                                            <Icon d={icons.pin} size={11} color="#D97706" />
+                                            <TI name="pin" size={12} style={{ color: "#92400E" }} />
                                             Pinned
                                         </div>
                                     )}
                                     {a?.important && !a?.pinned && (
                                         <div className="an-important-banner">
-                                            <Icon d={icons.alert} size={11} color="#DC2626" />
+                                            <TI name="alert-triangle" size={12} style={{ color: "#991B1B" }} />
                                             Important
                                         </div>
                                     )}
@@ -951,12 +934,12 @@ const Announcements = () => {
                                         <div className="an-card-meta">
                                             {roleChip(a?.targetRole)}
                                             <span className="an-chip chip-gray">
-                                                <Icon d={icons.user} size={10} />
+                                                <TI name="user" size={11} />
                                                 {a?.createdBy?.name || "—"}
                                             </span>
                                             {isExpiringSoon(a?.expiresAt) && (
                                                 <span className="an-chip chip-amber">
-                                                    <Icon d={icons.clock} size={10} />
+                                                    <TI name="clock" size={11} />
                                                     Expiring soon
                                                 </span>
                                             )}
@@ -964,11 +947,12 @@ const Announcements = () => {
 
                                         {a?.isRead ? (
                                             <span className="an-read-badge">
-                                                <Icon d={icons.check} size={12} color="#9CA3AF" />
+                                                <TI name="circle-check" size={13} style={{ color: "#374151" }} />
                                                 Read
                                             </span>
                                         ) : (
                                             <span className="an-chip chip-purple" style={{ fontSize: ".68rem" }}>
+                                                <TI name="sparkles" size={10} />
                                                 New
                                             </span>
                                         )}
@@ -979,7 +963,6 @@ const Announcements = () => {
                     </div>
                 </div>
 
-                {/* Detail modal */}
                 {selected && (
                     <AnnouncementModal
                         announcement={selected}

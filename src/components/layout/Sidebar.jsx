@@ -17,6 +17,9 @@ import {
     MdPsychology,
     MdTrendingUp,
     MdAssignment,
+    MdInventory2,
+    MdManageAccounts,
+    MdSpaceDashboard,
 } from "react-icons/md";
 import {
     FaUserAlt,
@@ -85,10 +88,22 @@ const SIDEBAR_STYLES = `
     padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
   }
 
+  /* ── Nav item base ── */
   .nav-item {
     transition: background 0.15s ease !important;
     position: relative;
     overflow: hidden;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 9px 14px !important;
+    border-radius: 8px !important;
+    margin: 1px 6px !important;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: calc(100% - 12px) !important;
+    box-sizing: border-box !important;
   }
 
   .nav-item:not(.active):hover {
@@ -99,8 +114,83 @@ const SIDEBAR_STYLES = `
     background: #625be79a !important;
   }
 
+  /* Icon always fixed width so labels align */
   .nav-icon {
-    flex-shrink: 0;
+    flex-shrink: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .nav-item-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.875rem;
+    line-height: 1;
+  }
+
+  /* Collapsed mode: hide label, show tooltip */
+  .sidebar-collapsed .nav-item-label {
+    display: none !important;
+  }
+
+  .nav-tooltip {
+    display: none !important;
+  }
+
+  .sidebar-collapsed .nav-item {
+    justify-content: center !important;
+    padding: 10px !important;
+    margin: 1px auto !important;
+    width: 40px !important;
+    border-radius: 10px !important;
+  }
+
+  .sidebar-collapsed .sidebar-section-label {
+    display: none !important;
+  }
+
+  .sidebar-collapsed .sidebar-section {
+    padding-top: 4px !important;
+  }
+
+  /* Tooltip on hover in collapsed mode */
+  .sidebar-collapsed .nav-item {
+    position: relative;
+  }
+
+  .sidebar-collapsed .nav-item:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1e1b4b;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 5px 10px;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .sidebar-collapsed .nav-item:hover::before {
+    content: '';
+    position: absolute;
+    left: calc(100% + 4px);
+    top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: #1e1b4b;
+    pointer-events: none;
+    z-index: 9999;
   }
 `;
 
@@ -126,10 +216,13 @@ const ICON_MAP = {
     helpdeskMgmt: MdHeadsetMic,
     myAttendance: MdEventNote,
     scanLogs: MdSensors,
-    upcomingEvents: MdEvent,        // calendar-style event icon for "Upcoming Events"
-    aiTraining: MdPsychology,       // brain/AI icon for "AI Training"
-    salesReport: MdTrendingUp,      // trending chart icon for "Sales Report"
-    dailyReport: MdAssignment,      // clipboard/document icon for "Daily Report"
+    upcomingEvents: MdEvent,
+    aiTraining: MdPsychology,
+    salesReport: MdTrendingUp,
+    dailyReport: MdAssignment,
+    assets: MdInventory2,      // ✅ dedicated assets icon
+    assetsMgmt: MdManageAccounts,  // ✅ dedicated assets management icon
+    viewTasks: MdSpaceDashboard,  // ✅ distinct icon for "View Tasks"
 };
 
 /**
@@ -139,7 +232,13 @@ const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
     const { pathname } = useLocation();
     const active =
         pathname === to ||
-        (to !== "/hr" && to !== "/employee" && to !== "/tl" && to !== "/manager" && pathname.startsWith(to + "/"));
+        (
+            to !== "/hr" &&
+            to !== "/employee" &&
+            to !== "/tl" &&
+            to !== "/manager" &&
+            pathname.startsWith(to + "/")
+        );
 
     const IconComponent = ICON_MAP[iconKey] || MdDashboard;
 
@@ -149,13 +248,15 @@ const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
             className={`nav-item ${active ? "active" : ""}`}
             style={{ textDecoration: "none", color: "#0a0a0a" }}
             onClick={onClick}
-            title={collapsed ? label : undefined}
+            title={label}                  /* always set for collapsed tooltip */
         >
             <IconComponent size={18} className="nav-icon" />
-            <span className="nav-item-label" style={{ color: "#0a0a0a", fontWeight: active ? 600 : 500 }}>
+            <span
+                className="nav-item-label"
+                style={{ color: "#0a0a0a", fontWeight: active ? 600 : 500 }}
+            >
                 {label}
             </span>
-            <span className="nav-tooltip">{label}</span>
         </Link>
     );
 };
@@ -171,7 +272,6 @@ const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
 const Sidebar = ({ isOpen, onClose, collapsed }) => {
     const { user, logout } = useContext(AuthContext);
     const styleInjected = useRef(false);
-
     const navRef = useRef(null);
 
     useEffect(() => {
@@ -183,37 +283,35 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
         styleInjected.current = true;
     }, []);
 
-
-
     useLayoutEffect(() => {
         const nav = navRef.current;
-
         if (!nav) return;
 
-        // Restore instantly before paint
         const savedScroll = sessionStorage.getItem("sidebar-scroll");
+        if (savedScroll) nav.scrollTop = parseInt(savedScroll, 10);
 
-        if (savedScroll) {
-            nav.scrollTop = parseInt(savedScroll, 10);
-        }
-
-        const handleScroll = () => {
-            sessionStorage.setItem("sidebar-scroll", nav.scrollTop);
-        };
-
+        const handleScroll = () => sessionStorage.setItem("sidebar-scroll", nav.scrollTop);
         nav.addEventListener("scroll", handleScroll);
-
-        return () => {
-            nav.removeEventListener("scroll", handleScroll);
-        };
+        return () => nav.removeEventListener("scroll", handleScroll);
     }, []);
-
 
     const sidebarClass = [
         "sidebar",
         isOpen ? "sidebar-open" : "",
         collapsed ? "sidebar-collapsed" : "",
     ].filter(Boolean).join(" ");
+
+    const isSalesBDE =
+        user?.department === "Sales" &&
+        (
+            user?.designation === "Business Development Manager" ||
+            user?.designation === "Business Development Executive"
+        );
+
+    const isSalesOther =
+        user?.role === "employee" &&
+        user?.department === "Sales" &&
+        !isSalesBDE;
 
     return (
         <div className={sidebarClass}>
@@ -222,7 +320,6 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                 <div className="sidebar-logo">HR</div>
                 <span className="sidebar-title" style={{ color: "#0a0a0a" }}>HRMS</span>
 
-                {/* Mobile-only close button */}
                 <button className="sidebar-close" onClick={onClose} aria-label="Close menu">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -234,7 +331,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
             {/* ── Navigation ── */}
             <nav className="sidebar-nav" ref={navRef}>
 
-                {/* EMPLOYEE */}
+                {/* ══ EMPLOYEE ══ */}
                 {user?.role === "employee" && (
                     <div className="sidebar-section">
                         <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Employee</div>
@@ -248,39 +345,23 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <NavItem to="/employee/tasks" label="Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
-                        <NavItem to="/employee/assets" label="Assets" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
+                        <NavItem to="/employee/assets" label="Assets" iconKey="assets" onClick={onClose} collapsed={collapsed} />
 
-                        {
-                            user.role === "employee" && user.department === "Sales" && user.designation !== "Business Development Manager" && user.designation !== "Business Development Executive" && (
-                                <NavItem to="/employee/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
+                        {/* Sales report – non-BDE/BDM sales employees */}
+                        {isSalesOther && (
+                            <NavItem to="/employee/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
+                        )}
 
-                            )
-                        }
-
-                        <div>
-                            {/* BDE - BDM  */}
-                            {
-                                user.department === "Sales" &&
-                                (
-                                    user.designation === "Business Development Manager" ||
-                                    user.designation === "Business Development Executive"
-                                ) && (
-                                    <NavItem
-                                        to="/sales-reports"
-                                        label="Sales Report"
-                                        iconKey="salesReport"
-                                        onClick={onClose}
-                                        collapsed={collapsed}
-                                    />
-                                )
-                            }
-                        </div>
+                        {/* Sales report – BDE / BDM (different route) */}
+                        {isSalesBDE && (
+                            <NavItem to="/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
+                        )}
 
                         <NavItem to="/employee/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                     </div>
                 )}
 
-                {/* TL */}
+                {/* ══ TL ══ */}
                 {user?.role === "tl" && (
                     <>
                         <div className="sidebar-section">
@@ -294,7 +375,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/tl/tasks" label="My Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/tl/assets" label="Assets" iconKey="profile" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/tl/assets" label="Assets" iconKey="assets" onClick={onClose} collapsed={collapsed} />
                         </div>
 
                         <div className="sidebar-section">
@@ -307,8 +388,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                     </>
                 )}
 
-
-                {/* HR */}
+                {/* ══ HR ══ */}
                 {user?.role === "hr" && (
                     <>
                         <div className="sidebar-section">
@@ -321,7 +401,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/scan-logs" label="Scan Logs" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/ai-training" label="AI Training" iconKey="aiTraining" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/hr/assets" label="Assets Management" iconKey="aiTraining" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>
@@ -330,12 +410,12 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/correction-requests" label="Attendance Management" iconKey="correctionRequests" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/payroll-management" label="Payroll" iconKey="payrollMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/helpdesk" label="Helpdesk Management" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/employee/attendance" label="My Attendance" iconKey="myAttendance" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/employee/attendance" label="My Attendance" iconKey="attendance" onClick={onClose} collapsed={collapsed} />
                         </div>
                     </>
                 )}
 
-                {/* MANAGER */}
+                {/* ══ MANAGER ══ */}
                 {user?.role === "manager" && (
                     <>
                         <div className="sidebar-section">
@@ -346,11 +426,11 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager-holidays" label="Holiday Management" iconKey="holidayMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-scan-logs" label="Scan Logs" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/manager-view-task" label="View Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager-view-task" label="View Tasks" iconKey="viewTasks" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/manager-assets" label="Assets Management" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager-assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>
@@ -369,12 +449,11 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                 <button
                     onClick={logout}
                     className="nav-item"
-                    style={{ color: "var(--danger)" }}
-                    title={collapsed ? "Logout" : undefined}
+                    style={{ color: "var(--danger)", background: "transparent", border: "none", cursor: "pointer" }}
+                    title="Logout"
                 >
                     <FaSignOutAlt size={18} className="nav-icon" />
                     <span className="nav-item-label">Logout</span>
-                    <span className="nav-tooltip">Logout</span>
                 </button>
             </div>
         </div>

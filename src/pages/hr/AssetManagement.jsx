@@ -11,6 +11,7 @@ import {
 } from "../../services/assetsServices";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { HistoryTimeline } from "../../components/common/AssetShared";
+import { BASE_URL } from "../../services/api";
 
 // ─── Inline CSS ──────────────────────────────────────────────────────────────
 
@@ -468,7 +469,7 @@ export default function AssetManagement() {
 
                 // ─── Fetch Employees ─────────────────────────────
                 const usersRes = await fetch(
-                    "http://localhost:5000/api/users?role=employee,hr,manager",
+                    `${BASE_URL}/users?role=employee,hr,manager`,
                     {
                         method: "GET",
                         headers: {
@@ -479,8 +480,6 @@ export default function AssetManagement() {
                 );
 
                 const usersJson = await usersRes.json();
-
-                console.log("Users Response:", usersJson);
 
                 if (usersJson.success) {
 
@@ -494,7 +493,7 @@ export default function AssetManagement() {
 
                 // ─── Fetch Departments ───────────────────────────
                 const deptRes = await fetch(
-                    "http://localhost:5000/api/tasks/departments",
+                    `${BASE_URL}/tasks/departments`,
                     {
                         method: "GET",
                         headers: {
@@ -505,8 +504,6 @@ export default function AssetManagement() {
                 );
 
                 const deptJson = await deptRes.json();
-
-                console.log("Departments Response:", deptJson);
 
                 if (deptJson.success) {
 
@@ -944,7 +941,7 @@ export default function AssetManagement() {
                         {detailAsset.photoUrl && (
                             <div style={{ marginBottom: 18, textAlign: "center" }}>
                                 <img
-                                    src={`http://localhost:5000/${detailAsset.photoUrl.replace(/\\/g, "/")}`}
+                                    src={`${BASE_URL}/${detailAsset.photoUrl.replace(/\\/g, "/")}`}
                                     alt="Asset"
                                     style={{
                                         maxWidth: "100%", maxHeight: 180,

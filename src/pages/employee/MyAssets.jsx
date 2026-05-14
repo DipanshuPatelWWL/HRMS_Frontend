@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getMyAssets, getAssetHistory } from "../../services/assetsServices";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { HistoryTimeline } from "../../components/common/AssetShared";
+import { BASE_URL } from "../../services/api";
 
 /* ─── Inject Styles ──────────────────────────────────────────────────────── */
 const injectStyles = () => {
@@ -330,7 +331,7 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
                     {asset.photoUrl && (
                         <div style={{ marginBottom: 20 }}>
                             <img
-                                src={`http://localhost:5000/${asset.photoUrl.replace(/\\/g, "/")}`}
+                                src={`${BASE_URL}/${asset.photoUrl.replace(/\\/g, "/")}`}
                                 alt={asset.name}
                                 style={{
                                     width: "100%", maxHeight: 200, borderRadius: 12,

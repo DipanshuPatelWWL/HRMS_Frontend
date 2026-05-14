@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import API from "../../services/api";
+import API, { BASE_URL } from "../../services/api";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (d) =>
@@ -15,7 +15,7 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const WEEKEND_DAYS = ["Saturday", "Sunday"];
 const PER_PAGE = 10;
 const EMPTY_FORM = { task_name: "", day: "", date: "", status: "pending", message: "", file: null };
-const BASE_URL = "http://localhost:5000";
+
 
 // ── Injected styles ───────────────────────────────────────────────────────────
 const globalStyles = `
@@ -45,9 +45,7 @@ const globalStyles = `
     .emp-stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important; }
 `;
 
-// ── Normalize a backend report → add fileName + filePreview ──────────────────
-// Backend returns: file: "uploads\\daily-reports\\xxx.png"  (Windows backslashes)
-// We need:         fileUrl: "http://localhost:5000/uploads/daily-reports/xxx.png"
+
 const normalizeReport = (report) => {
     const filePath = report.file || "";
     const normalized = filePath.replace(/\\/g, "/");
@@ -830,7 +828,7 @@ function DetailModal({ report, onClose }) {
                                 }}
                             >
                                 <img
-                                    src={report.filePreview}
+                                    src={`${BASE_URL}/report.filePreview`}
                                     alt="preview"
                                     style={{
                                         width: "100%",

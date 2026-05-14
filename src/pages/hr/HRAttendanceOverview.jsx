@@ -925,15 +925,18 @@ const HRAttendanceOverview = () => {
                                 <tr>
                                     <th>Employee</th>
                                     <th>Department</th>
-                                    {/* <th>Present</th> */}
+                                    <th>Present</th>
                                     <th>Half Days</th>
                                     <th>Late</th>
                                     <th>Absent</th>
                                     <th>Leave Days</th>
+                                    <th>Total Hrs</th>
+                                    <th>Avg / Day</th>
+                                    <th>Late hrs</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredMonthly.length === 0 && (
+                                {filteredLeaves.length === 0 && (
                                     <tr>
                                         <td colSpan={7} className="empty-cell">
                                             No data available
@@ -1099,11 +1102,9 @@ const HRAttendanceOverview = () => {
                                                 {s.leaveDays > 0 ? (
                                                     <span
                                                         style={{
-                                                            background:
-                                                                "#F3E8FF",
+                                                            background: "#F3E8FF",
                                                             color: "#6B21A8",
-                                                            padding:
-                                                                "2px 8px",
+                                                            padding: "2px 8px",
                                                             borderRadius: 4,
                                                             fontWeight: 700,
                                                             fontSize: ".75rem",
@@ -1112,14 +1113,59 @@ const HRAttendanceOverview = () => {
                                                         {s.leaveDays}
                                                     </span>
                                                 ) : (
-                                                    <span
-                                                        style={{
-                                                            color: "#374151",
-                                                            fontWeight: 500,
-                                                        }}
-                                                    >
-                                                        0
+                                                    <span style={{ color: "#374151", fontWeight: 500 }}>0</span>
+                                                )}
+                                            </td>
+
+                                            {/* Total Work Hours */}
+                                            <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "#111318" }}>
+                                                {s.totalWorkHours > 0 ? (
+                                                    <span style={{ display: "inline-flex", alignItems: "baseline", gap: 2 }}>
+                                                        {Math.floor(s.totalWorkHours)}
+                                                        <span style={{ fontSize: ".68rem", color: "#6B7280", fontWeight: 400 }}>
+                                                            h {Math.round((s.totalWorkHours % 1) * 60)}m
+                                                        </span>
                                                     </span>
+                                                ) : (
+                                                    <span style={{ color: "#9CA3AF" }}>—</span>
+                                                )}
+                                            </td>
+
+                                            {/* Avg Daily Hours */}
+                                            <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "#111318" }}>
+                                                {s.avgDailyHours > 0 ? (
+                                                    <span style={{ display: "inline-flex", alignItems: "baseline", gap: 2 }}>
+                                                        {Math.floor(s.avgDailyHours)}
+                                                        <span style={{ fontSize: ".68rem", color: "#6B7280", fontWeight: 400 }}>
+                                                            h {Math.round((s.avgDailyHours % 1) * 60)}m
+                                                        </span>
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ color: "#9CA3AF" }}>—</span>
+                                                )}
+                                            </td>
+
+                                            {/* Total Late Minutes */}
+                                            <td>
+                                                {s.totalLateMinutes > 0 ? (() => {
+                                                    const totalMins = Math.round(s.totalLateMinutes);
+                                                    const hrs = Math.floor(totalMins / 60);
+                                                    const mins = totalMins % 60;
+                                                    return (
+                                                        <span style={{
+                                                            background: "#FFF7ED",
+                                                            color: "#C2410C",
+                                                            padding: "2px 8px",
+                                                            borderRadius: 4,
+                                                            fontWeight: 700,
+                                                            fontSize: ".75rem",
+                                                            fontFamily: "DM Mono,monospace",
+                                                        }}>
+                                                            {hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`}
+                                                        </span>
+                                                    );
+                                                })() : (
+                                                    <span style={{ color: "#374151", fontWeight: 500 }}>—</span>
                                                 )}
                                             </td>
                                         </tr>
