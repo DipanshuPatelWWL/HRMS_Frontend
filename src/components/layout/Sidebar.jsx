@@ -248,6 +248,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <NavItem to="/employee/tasks" label="Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
+                        <NavItem to="/employee/assets" label="Assets" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
 
                         {
                             user.role === "employee" && user.department === "Sales" && user.designation !== "Business Development Manager" && user.designation !== "Business Development Executive" && (
@@ -293,7 +294,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/tl/tasks" label="My Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/tl/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/tl/assets" label="Assets" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                         </div>
 
                         <div className="sidebar-section">
@@ -301,6 +302,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/tl/team" label="My Team" iconKey="team" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/leave-approval" label="Leave Approvals" iconKey="leaveApprove" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/team-attendance" label="Team Attendance" iconKey="attendanceOverview" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/tl/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                         </div>
                     </>
                 )}
@@ -319,6 +321,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/scan-logs" label="Scan Logs" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/ai-training" label="AI Training" iconKey="aiTraining" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/assets" label="Assets Management" iconKey="aiTraining" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>
@@ -347,6 +350,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager-assets" label="Assets Management" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>
