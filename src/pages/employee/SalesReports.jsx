@@ -346,7 +346,7 @@ const ReportModal = ({ open, onClose, onSave, editData, saving }) => {
                     </FormField>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                        <FormField label="Report Date">
+                        <FormField label="Lead Date">
                             <input type="date" style={fs('date', false)} value={form.date} onChange={set('date')}
                                 onFocus={() => setFocused('date')} onBlur={() => setFocused(null)} />
                         </FormField>

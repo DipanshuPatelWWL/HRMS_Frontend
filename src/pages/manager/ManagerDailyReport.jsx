@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
-import API from '../../services/api'
+import API, { BASE_URL } from '../../services/api'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const BASE_URL = 'http://localhost:5000'
 
 const C = {
     indigo: '#4f46e5', indigoDark: '#4338ca', indigoLight: '#eef2ff', indigoBorder: '#c7d2fe',

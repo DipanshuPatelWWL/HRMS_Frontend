@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import API from "../../services/api";
+import API, { BASE_URL } from "../../services/api";
 import {
     FaBirthdayCake,
     FaEnvelope,
@@ -304,7 +304,7 @@ const EmailPreview = ({
                     >
                         {profileImage ? (
                             <img
-                                src={profileImage}
+                                src={`${BASE_URL}/profileImage`}
                                 alt={employeeName}
                                 style={{
                                     width: "100%",
@@ -676,7 +676,7 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
                                 }}
                             >
                                 <img
-                                    src={uploadedImage}
+                                    src={`${BASE_URL}/uploadedImage`}
                                     alt="Preview"
                                     style={{
                                         width: 90,

@@ -24,22 +24,30 @@ const fmt = (n) =>
  * If backend sends netSalary=0 but there are earnings, recalculate.
  */
 function resolveNetSalary(p) {
+    // Always trust backend value if present and non-zero
     const raw = p.netSalary ?? 0;
     if (raw > 0) return raw;
 
-    // Reconstruct from what we have
+    // Recompute from stored breakdown fields (backend now stores all of these)
+    const grossEarnings = p.grossEarnings ?? 0;
+    const totalDeductions = p.deductions ?? 0;
+
+    if (grossEarnings > 0) {
+        return Math.max(0, Number((grossEarnings - totalDeductions).toFixed(2)));
+    }
+
+    // Last resort: rebuild from primitives
     const perDay = p.perDaySalary ?? 0;
     const presentDays = p.presentDays ?? 0;
     const halfDays = p.halfDays ?? 0;
     const paidLeave = p.paidLeave ?? 0;
-    const deductions = p.deductions ?? 0;
 
     const basicEarnings = p.basicEarnings ?? (presentDays * perDay);
     const halfDayEarnings = p.halfDayEarnings ?? (halfDays * (perDay / 2));
-    const paidLeaveAmt = paidLeave * perDay;
+    const paidLeaveAmt = p.paidLeaveAmt ?? (paidLeave * perDay);
     const gross = basicEarnings + halfDayEarnings + paidLeaveAmt;
 
-    return Math.max(0, gross - deductions);
+    return Math.max(0, Number((gross - totalDeductions).toFixed(2)));
 }
 
 const StatusBadge = ({ status }) => {

@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import API from "../../services/api";
+import API, { BASE_URL } from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { AuthContext } from "../../context/AuthContext";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
@@ -395,6 +395,7 @@ const GovernmentIdTab = ({ employeeId }) => {
     const [result, setResult] = useState(null);
     const [touched, setTouched] = useState({ pan: false, aadhaar: false });
     const [fieldErrors, setFieldErrors] = useState({ pan: null, aadhaar: null });
+    const [empDocs, setEmpDocs] = useState(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -411,6 +412,14 @@ const GovernmentIdTab = ({ employeeId }) => {
             finally { setLoading(false); }
         };
         loadData();
+    }, [employeeId]);
+
+    useEffect(() => {
+        if (!employeeId) return;
+
+        API.get(`/users/${employeeId}/documents`)
+            .then(r => setEmpDocs(r.data.documents))
+            .catch(() => { });
     }, [employeeId]);
 
     const handleChange = (e) => {
@@ -447,6 +456,30 @@ const GovernmentIdTab = ({ employeeId }) => {
         return fieldErrors[name]
             ? { borderColor: "#fca5a5", background: "#fff5f5" }
             : { borderColor: "#86efac", background: "#f0fdf4" };
+    };
+
+    const handleVerifyDoc = async (type) => {
+        try {
+            await API.put(`/users/${employeeId}/documents/${type}/verify`);
+
+            const r = await API.get(`/users/${employeeId}/documents`);
+
+            setEmpDocs(r.data.documents);
+        } catch (err) {
+            alert(err.response?.data?.message || "Verification failed");
+        }
+    };
+
+    const handleVerifyOtherDoc = async (otherId) => {
+        try {
+            await API.put(`/users/${employeeId}/documents/other/${otherId}/verify`);
+
+            const r = await API.get(`/users/${employeeId}/documents`);
+
+            setEmpDocs(r.data.documents);
+        } catch (err) {
+            alert(err.response?.data?.message || "Verification failed");
+        }
     };
 
     if (loading) return (
@@ -486,6 +519,212 @@ const GovernmentIdTab = ({ employeeId }) => {
                     {result.success ? "✅" : "❌"} {result.message}
                 </div>
             )}
+
+            {/* ── Uploaded Documents ── */}
+            {empDocs && (
+                <div
+                    style={{
+                        borderTop: "1px dashed #e5e7eb",
+                        paddingTop: 16,
+                        marginTop: 4,
+                    }}
+                >
+                    <p
+                        style={{
+                            fontWeight: 700,
+                            fontSize: 13,
+                            marginBottom: 12,
+                        }}
+                    >
+                        Uploaded Documents
+                    </p>
+
+                    {["aadhaar", "pan", "passbook"].map((key) => {
+                        const d = empDocs?.[key];
+
+                        if (!d?.url)
+                            return (
+                                <div
+                                    key={key}
+                                    style={{
+                                        fontSize: 12,
+                                        color: "#9ca3af",
+                                        marginBottom: 10,
+                                    }}
+                                >
+                                    {key.toUpperCase()}: No document uploaded
+                                </div>
+                            );
+
+                        return (
+                            <div
+                                key={key}
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    padding: "10px 14px",
+                                    borderRadius: 10,
+                                    background: d.verified
+                                        ? "#ecfdf5"
+                                        : "#fffbeb",
+                                    border: `1px solid ${d.verified
+                                        ? "#a7f3d0"
+                                        : "#fde68a"
+                                        }`,
+                                    marginBottom: 10,
+                                }}
+                            >
+                                <div>
+                                    <p
+                                        style={{
+                                            fontWeight: 700,
+                                            fontSize: 12.5,
+                                            margin: "0 0 2px",
+                                        }}
+                                    >
+                                        {key.toUpperCase()} — {d.originalName}
+                                    </p>
+
+                                    <p
+                                        style={{
+                                            fontSize: 11,
+                                            color: "#6b7280",
+                                            margin: 0,
+                                        }}
+                                    >
+                                        {d.verified
+                                            ? `✓ Verified on ${new Date(
+                                                d.verifiedAt
+                                            ).toLocaleDateString("en-IN")}`
+                                            : "Verification pending"}
+                                    </p>
+                                </div>
+
+                                <div style={{ display: "flex", gap: 8 }}>
+                                    <a
+                                        href={`${BASE_URL}${d.url}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{
+                                            fontSize: 12,
+                                            color: "#6c63ff",
+                                            fontWeight: 600,
+                                            textDecoration: "none",
+                                        }}
+                                    >
+                                        View
+                                    </a>
+
+                                    {!d.verified && (
+                                        <button
+                                            style={{
+                                                fontSize: 12,
+                                                fontWeight: 700,
+                                                color: "#059669",
+                                                background: "#ecfdf5",
+                                                border:
+                                                    "1px solid #6ee7b7",
+                                                borderRadius: 6,
+                                                padding: "3px 10px",
+                                                cursor: "pointer",
+                                            }}
+                                            onClick={() =>
+                                                handleVerifyDoc(key)
+                                            }
+                                        >
+                                            Verify
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+
+                    {(empDocs?.others || []).map((od) => (
+                        <div
+                            key={od._id}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                padding: "10px 14px",
+                                borderRadius: 10,
+                                background: od.verified
+                                    ? "#ecfdf5"
+                                    : "#fffbeb",
+                                border: `1px solid ${od.verified
+                                    ? "#a7f3d0"
+                                    : "#fde68a"
+                                    }`,
+                                marginBottom: 10,
+                            }}
+                        >
+                            <div>
+                                <p
+                                    style={{
+                                        fontWeight: 700,
+                                        fontSize: 12.5,
+                                        margin: "0 0 2px",
+                                    }}
+                                >
+                                    {od.label} — {od.originalName}
+                                </p>
+
+                                <p
+                                    style={{
+                                        fontSize: 11,
+                                        color: "#6b7280",
+                                        margin: 0,
+                                    }}
+                                >
+                                    {od.verified
+                                        ? "✓ Verified"
+                                        : "Pending"}
+                                </p>
+                            </div>
+
+                            <div style={{ display: "flex", gap: 8 }}>
+                                <a
+                                    href={`${BASE_URL}${od.url}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                        fontSize: 12,
+                                        color: "#6c63ff",
+                                        fontWeight: 600,
+                                        textDecoration: "none",
+                                    }}
+                                >
+                                    View
+                                </a>
+
+                                {!od.verified && (
+                                    <button
+                                        style={{
+                                            fontSize: 12,
+                                            fontWeight: 700,
+                                            color: "#059669",
+                                            background: "#ecfdf5",
+                                            border:
+                                                "1px solid #6ee7b7",
+                                            borderRadius: 6,
+                                            padding: "3px 10px",
+                                            cursor: "pointer",
+                                        }}
+                                        onClick={() =>
+                                            handleVerifyOtherDoc(od._id)
+                                        }
+                                    >
+                                        Verify
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             <button className="btn btn-primary" onClick={handleSave} disabled={saving || loading} style={{ justifyContent: "center" }}>
                 {saving ? <><span className="spinner" />Validating & Saving...</> : "Save Government ID"}
             </button>
@@ -848,6 +1087,11 @@ const Employees = () => {
     const [addModal, setAddModal] = useState(false);
     const [editTarget, setEditTarget] = useState(null);
     const [editTab, setEditTab] = useState("basic");
+    const [editGovIds, setEditGovIds] = useState({
+        pan: "",
+        aadhaar: "",
+    });
+    const [empDocs, setEmpDocs] = useState(null);
     const [form, setForm] = useState(EMPTY_FORM);
     const [confirm, setConfirm] = useState(null);
 
@@ -1040,6 +1284,51 @@ const Employees = () => {
         } finally { setActionLoading(false); }
     };
 
+    const handleSaveGovId = async () => {
+        if (!editTarget?._id) return;
+
+        try {
+            await API.put(`/users/${editTarget._id}/government-id`, {
+                governmentIds: editGovIds,
+            });
+
+            alert("Government ID saved successfully");
+
+            // refresh documents
+            const r = await API.get(`/users/${editTarget._id}/documents`);
+            setEmpDocs(r.data.documents);
+
+        } catch (err) {
+            alert(err.response?.data?.message || "Failed to save Government ID");
+        }
+    };
+
+    const handleVerifyDoc = async (employeeId, type) => {
+        try {
+            await API.put(`/users/${employeeId}/documents/${type}/verify`);
+
+            const r = await API.get(`/users/${employeeId}/documents`);
+            setEmpDocs(r.data.documents);
+
+            alert(`${type.toUpperCase()} verified successfully`);
+        } catch (err) {
+            alert(err.response?.data?.message || "Verification failed");
+        }
+    };
+
+    const handleVerifyOtherDoc = async (employeeId, otherId) => {
+        try {
+            await API.put(`/users/${employeeId}/documents/other/${otherId}/verify`);
+
+            const r = await API.get(`/users/${employeeId}/documents`);
+            setEmpDocs(r.data.documents);
+
+            alert("Document verified successfully");
+        } catch (err) {
+            alert(err.response?.data?.message || "Verification failed");
+        }
+    };
+
     const handleViewSalary = (emp) => {
         setSelectedEmployee(emp);
         setSalaryModal(true);
@@ -1061,12 +1350,48 @@ const Employees = () => {
         } finally { setSalaryLoading(false); }
     };
 
+
+
+
+
     useEffect(() => {
         if (salaryModal && selectedMonth && selectedYear && selectedEmployee) fetchSalary();
     }, [selectedMonth, selectedYear]);
 
     const editEmp = editTarget ? (employees.find(e => e._id === editTarget._id) || editTarget) : null;
     const activeConfirmConfig = confirm ? CONFIRM_CONFIG[confirm.type] : null;
+
+
+    // ── Styles for Gov ID Tab ──
+    const labelStyle = {
+        display: "block",
+        marginBottom: "6px",
+        fontSize: "13px",
+        fontWeight: 600,
+        color: "#0f172a",
+    };
+
+    const inputStyle = {
+        width: "100%",
+        padding: "10px 12px",
+        borderRadius: "8px",
+        border: "1px solid #d1d5db",
+        outline: "none",
+        fontSize: "14px",
+        background: "#fff",
+        color: "#111827",
+    };
+
+    const primaryBtnStyle = {
+        padding: "10px 14px",
+        borderRadius: "8px",
+        border: "none",
+        background: "#4f46e5",
+        color: "#fff",
+        fontWeight: 600,
+        cursor: "pointer",
+    };
+
 
     return (
         <DashboardLayout>
@@ -1696,6 +2021,92 @@ const Employees = () => {
                             ))}
                         </div>
 
+
+                        {editTab === "govid" && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+                                {/* ── uploaded docs ── */}
+                                {empDocs && (
+                                    <div style={{ borderTop: "1px dashed #e5e7eb", paddingTop: 16, marginTop: 4 }}>
+                                        <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 12 }}>Uploaded Documents</p>
+
+                                        {["aadhaar", "pan", "passbook"].map(key => {
+                                            const d = empDocs?.[key];
+                                            if (!d?.url) return (
+                                                <div key={key} style={{ fontSize: 12, color: "#9ca3af", marginBottom: 10 }}>
+                                                    {key.toUpperCase()}: No document uploaded
+                                                </div>
+                                            );
+                                            return (
+                                                <div key={key} style={{
+                                                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                                                    padding: "10px 14px", borderRadius: 10,
+                                                    background: d.verified ? "#ecfdf5" : "#fffbeb",
+                                                    border: `1px solid ${d.verified ? "#a7f3d0" : "#fde68a"}`,
+                                                    marginBottom: 10,
+                                                }}>
+                                                    <div>
+                                                        <p style={{ fontWeight: 700, fontSize: 12.5, margin: "0 0 2px" }}>{key.toUpperCase()} — {d.originalName}</p>
+                                                        <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>
+                                                            {d.verified
+                                                                ? `✓ Verified on ${new Date(d.verifiedAt).toLocaleDateString("en-IN")}`
+                                                                : "Verification pending"}
+                                                        </p>
+                                                    </div>
+                                                    <div style={{ display: "flex", gap: 8 }}>
+                                                        <a href={`${BASE_URL}${d.url}`} target="_blank" rel="noreferrer"
+                                                            style={{ fontSize: 12, color: "#6c63ff", fontWeight: 600, textDecoration: "none" }}>
+                                                            View
+                                                        </a>
+                                                        {!d.verified && (
+                                                            <button
+                                                                style={{ fontSize: 12, fontWeight: 700, color: "#059669", background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}
+                                                                onClick={() => handleVerifyDoc(employeeId, key)}
+                                                            >
+                                                                Verify
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+
+                                        {/* others */}
+                                        {(empDocs?.others || []).map(od => (
+                                            <div key={od._id} style={{
+                                                display: "flex", alignItems: "center", justifyContent: "space-between",
+                                                padding: "10px 14px", borderRadius: 10,
+                                                background: od.verified ? "#ecfdf5" : "#fffbeb",
+                                                border: `1px solid ${od.verified ? "#a7f3d0" : "#fde68a"}`,
+                                                marginBottom: 10,
+                                            }}>
+                                                <div>
+                                                    <p style={{ fontWeight: 700, fontSize: 12.5, margin: "0 0 2px" }}>{od.label} — {od.originalName}</p>
+                                                    <p style={{ fontSize: 11, color: "#6b7280", margin: 0 }}>
+                                                        {od.verified ? `✓ Verified` : "Pending"}
+                                                    </p>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 8 }}>
+                                                    <a href={`${BASE_URL}${od.url}`} target="_blank" rel="noreferrer"
+                                                        style={{ fontSize: 12, color: "#6c63ff", fontWeight: 600, textDecoration: "none" }}>
+                                                        View
+                                                    </a>
+                                                    {!od.verified && (
+                                                        <button
+                                                            style={{ fontSize: 12, fontWeight: 700, color: "#059669", background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}
+                                                            onClick={() => handleVerifyOtherDoc(employeeId, od._id)}
+                                                        >
+                                                            Verify
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <div className="tab-content" style={{ padding: "0 4px" }}>
                             {editTab === "basic" && (
                                 <div style={{ display: "flex", flexDirection: "column", gap: ".85rem" }}>
@@ -1890,9 +2301,9 @@ const Employees = () => {
                                         fontSize: ".8rem", color: "#451a03", marginTop: "1rem", fontWeight: 600
                                     }}>
                                         <strong>Working Days:</strong> {salaryData.totalWorkingDays}&nbsp;·&nbsp;
-                                        <strong>Weekends (Paid):</strong> {salaryData.weekends}&nbsp;·&nbsp;
+                                        <strong>Weekends (Paid):</strong> {salaryData.totalWeekends}&nbsp;·&nbsp;
                                         <strong>Holidays (Paid):</strong> {salaryData.holidays}&nbsp;·&nbsp;
-                                        <strong>Total Calendar Days:</strong> {salaryData.totalDaysInMonth}
+                                        <strong>Total Calendar Days:</strong> {salaryData.totalCalendarDays}
                                     </div>
                                     <div className="salary-total">
                                         <div className="salary-total-label">Total Salary</div>

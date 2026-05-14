@@ -13,7 +13,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { QRCodeSVG } from "qrcode.react";
-import API from "../../services/api";
+import API, { QR_CODE_URL } from "../../services/api";
 
 /* ── design tokens (matches your Profile.jsx palette) ── */
 const T = {
@@ -60,10 +60,15 @@ function LiveScanner({ onDetected, onClose }) {
 
     /* enumerate cameras */
     useEffect(() => {
-        BrowserMultiFormatReader.listVideoInputDevices()
-            .then((devs) => {
+        navigator.mediaDevices
+            .getUserMedia({ video: true })          // triggers permission prompt
+            .then((stream) => {
+                stream.getTracks().forEach((t) => t.stop());   // release immediately
+                return navigator.mediaDevices.enumerateDevices();
+            })
+            .then((devices) => {
+                const devs = devices.filter((d) => d.kind === "videoinput");
                 setCameras(devs);
-                /* prefer rear camera */
                 const rearIdx = devs.findIndex((d) =>
                     /back|rear|environment/i.test(d.label)
                 );
@@ -123,10 +128,16 @@ function LiveScanner({ onDetected, onClose }) {
         },
         box: {
             background: "#000", borderRadius: 20, overflow: "hidden",
-            width: "min(92vw, 480px)", position: "relative",
+            width: "min(96vw, 500px)",
+            position: "relative",
             boxShadow: "0 24px 64px rgba(0,0,0,.7)",
         },
-        video: { width: "100%", display: "block", maxHeight: "55vh", objectFit: "cover" },
+        video: {
+            width: "100%",
+            display: "block",
+            maxHeight: "65vh",
+            objectFit: "cover"
+        },
         topBar: {
             position: "absolute", top: 0, left: 0, right: 0,
             padding: "12px 16px",
@@ -144,12 +155,14 @@ function LiveScanner({ onDetected, onClose }) {
         guide: {
             position: "absolute", top: "50%", left: "50%",
             transform: "translate(-50%,-50%)",
-            width: 220, height: 220,
+            width: 300,
+            height: 300,
             border: `2.5px solid ${flash ? "#22c55e" : T.accent}`,
             borderRadius: 14,
             transition: "border-color .2s",
             pointerEvents: "none",
         },
+
         corner: (t, r, b, l) => ({
             position: "absolute", width: 22, height: 22,
             borderColor: flash ? "#22c55e" : T.accent,
@@ -486,7 +499,7 @@ function EmployeeDetailCard({ emp, govId, bank, onClose }) {
                             boxShadow: "0 2px 8px rgba(0,0,0,.08)", flexShrink: 0,
                         }}>
                             <QRCodeSVG
-                                value={emp.employeeId || emp._id || "N/A"}
+                                value={`${QR_CODE_URL}/employee/${emp.employeeId || emp._id || "N/A"}`}
                                 size={80}
                                 fgColor={rc.clr}
                                 bgColor="#ffffff"
@@ -534,7 +547,7 @@ function EmployeeDetailCard({ emp, govId, bank, onClose }) {
 /* ═══════════════════════════════════════════════════════════
    SECTION 3 — Main EmployeeScanner (exported component)
 ═══════════════════════════════════════════════════════════ */
-export default function EmployeeScanner({ onFound }) {
+export default function EmployeeScanner({ onFound, onEdit }) {
     const [scannerOpen, setScannerOpen] = useState(false);
     const [manualId, setManualId] = useState("");
     const [loading, setLoading] = useState(false);
@@ -572,7 +585,6 @@ export default function EmployeeScanner({ onFound }) {
             }
 
             setEmp(match);
-            if (onFound) onFound(match);   /* notify parent (e.g. open edit modal) */
 
             /* parallel fetch for gov-id + bank */
             const [govRes, bankRes] = await Promise.allSettled([
@@ -583,6 +595,7 @@ export default function EmployeeScanner({ onFound }) {
             if (govRes.status === "fulfilled") setGovId(govRes.value.data.governmentIds ?? null);
             if (bankRes.status === "fulfilled") setBank(bankRes.value.data.bankDetails ?? null);
 
+            // Always open detail card on search/scan
             setDetailOpen(true);
         } catch (e) {
             setError(e?.response?.data?.message ?? "Failed to load employee.");
@@ -593,14 +606,18 @@ export default function EmployeeScanner({ onFound }) {
 
     /* ── called by LiveScanner when a code is detected ── */
     const handleDetected = useCallback((text) => {
-        /* debounce — same code within 3 s counts once */
         if (lastFetchRef.current === text) return;
         lastFetchRef.current = text;
         setTimeout(() => { lastFetchRef.current = null; }, 3000);
 
+        // extract ID from URL or use plain text directly
+        const cleaned = text.includes("/employee/")
+            ? text.split("/employee/").pop()
+            : text;
+
         setScannerOpen(false);
-        setManualId(text);
-        fetchEmployee(text);
+        setManualId(cleaned);
+        fetchEmployee(cleaned);
     }, [fetchEmployee]);
 
     const handleManualSearch = () => fetchEmployee(manualId);
@@ -735,7 +752,7 @@ export default function EmployeeScanner({ onFound }) {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="20 6 9 17 4 12" />
                         </svg>
-                        {emp.name} ({emp.employeeId}) — click to view full details
+                        {emp.name} ({emp.employeeId}) — click to view details
                     </div>
                 )}
             </div>

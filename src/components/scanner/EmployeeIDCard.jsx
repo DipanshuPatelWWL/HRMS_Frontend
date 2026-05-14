@@ -76,7 +76,7 @@ const CardHeader = ({ logoImg }) => (
             padding: "14px 14px 0",
         }}>
             {logoImg
-                ? <img src={logoImg} alt="World WebLogic" style={{ height: 48, maxWidth: 180, objectFit: "contain" }} />
+                ? <img src={`${BASE_URL}/logoImg`} alt="World WebLogic" style={{ height: 48, maxWidth: 180, objectFit: "contain" }} />
                 : <GlobeMark size={34} />
             }
         </div>

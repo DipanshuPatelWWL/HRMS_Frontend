@@ -27,6 +27,46 @@ const icons = {
     lock: "M19 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2z M7 11V7a5 5 0 0 1 10 0v4",
 };
 
+/* ─── User Avatar Icon (SVG-based, no emoji) ─────────────────────────────── */
+const UserAvatar = ({ name = "", size = 30, bg = "#6366F1" }) => {
+    const parts = name.trim().split(" ").filter(Boolean);
+    const initials = parts.length >= 2
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : name.slice(0, 2).toUpperCase();
+
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 40 40"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ borderRadius: "50%", flexShrink: 0 }}
+        >
+            <rect width="40" height="40" rx="20" fill={bg} />
+            {initials ? (
+                <text
+                    x="50%"
+                    y="50%"
+                    dominantBaseline="central"
+                    textAnchor="middle"
+                    fill="#fff"
+                    fontSize="14"
+                    fontFamily="'DM Sans', sans-serif"
+                    fontWeight="700"
+                >
+                    {initials}
+                </text>
+            ) : (
+                /* fallback person silhouette */
+                <>
+                    <circle cx="20" cy="15" r="6" fill="rgba(255,255,255,0.9)" />
+                    <path d="M8 34c0-6.627 5.373-12 12-12s12 5.373 12 12" fill="rgba(255,255,255,0.9)" />
+                </>
+            )}
+        </svg>
+    );
+};
+
 /* ─── Styles ─────────────────────────────────────────────────────────────── */
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
@@ -35,7 +75,7 @@ const css = `
 .hd-root {
     font-family: 'DM Sans', sans-serif;
     background: #F4F6FA;
-    color: #1A1D23;
+    color: #111318;
     min-height: 100vh;
 }
 
@@ -48,8 +88,8 @@ const css = `
     flex-wrap: wrap;
     gap: 12px;
 }
-.hd-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.5px; color: #111318; }
-.hd-header p  { font-size: .825rem; color: #818898; margin-top: 2px; }
+.hd-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.5px; color: #0D0F14; }
+.hd-header p  { font-size: .825rem; color: #4B5563; margin-top: 2px; font-weight: 500; }
 
 /* new ticket btn */
 .btn-new-ticket {
@@ -86,7 +126,7 @@ const css = `
     background: #fff;
     border-radius: 14px;
     padding: 18px 20px;
-    border: 1px solid #E8EBF0;
+    border: 1.5px solid #CBD5E1;
     position: relative;
     overflow: hidden;
 }
@@ -107,14 +147,14 @@ const css = `
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .7px;
-    color: #9CA3AF;
+    color: #374151;
     margin-bottom: 8px;
 }
 .hd-stat-val {
     font-size: 2.2rem;
     font-weight: 700;
     letter-spacing: -1.5px;
-    color: #111318;
+    color: #0D0F14;
     line-height: 1;
 }
 
@@ -129,11 +169,12 @@ const css = `
 .hd-select {
     padding: 7px 12px;
     border-radius: 8px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #94A3B8;
     background: #fff;
     font-size: .82rem;
     font-family: inherit;
-    color: #374151;
+    color: #111318;
+    font-weight: 500;
     cursor: pointer;
     outline: none;
     transition: border .15s;
@@ -143,16 +184,18 @@ const css = `
 .hd-search {
     padding: 7px 12px;
     border-radius: 8px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #94A3B8;
     background: #fff;
     font-size: .82rem;
     font-family: inherit;
-    color: #374151;
+    color: #111318;
+    font-weight: 500;
     outline: none;
     min-width: 200px;
     transition: border .15s;
 }
 .hd-search:focus { border-color: #6366F1; }
+.hd-search::placeholder { color: #6B7280; }
 
 /* ticket list */
 .hd-list {
@@ -164,7 +207,7 @@ const css = `
 .hd-ticket-row {
     background: #fff;
     border-radius: 14px;
-    border: 1px solid #E8EBF0;
+    border: 1.5px solid #CBD5E1;
     padding: 18px 20px;
     cursor: pointer;
     transition: all .18s;
@@ -173,8 +216,8 @@ const css = `
     gap: 16px;
 }
 .hd-ticket-row:hover {
-    border-color: #C7D2FE;
-    box-shadow: 0 4px 20px rgba(99,102,241,.07);
+    border-color: #818CF8;
+    box-shadow: 0 4px 20px rgba(99,102,241,.10);
     transform: translateY(-1px);
 }
 
@@ -192,6 +235,7 @@ const css = `
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    border: 1.5px solid rgba(0,0,0,0.08);
 }
 
 .hd-ticket-body { flex: 1; min-width: 0; }
@@ -206,20 +250,22 @@ const css = `
 .hd-ticket-title {
     font-size: .925rem;
     font-weight: 600;
-    color: #111318;
+    color: #0D0F14;
 }
 .hd-ticket-id {
     font-family: 'DM Mono', monospace;
     font-size: .72rem;
-    color: #9CA3AF;
-    background: #F3F4F6;
+    color: #374151;
+    background: #E5E7EB;
     padding: 2px 7px;
     border-radius: 5px;
     white-space: nowrap;
+    font-weight: 500;
+    border: 1px solid #D1D5DB;
 }
 .hd-ticket-desc {
     font-size: .8rem;
-    color: #6B7280;
+    color: #374151;
     margin-bottom: 10px;
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -242,14 +288,15 @@ const css = `
     border-radius: 6px;
     font-size: .72rem;
     font-weight: 600;
+    border: 1px solid;
 }
-.chip-blue    { background: #EFF6FF; color: #1D4ED8; }
-.chip-amber   { background: #FFFBEB; color: #92400E; }
-.chip-green   { background: #F0FDF4; color: #15803D; }
-.chip-red     { background: #FFF1F2; color: #BE123C; }
-.chip-gray    { background: #F3F4F6; color: #4B5563; }
-.chip-purple  { background: #EEF2FF; color: #4338CA; }
-.chip-orange  { background: #FFF7ED; color: #C2410C; }
+.chip-blue    { background: #DBEAFE; color: #1E40AF; border-color: #93C5FD; }
+.chip-amber   { background: #FEF3C7; color: #78350F; border-color: #FCD34D; }
+.chip-green   { background: #DCFCE7; color: #14532D; border-color: #86EFAC; }
+.chip-red     { background: #FFE4E6; color: #9F1239; border-color: #FCA5A5; }
+.chip-gray    { background: #E5E7EB; color: #1F2937; border-color: #9CA3AF; }
+.chip-purple  { background: #EDE9FE; color: #3730A3; border-color: #A5B4FC; }
+.chip-orange  { background: #FFEDD5; color: #9A3412; border-color: #FDBA74; }
 
 /* status badge */
 .hd-badge {
@@ -261,45 +308,48 @@ const css = `
     font-size: .72rem;
     font-weight: 700;
     white-space: nowrap;
+    border: 1.5px solid;
 }
-.badge-open       { background: #EFF6FF; color: #1D4ED8; }
-.badge-inprogress { background: #FFF7ED; color: #C2410C; }
-.badge-resolved   { background: #F0FDF4; color: #15803D; }
-.badge-closed     { background: #F3F4F6; color: #6B7280; }
-.badge-critical   { background: #FFF1F2; color: #BE123C; }
+.badge-open       { background: #DBEAFE; color: #1E3A8A; border-color: #93C5FD; }
+.badge-inprogress { background: #FFEDD5; color: #7C2D12; border-color: #FDBA74; }
+.badge-resolved   { background: #DCFCE7; color: #14532D; border-color: #86EFAC; }
+.badge-closed     { background: #E5E7EB; color: #1F2937; border-color: #9CA3AF; }
+.badge-critical   { background: #FFE4E6; color: #9F1239; border-color: #FCA5A5; }
 
 /* reply count bubble */
 .hd-reply-count {
     font-size: .7rem;
-    background: #EEF2FF;
-    color: #4338CA;
+    background: #EDE9FE;
+    color: #3730A3;
     border-radius: 99px;
     padding: 2px 8px;
     font-weight: 700;
+    border: 1px solid #A5B4FC;
 }
 
 /* empty */
 .hd-empty {
     text-align: center;
     padding: 4rem 2rem;
-    color: #9CA3AF;
+    color: #374151;
     background: #fff;
     border-radius: 14px;
-    border: 1px solid #E8EBF0;
+    border: 1.5px solid #CBD5E1;
 }
 .hd-empty-icon {
     width: 56px; height: 56px;
     border-radius: 16px;
-    background: #F3F4F6;
+    background: #E5E7EB;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px;
+    border: 1.5px solid #CBD5E1;
 }
 
 /* skeleton */
 .hd-skeleton {
-    background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+    background: linear-gradient(90deg, #E5E7EB 25%, #D1D5DB 50%, #E5E7EB 75%);
     background-size: 200% 100%;
     animation: shimmer 1.4s infinite;
     border-radius: 8px;
@@ -310,7 +360,7 @@ const css = `
 .hd-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.5);
+    background: rgba(0,0,0,.55);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -328,6 +378,7 @@ const css = `
     display: flex;
     flex-direction: column;
     gap: 0;
+    border: 1.5px solid #CBD5E1;
 }
 .hd-modal-header {
     display: flex;
@@ -338,13 +389,13 @@ const css = `
 .hd-modal-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #111318;
+    color: #0D0F14;
     line-height: 1.3;
     padding-right: 12px;
 }
 .hd-close-btn {
-    background: #F3F4F6;
-    border: none;
+    background: #E5E7EB;
+    border: 1.5px solid #CBD5E1;
     cursor: pointer;
     width: 32px; height: 32px;
     border-radius: 8px;
@@ -352,10 +403,10 @@ const css = `
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #6B7280;
+    color: #374151;
     transition: background .15s;
 }
-.hd-close-btn:hover { background: #E5E7EB; }
+.hd-close-btn:hover { background: #D1D5DB; }
 
 /* form */
 .hd-form-group {
@@ -369,26 +420,27 @@ const css = `
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .7px;
-    color: #6B7280;
+    color: #374151;
 }
 .hd-input {
     padding: 10px 12px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #94A3B8;
     border-radius: 10px;
     font-size: .875rem;
     font-family: inherit;
-    color: #374151;
+    color: #111318;
     outline: none;
     transition: border .15s;
 }
 .hd-input:focus { border-color: #6366F1; }
+.hd-input::placeholder { color: #6B7280; }
 .hd-textarea {
     padding: 10px 12px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #94A3B8;
     border-radius: 10px;
     font-size: .875rem;
     font-family: inherit;
-    color: #374151;
+    color: #111318;
     outline: none;
     resize: vertical;
     min-height: 100px;
@@ -396,13 +448,14 @@ const css = `
     transition: border .15s;
 }
 .hd-textarea:focus { border-color: #6366F1; }
+.hd-textarea::placeholder { color: #6B7280; }
 .hd-select-full {
     padding: 10px 12px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #94A3B8;
     border-radius: 10px;
     font-size: .875rem;
     font-family: inherit;
-    color: #374151;
+    color: #111318;
     outline: none;
     cursor: pointer;
     background: #fff;
@@ -445,7 +498,7 @@ const css = `
     gap: 8px;
     margin-bottom: 18px;
     padding-bottom: 18px;
-    border-bottom: 1px solid #F3F4F6;
+    border-bottom: 1.5px solid #E5E7EB;
 }
 
 .hd-replies {
@@ -458,7 +511,7 @@ const css = `
     padding-right: 4px;
 }
 .hd-replies::-webkit-scrollbar { width: 4px; }
-.hd-replies::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 4px; }
+.hd-replies::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
 
 .hd-reply-bubble {
     display: flex;
@@ -467,47 +520,38 @@ const css = `
 }
 .hd-reply-bubble.staff { flex-direction: row-reverse; }
 
-.hd-bubble-avatar {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .65rem;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-}
-
 .hd-bubble-content {
     max-width: 75%;
 }
 .hd-bubble-name {
     font-size: .7rem;
-    color: #9CA3AF;
+    color: #374151;
     margin-bottom: 4px;
-    font-weight: 500;
+    font-weight: 600;
 }
 .hd-reply-bubble.staff .hd-bubble-name { text-align: right; }
 .hd-bubble-text {
-    background: #F3F4F6;
+    background: #F1F5F9;
     padding: 10px 14px;
     border-radius: 12px 12px 12px 4px;
     font-size: .85rem;
-    color: #374151;
+    color: #1E293B;
     line-height: 1.5;
     word-break: break-word;
+    border: 1px solid #CBD5E1;
 }
 .hd-reply-bubble.staff .hd-bubble-text {
     background: #6366F1;
     color: #fff;
     border-radius: 12px 12px 4px 12px;
+    border-color: #4F46E5;
 }
 .hd-bubble-time {
     font-size: .65rem;
-    color: #D1D5DB;
+    color: #6B7280;
     margin-top: 4px;
     font-family: 'DM Mono', monospace;
+    font-weight: 500;
 }
 .hd-reply-bubble.staff .hd-bubble-time { text-align: right; }
 
@@ -515,10 +559,12 @@ const css = `
 .hd-no-replies {
     text-align: center;
     padding: 2rem;
-    color: #9CA3AF;
+    color: #374151;
     font-size: .82rem;
-    background: #F9FAFB;
+    background: #F8FAFC;
     border-radius: 10px;
+    border: 1.5px solid #CBD5E1;
+    font-weight: 500;
 }
 
 /* reply input row */
@@ -526,17 +572,17 @@ const css = `
     display: flex;
     gap: 8px;
     align-items: flex-end;
-    border-top: 1px solid #F3F4F6;
+    border-top: 1.5px solid #E5E7EB;
     padding-top: 16px;
 }
 .hd-reply-input {
     flex: 1;
     padding: 10px 14px;
-    border: 1.5px solid #E8EBF0;
+    border: 1.5px solid #94A3B8;
     border-radius: 10px;
     font-size: .875rem;
     font-family: inherit;
-    color: #374151;
+    color: #111318;
     outline: none;
     resize: none;
     min-height: 42px;
@@ -545,6 +591,7 @@ const css = `
     transition: border .15s;
 }
 .hd-reply-input:focus { border-color: #6366F1; }
+.hd-reply-input::placeholder { color: #6B7280; }
 
 .hd-send-btn {
     width: 42px; height: 42px;
@@ -565,9 +612,9 @@ const css = `
 /* close ticket btn */
 .hd-close-ticket-btn {
     padding: 8px 16px;
-    background: #F3F4F6;
-    color: #6B7280;
-    border: 1.5px solid #E8EBF0;
+    background: #F1F5F9;
+    color: #1E293B;
+    border: 1.5px solid #94A3B8;
     border-radius: 8px;
     font-size: .8rem;
     font-weight: 600;
@@ -578,33 +625,34 @@ const css = `
     align-items: center;
     gap: 6px;
 }
-.hd-close-ticket-btn:hover { background: #E5E7EB; color: #374151; }
+.hd-close-ticket-btn:hover { background: #E2E8F0; color: #0D0F14; border-color: #64748B; }
 
 /* divider */
-.hd-divider { border: none; border-top: 1px solid #F3F4F6; margin: 16px 0; }
+.hd-divider { border: none; border-top: 1.5px solid #E5E7EB; margin: 16px 0; }
 
 /* description block */
 .hd-desc-block {
-    background: #F9FAFB;
+    background: #F8FAFC;
     border-radius: 10px;
     padding: 12px 14px;
     font-size: .85rem;
-    color: #374151;
+    color: #1E293B;
     line-height: 1.6;
     white-space: pre-wrap;
     margin-bottom: 16px;
-    border: 1px solid #F3F4F6;
+    border: 1.5px solid #CBD5E1;
+    font-weight: 400;
 }
 
 /* attachments */
 .hd-file-drop {
-    border: 2px dashed #E8EBF0;
+    border: 2px dashed #94A3B8;
     border-radius: 10px;
     padding: 16px;
     text-align: center;
     cursor: pointer;
     transition: border .15s, background .15s;
-    background: #FAFAFA;
+    background: #F8FAFC;
     position: relative;
 }
 .hd-file-drop:hover { border-color: #6366F1; background: #F5F3FF; }
@@ -618,7 +666,7 @@ const css = `
 }
 .hd-file-drop-text {
     font-size: .8rem;
-    color: #9CA3AF;
+    color: #374151;
     font-weight: 500;
     pointer-events: none;
 }
@@ -638,7 +686,7 @@ const css = `
     height: 72px;
     border-radius: 8px;
     overflow: hidden;
-    border: 1px solid #E8EBF0;
+    border: 1.5px solid #94A3B8;
     flex-shrink: 0;
 }
 .hd-preview-item img {
@@ -652,7 +700,7 @@ const css = `
     top: 3px; right: 3px;
     width: 18px; height: 18px;
     border-radius: 50%;
-    background: rgba(0,0,0,.55);
+    background: rgba(0,0,0,.65);
     border: none;
     cursor: pointer;
     display: flex;
@@ -668,17 +716,18 @@ const css = `
     bottom: 24px;
     right: 24px;
     z-index: 9999;
-    background: #1A1D23;
+    background: #0D0F14;
     color: #fff;
     padding: 12px 20px;
     border-radius: 12px;
     font-size: .85rem;
     font-weight: 500;
-    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
     display: flex;
     align-items: center;
     gap: 8px;
     animation: slideUp .2s ease;
+    border: 1px solid #374151;
 }
 @keyframes slideUp { from{transform:translateY(12px);opacity:0} to{transform:translateY(0);opacity:1} }
 `;
@@ -738,21 +787,24 @@ const categoryChip = (c) => {
 };
 
 const iconBg = {
-    it: "#EFF6FF",
-    hr: "#EEF2FF",
-    admin: "#F3F4F6",
-    payroll: "#F0FDF4",
-    attendance: "#FFFBEB",
-    other: "#F3F4F6",
+    it: "#DBEAFE",
+    hr: "#EDE9FE",
+    admin: "#E5E7EB",
+    payroll: "#DCFCE7",
+    attendance: "#FEF3C7",
+    other: "#E5E7EB",
 };
 const iconColor = {
-    it: "#3B82F6",
-    hr: "#6366F1",
-    admin: "#6B7280",
-    payroll: "#22C55E",
-    attendance: "#F59E0B",
-    other: "#9CA3AF",
+    it: "#1E40AF",
+    hr: "#4338CA",
+    admin: "#374151",
+    payroll: "#15803D",
+    attendance: "#78350F",
+    other: "#4B5563",
 };
+
+/* Avatar bg per role */
+const avatarBg = (isStaff) => isStaff ? "#6366F1" : "#475569";
 
 /* ─── Raise Ticket Modal ─────────────────────────────────────────────────── */
 const RaiseModal = ({ onClose, onCreated }) => {
@@ -873,7 +925,7 @@ const RaiseModal = ({ onClose, onCreated }) => {
                 <div className="hd-form-group">
                     <label className="hd-label">
                         Attachments
-                        <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#9CA3AF", marginLeft: 6 }}>
+                        <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#6B7280", marginLeft: 6 }}>
                             (images only · max 4)
                         </span>
                     </label>
@@ -887,7 +939,7 @@ const RaiseModal = ({ onClose, onCreated }) => {
                         />
                         <div className="hd-file-drop-text">
                             <span>Click to upload</span> or drag & drop
-                            <div style={{ fontSize: ".72rem", marginTop: 3 }}>PNG, JPG, WEBP up to 5MB each</div>
+                            <div style={{ fontSize: ".72rem", marginTop: 3, color: "#6B7280" }}>PNG, JPG, WEBP up to 5MB each</div>
                         </div>
                     </div>
                     {files.length > 0 && (
@@ -910,13 +962,14 @@ const RaiseModal = ({ onClose, onCreated }) => {
 
                 {error && (
                     <div style={{
-                        background: "#FFF1F2", color: "#BE123C",
+                        background: "#FFE4E6", color: "#9F1239",
                         padding: "10px 14px", borderRadius: 8,
                         fontSize: ".82rem", marginBottom: 10,
-                        border: "1px solid #FECDD3",
+                        border: "1.5px solid #FCA5A5",
                         display: "flex", alignItems: "center", gap: 6,
+                        fontWeight: 500,
                     }}>
-                        <Icon d={icons.alert} size={14} color="#BE123C" /> {error}
+                        <Icon d={icons.alert} size={14} color="#9F1239" /> {error}
                     </div>
                 )}
 
@@ -941,7 +994,6 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
     const [closing, setClosing] = useState(false);
     const repliesEndRef = useRef(null);
 
-    // scroll to bottom of replies
     useEffect(() => {
         repliesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [ticket.replies]);
@@ -1000,8 +1052,9 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                         <div style={{
                             fontFamily: "'DM Mono', monospace",
                             fontSize: ".72rem",
-                            color: "#9CA3AF",
+                            color: "#374151",
                             marginBottom: 4,
+                            fontWeight: 600,
                         }}>
                             {ticket.ticketId}
                         </div>
@@ -1035,7 +1088,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: ".7px",
-                    color: "#9CA3AF",
+                    color: "#374151",
                     marginBottom: 8,
                 }}>
                     Description
@@ -1045,7 +1098,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                 {/* Attachments */}
                 {ticket.attachments?.length > 0 && (
                     <>
-                        <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "#9CA3AF", marginBottom: 8 }}>
+                        <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "#374151", marginBottom: 8 }}>
                             Attachments ({ticket.attachments.length})
                         </div>
                         <div className="hd-previews" style={{ marginBottom: 16 }}>
@@ -1055,7 +1108,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                                     href={`${BASE_URL}${att.url}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    style={{ display: "block", borderRadius: 8, overflow: "hidden", border: "1px solid #E8EBF0", width: 72, height: 72, flexShrink: 0 }}
+                                    style={{ display: "block", borderRadius: 8, overflow: "hidden", border: "1.5px solid #94A3B8", width: 72, height: 72, flexShrink: 0 }}
                                 >
                                     <img
                                         src={`${BASE_URL}${att.url}`}
@@ -1071,18 +1124,19 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                 {/* Resolved info */}
                 {isResolved && ticket.resolvedAt && (
                     <div style={{
-                        background: "#F0FDF4",
-                        border: "1px solid #BBF7D0",
+                        background: "#DCFCE7",
+                        border: "1.5px solid #86EFAC",
                         borderRadius: 8,
                         padding: "10px 14px",
                         fontSize: ".8rem",
-                        color: "#15803D",
+                        color: "#14532D",
                         display: "flex",
                         alignItems: "center",
                         gap: 6,
                         marginBottom: 16,
+                        fontWeight: 600,
                     }}>
-                        <Icon d={icons.check} size={14} color="#15803D" />
+                        <Icon d={icons.check} size={14} color="#14532D" />
                         Resolved on {formatDate(ticket.resolvedAt)}
                         {ticket.resolvedBy && ` by ${ticket.resolvedBy.name}`}
                     </div>
@@ -1094,7 +1148,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: ".7px",
-                    color: "#9CA3AF",
+                    color: "#374151",
                     marginBottom: 10,
                 }}>
                     Conversation ({ticket.replies?.length || 0})
@@ -1110,31 +1164,31 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                     {ticket.replies?.map((r) => {
                         const isStaff = r.isStaff;
                         const name = r.sentBy?.name || "Unknown";
-                        const bg = isStaff ? "#6366F1" : "#9CA3AF";
 
                         return (
                             <div
                                 key={r._id}
                                 className={`hd-reply-bubble ${isStaff ? "staff" : ""}`}
                             >
-                                <div
-                                    className="hd-bubble-avatar"
-                                    style={{ background: bg }}
-                                >
-                                    {initials(name)}
-                                </div>
+                                {/* SVG-based user avatar — no emoji */}
+                                <UserAvatar
+                                    name={name}
+                                    size={30}
+                                    bg={avatarBg(isStaff)}
+                                />
                                 <div className="hd-bubble-content">
                                     <div className="hd-bubble-name">
                                         {name}
                                         {isStaff && (
                                             <span style={{
                                                 marginLeft: 5,
-                                                background: "#EEF2FF",
-                                                color: "#4338CA",
+                                                background: "#EDE9FE",
+                                                color: "#3730A3",
                                                 padding: "1px 5px",
                                                 borderRadius: 4,
                                                 fontSize: ".65rem",
                                                 fontWeight: 700,
+                                                border: "1px solid #A5B4FC",
                                             }}>
                                                 Staff
                                             </span>
@@ -1154,19 +1208,21 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                     <div style={{
                         textAlign: "center",
                         padding: "14px",
-                        background: "#F9FAFB",
+                        background: "#F8FAFC",
                         borderRadius: 10,
-                        color: "#9CA3AF",
+                        color: "#374151",
                         fontSize: ".82rem",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         gap: 6,
-                        borderTop: "1px solid #F3F4F6",
+                        borderTop: "1.5px solid #E5E7EB",
                         paddingTop: 16,
                         marginTop: 4,
+                        fontWeight: 600,
+                        border: "1.5px solid #CBD5E1",
                     }}>
-                        <Icon d={icons.lock} size={14} color="#9CA3AF" />
+                        <Icon d={icons.lock} size={14} color="#374151" />
                         This ticket is closed
                     </div>
                 ) : (
@@ -1234,7 +1290,6 @@ const Helpdesk = () => {
     const [search, setSearch] = useState("");
     const [toast, setToast] = useState("");
 
-    // get logged in user from localStorage
     const currentUser = useMemo(() => {
         try { return JSON.parse(localStorage.getItem("user") || "{}"); }
         catch { return {}; }
@@ -1270,7 +1325,6 @@ const Helpdesk = () => {
         );
     };
 
-    // client side search
     const filtered = useMemo(() =>
         tickets.filter((t) =>
             t.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -1279,7 +1333,6 @@ const Helpdesk = () => {
         ),
         [tickets, search]);
 
-    // derive stats
     const stats = useMemo(() => ({
         total: tickets.length,
         open: tickets.filter((t) => t.status === "open").length,
@@ -1332,7 +1385,7 @@ const Helpdesk = () => {
 
                     {/* Filters */}
                     <div className="hd-filters">
-                        <Icon d={icons.filter} size={15} color="#9CA3AF" />
+                        <Icon d={icons.filter} size={15} color="#374151" />
 
                         <input
                             className="hd-search"
@@ -1372,10 +1425,11 @@ const Helpdesk = () => {
                                 onClick={() => { setStatus("all"); setCat("all"); setSearch(""); }}
                                 style={{
                                     padding: "7px 12px", borderRadius: 8,
-                                    border: "1.5px solid #E8EBF0", background: "#fff",
-                                    fontSize: ".8rem", color: "#6B7280",
+                                    border: "1.5px solid #94A3B8", background: "#fff",
+                                    fontSize: ".8rem", color: "#374151",
                                     cursor: "pointer", fontFamily: "inherit",
                                     display: "flex", alignItems: "center", gap: 5,
+                                    fontWeight: 600,
                                 }}
                             >
                                 <Icon d={icons.close} size={12} /> Clear
@@ -1386,8 +1440,8 @@ const Helpdesk = () => {
                             onClick={fetchTickets}
                             style={{
                                 padding: "7px 10px", borderRadius: 8,
-                                border: "1.5px solid #E8EBF0", background: "#fff",
-                                cursor: "pointer", color: "#6B7280",
+                                border: "1.5px solid #94A3B8", background: "#fff",
+                                cursor: "pointer", color: "#374151",
                                 display: "flex", alignItems: "center",
                             }}
                             title="Refresh"
@@ -1406,12 +1460,12 @@ const Helpdesk = () => {
                         {!loading && filtered.length === 0 && (
                             <div className="hd-empty">
                                 <div className="hd-empty-icon">
-                                    <Icon d={icons.inbox} size={24} color="#9CA3AF" />
+                                    <Icon d={icons.inbox} size={24} color="#374151" />
                                 </div>
-                                <p style={{ fontWeight: 600, color: "#374151", marginBottom: 6 }}>
+                                <p style={{ fontWeight: 700, color: "#0D0F14", marginBottom: 6 }}>
                                     No tickets found
                                 </p>
-                                <p style={{ fontSize: ".82rem" }}>
+                                <p style={{ fontSize: ".82rem", color: "#374151", fontWeight: 500 }}>
                                     {search || statusFilter !== "all" || categoryFilter !== "all"
                                         ? "Try adjusting your filters"
                                         : "You haven't raised any tickets yet"}
@@ -1430,13 +1484,13 @@ const Helpdesk = () => {
                                     <div
                                         className="hd-ticket-icon"
                                         style={{
-                                            background: iconBg[ticket.category] || "#F3F4F6",
+                                            background: iconBg[ticket.category] || "#E5E7EB",
                                         }}
                                     >
                                         <Icon
                                             d={icons.ticket}
                                             size={18}
-                                            color={iconColor[ticket.category] || "#9CA3AF"}
+                                            color={iconColor[ticket.category] || "#374151"}
                                         />
                                     </div>
                                 </div>

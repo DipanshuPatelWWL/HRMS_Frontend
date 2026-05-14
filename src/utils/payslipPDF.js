@@ -26,6 +26,7 @@ const MID_GRAY = [140, 140, 140];
 const WHITE = [255, 255, 255];
 const BORDER = [200, 200, 200];
 const TEAL_LIGHT = [224, 247, 244];
+const RED = [200, 50, 50];
 
 // ── Helpers ───────────────────────────────────────────────
 const RS = "Rs.";
@@ -39,7 +40,7 @@ const fmt = (n) => {
 };
 
 const fmtInt = (n) =>
-    typeof n === "number" && !isNaN(n) ? String(n) : "0";
+    typeof n === "number" && !isNaN(n) ? String(Math.round(n)) : "0";
 
 function formatDateStr(dateVal) {
     if (!dateVal) return "—";
@@ -47,7 +48,7 @@ function formatDateStr(dateVal) {
         const d = new Date(dateVal);
         if (isNaN(d.getTime())) return "—";
         return d.toLocaleDateString("en-IN", {
-            day: "2-digit", month: "short", year: "numeric"
+            day: "2-digit", month: "short", year: "numeric",
         });
     } catch {
         return "—";
@@ -102,11 +103,10 @@ function cell(doc, x, y, w, h, text, opts = {}) {
     doc.setTextColor(...textColor);
 
     const ty = y + h / 2 + fontSize * 0.45;
-    const tx = align === "center"
-        ? x + w / 2
-        : align === "right"
-            ? x + w - paddingX
-            : x + paddingX;
+    const tx =
+        align === "center" ? x + w / 2
+            : align === "right" ? x + w - paddingX
+                : x + paddingX;
 
     doc.text(String(text), tx, ty, { align });
 }
@@ -116,11 +116,15 @@ function cell(doc, x, y, w, h, text, opts = {}) {
 // ─────────────────────────────────────────────────────────
 function numberToWords(n) {
     if (n === 0) return "zero";
-    const ones = ["", "one", "two", "three", "four", "five", "six", "seven",
+    const ones = [
+        "", "one", "two", "three", "four", "five", "six", "seven",
         "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
-        "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
-    const tens = ["", "", "twenty", "thirty", "forty", "fifty",
-        "sixty", "seventy", "eighty", "ninety"];
+        "fifteen", "sixteen", "seventeen", "eighteen", "nineteen",
+    ];
+    const tens = [
+        "", "", "twenty", "thirty", "forty", "fifty",
+        "sixty", "seventy", "eighty", "ninety",
+    ];
 
     function convert(num) {
         if (num < 20) return ones[num];
@@ -131,6 +135,104 @@ function numberToWords(n) {
         return convert(Math.floor(num / 10000000)) + " crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
     }
     return convert(Math.abs(Math.round(n)));
+}
+
+// ─────────────────────────────────────────────────────────
+//  RESOLVE ALL SALARY FIGURES FROM PAYROLL OBJECT
+//
+//  KEY FORMULA (must match payroll.controller.js):
+//    perDay         = monthlySalary / totalWorkingDays
+//    halfDaySalary  = perDay / 2
+//    basicEarnings  = presentDays × perDay          ← ONLY actual present days
+//    halfDayEarnings= halfDays × halfDaySalary
+//    paidLeaveAmt   = paidLeave × perDay
+//    grossEarnings  = basicEarnings + halfDayEarnings + paidLeaveAmt
+//    absentAmt      = absentDays × perDay
+//    unpaidLeaveAmt = unpaidLeave × perDay
+//    deductions     = absentAmt + unpaidLeaveAmt
+//    netSalary      = grossEarnings - deductions
+//
+//  Weekends and holidays are IMPLICITLY paid because:
+//    perDay = salary / workingDays  (not calendar days)
+//    We only DEDUCT for absent working days.
+//    So if employee attends all working days → net = monthlySalary ✅
+// ─────────────────────────────────────────────────────────
+function resolveSalaryFigures(p) {
+    const emp = (p.employee && typeof p.employee === "object") ? p.employee : {};
+
+    // Monthly salary set by HR
+    const monthlySalary =
+        p.monthlySalary ||
+        p.basicSalary ||
+        (emp.salary && typeof emp.salary === "object" ? emp.salary.monthly : null) ||
+        (typeof emp.salary === "number" ? emp.salary : 0) ||
+        emp.monthlySalary ||
+        0;
+
+    // Attendance counts from backend
+    const totalWorkingDays = p.totalWorkingDays ?? 0;
+    const totalCalendarDays = p.totalCalendarDays ?? 30;
+    const weekends = p.weekends ?? p.totalWeekends ?? 0;
+    const holidayCount = p.holidays ?? 0;
+
+    // presentDays from backend = FULL present days (half-days are stored separately)
+    const presentDays = p.presentDays ?? 0;
+    const halfDays = p.halfDays ?? 0;
+    const paidLeave = p.paidLeave ?? 0;
+    const unpaidLeave = p.unpaidLeave ?? 0;
+    const absentDays = p.absentDays ?? 0;
+
+    // ── Per-day rate ──────────────────────────────────────
+    // Use backend-stored value first; compute from workingDays as fallback
+    const perDaySalary =
+        p.perDaySalary ??
+        (totalCalendarDays > 0 ? monthlySalary / totalCalendarDays : 0);
+
+    const halfDaySalary =
+        p.halfDaySalary ??
+        (perDaySalary / 2);
+
+    // ── Earnings ──────────────────────────────────────────
+    // New formula: start from full salary, only deductions
+    const absentAmt = p.absentAmt ?? round2(absentDays * perDaySalary);
+    const halfDayDeduct = p.halfDayDeduct ?? round2(halfDays * halfDaySalary);
+    const unpaidLeaveAmt = p.unpaidLeaveAmt ?? round2(unpaidLeave * perDaySalary);
+    const totalDeductions = p.deductions ?? round2(absentAmt + halfDayDeduct + unpaidLeaveAmt);
+
+    const rawNet = p.netSalary ?? 0;
+    const netSalary = rawNet > 0
+        ? rawNet
+        : Math.max(0, monthlySalary - totalDeductions);
+    function round2(n) { return Math.round(n * 100) / 100; }
+
+    // ── Paid days for attendance display ─────────────────
+    const paidDaysDisplay = presentDays + paidLeave;
+
+    return {
+        // ── salary rates ──────────────────────────────────
+        monthlySalary,
+        perDaySalary,
+        halfDaySalary,
+
+        // ── attendance counts ─────────────────────────────
+        presentDays,
+        halfDays,
+        absentDays,
+        paidLeave,
+        unpaidLeave,
+        weekends,
+        holidayCount,
+        totalWorkingDays,
+        totalCalendarDays,
+
+        // ── deductions ────────────────────────────────────
+        absentAmt,
+        halfDayDeduct,
+        unpaidLeaveAmt,
+        totalDeductions,
+        netSalary,
+        paidDaysDisplay,
+    };
 }
 
 // ─────────────────────────────────────────────────────────
@@ -145,32 +247,29 @@ export const generatePayslipPDF = (p) => {
 
     // ── Resolve employee ──────────────────────────────────
     const emp = (p.employee && typeof p.employee === "object") ? p.employee : {};
+
     const empName = emp.name || p.employeeName || "—";
     const empId = emp.employeeId || p.employeeId || "—";
     const empDesig = emp.designation || p.designation || "—";
     const empDept = (emp.department && typeof emp.department === "object")
         ? (emp.department.name || "—")
         : (emp.department || p.department || "—");
+
     const empDOJ = formatDateStr(
-        emp.joiningDate || emp.dateOfJoining ||
-        p.joiningDate || p.dateOfJoining
+        emp.joiningDate || emp.dateOfJoining || p.joiningDate || p.dateOfJoining
     );
     const empDOB = formatDateStr(emp.dob || p.dob);
 
     const empPAN =
         emp.governmentIds?.pan ||
         p.governmentIds?.pan ||
-        emp.pan ||
-        p.pan ||
-        "—";
+        emp.pan || p.pan || "—";
 
-    const maskAadhaar = (aadhaar) => {
-        if (!aadhaar) return "—";
-        const str = String(aadhaar);
-        if (str.length !== 12) return "—";
-        return "XXXX XXXX " + str.slice(-4);
+    const maskAadhaar = (v) => {
+        if (!v) return "—";
+        const s = String(v);
+        return s.length === 12 ? "XXXX XXXX " + s.slice(-4) : "—";
     };
-
     const empAadhaar = maskAadhaar(emp.governmentIds?.aadhaar);
 
     const bankDet = emp.bankDetails ?? {};
@@ -178,79 +277,22 @@ export const generatePayslipPDF = (p) => {
     const empAccount = bankDet.accountNumber || p.accountNo || p.accountNumber || "—";
 
     const empGuardian =
-        emp.guardianName ||
-        emp.fatherName ||
-        emp.fatherHusbandName ||
-        emp.guardian ||
-        emp.parentName ||
-        p.guardianName ||
-        p.fatherName ||
-        p.fatherHusbandName ||
-        p.guardian ||
-        p.parentName ||
-        "Not Provided";
+        emp.guardianName || emp.fatherName || emp.fatherHusbandName ||
+        emp.guardian || emp.parentName ||
+        p.guardianName || p.fatherName || p.fatherHusbandName ||
+        p.guardian || p.parentName || "Not Provided";
 
     const monthName = MONTHS[(p.month || 1) - 1];
     const year = p.year || new Date().getFullYear();
 
-    // ── FIX 1: Use actual monthlySalary set by HR ─────────
-    // Priority: p.monthlySalary → p.basicSalary → emp.salary → derive from perDay
-    const monthlySalary =
-        p.monthlySalary ||
-        p.basicSalary ||
-        emp.salary ||
-        emp.monthlySalary ||
-        0;
-
-    // ── Salary figures ────────────────────────────────────
-    const perDaySalary = p.perDaySalary ?? 0;
-    const halfDaySalary = p.halfDaySalary ?? (perDaySalary / 2);
-    const presentDays = p.presentDays ?? 0;
-    const halfDays = p.halfDays ?? 0;
-    const paidLeave = p.paidLeave ?? 0;
-    const unpaidLeave = p.unpaidLeave ?? 0;
-    const absentDays = p.absentDays ?? 0;
-    const weekends = p.weekends ?? p.totalWeekends ?? 0;
-    const totalWorkingDays = p.totalWorkingDays ?? 0;
-
-    // ── FIX 2: Net Salary — never show 0 if deductions exist ──
-    // If backend sends netSalary=0 but there are deductions, recalculate.
-    const rawNetSalary = p.netSalary ?? 0;
-    const basicEarnings = p.basicEarnings ?? (presentDays * perDaySalary);
-    const halfDayEarnings = p.halfDayEarnings ?? (halfDays * halfDaySalary);
-    const paidLeaveAmt = paidLeave * perDaySalary;
-    const unpaidLeaveAmt = unpaidLeave * perDaySalary;
-    const absentAmt = absentDays * perDaySalary;
-
-    const grossEarnings = basicEarnings + halfDayEarnings + paidLeaveAmt;
-
-    // Total deductions from backend or computed
-    const deductions = p.deductions ?? 0;
-    const totalDeductions = deductions > 0
-        ? deductions
-        : (absentAmt + unpaidLeaveAmt) > 0
-            ? (absentAmt + unpaidLeaveAmt)
-            : Math.max(0, Math.round((grossEarnings - rawNetSalary) * 100) / 100);
-
-    // FIX 2: If rawNetSalary is 0 but grossEarnings > 0, recalculate net
-    const netSalary = rawNetSalary > 0
-        ? rawNetSalary
-        : Math.max(0, grossEarnings - totalDeductions);
+    // ── Resolve all salary figures ────────────────────────
+    const S = resolveSalaryFigures(p);
 
     const isPaid = p.status === "paid";
     const paidDate = (isPaid && p.paidAt)
         ? new Date(p.paidAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
         : "—";
     const processedBy = p.paidBy?.name || "HR";
-
-    // ── Build deduction reason ────────────────────────────
-    const buildDeductionReason = () => {
-        const parts = [];
-        if (absentDays > 0) parts.push(`Absent: ${absentDays} day${absentDays > 1 ? "s" : ""}`);
-        if (unpaidLeave > 0) parts.push(`Unpaid Leave: ${unpaidLeave} day${unpaidLeave > 1 ? "s" : ""}`);
-        if (parts.length === 0 && totalDeductions > 0) parts.push("Salary Adjustment");
-        return parts.join(" + ") || "";
-    };
 
     let y = 8;
 
@@ -266,7 +308,6 @@ export const generatePayslipPDF = (p) => {
     const HDR_H = 26;
 
     fillStrokeRect(doc, M, y, LOGO_W, HDR_H, WHITE, BORDER, 0.3);
-
     try {
         doc.addImage(logoImg, "PNG", M + 1, y + 1, LOGO_W - 2, HDR_H - 2, undefined, "FAST");
     } catch {
@@ -333,7 +374,7 @@ export const generatePayslipPDF = (p) => {
         ["DATE OF JOINING", empDOJ],
         ["DATE OF BIRTH", empDOB],
         ["DESIGNATION", empDesig],
-        ["", ""]
+        ["", ""],
     ];
 
     const maxRows = Math.max(empLeft.length, empRight.length);
@@ -348,26 +389,19 @@ export const generatePayslipPDF = (p) => {
             sf(doc, "bold", 7.2);
             doc.setTextColor(...BLACK);
             doc.text(lbl + " :", M + 2.5, mid);
-
-            const valX = M + LBL_W;
-            const valW = HALF - LBL_W;
             sf(doc, "normal", 7.2);
-            doc.text(String(val), valX + valW / 2, mid, { align: "center" });
+            doc.text(String(val), M + LBL_W + (HALF - LBL_W) / 2, mid, { align: "center" });
         }
 
         fillStrokeRect(doc, M + HALF, ry, HALF, EMP_H, WHITE, BORDER, 0.25);
         if (empRight[i]) {
             const [lbl, val] = empRight[i];
             const rx = M + HALF;
-            const valX = rx + LBL_W;
-            const valW = HALF - LBL_W;
-
             sf(doc, "bold", 7.2);
             doc.setTextColor(...BLACK);
             doc.text(lbl + " :", rx + 2.5, mid);
-
             sf(doc, "normal", 7.2);
-            doc.text(String(val), valX + valW / 2, mid, { align: "center" });
+            doc.text(String(val), rx + LBL_W + (HALF - LBL_W) / 2, mid, { align: "center" });
         }
     }
 
@@ -386,14 +420,17 @@ export const generatePayslipPDF = (p) => {
 
     /* ════════════════════════════════════════════════════
        6. ATTENDANCE COLUMNS
+       NOTE: "Paid Days" = presentDays + paidLeave
+             Half-days are shown in salary section, not here
+             to avoid confusion in the attendance box
     ════════════════════════════════════════════════════ */
     const attCols = [
-        { label: "Working Days", value: fmtInt(totalWorkingDays) },
-        { label: "PL", value: fmtInt(paidLeave) },
-        { label: "CL", value: "0" },
-        { label: "Holidays", value: "0" },
-        { label: "Weekly Off", value: fmtInt(weekends) },
-        { label: "Paid Days", value: fmtInt(presentDays + paidLeave) },
+        { label: "Working Days", value: fmtInt(S.totalWorkingDays) },
+        { label: "PL", value: fmtInt(S.paidLeave) },
+        { label: "Half Days", value: fmtInt(S.halfDays) },
+        { label: "Absent", value: fmtInt(S.absentDays) },
+        { label: "Weekly Off", value: fmtInt(S.weekends) },
+        { label: "Paid Days", value: fmtInt(S.paidDaysDisplay) },
     ];
 
     const attCW = CW / attCols.length;
@@ -422,13 +459,18 @@ export const generatePayslipPDF = (p) => {
 
     /* ════════════════════════════════════════════════════
        7. SUMMARY ROW
+       PAYABLE DAYS = present + (halfDays × 0.5) + paidLeave
+       We show it as a decimal-aware number
     ════════════════════════════════════════════════════ */
+    const payableDays = S.presentDays + (S.halfDays * 0.5) + S.paidLeave;
+
     const sumItems = [
-        { label: "PAYABLE DAYS", value: fmtInt(presentDays + paidLeave) },
-        { label: "HOLIDAYS", value: "0" },
-        { label: "WEEKLY OFF", value: fmtInt(weekends) },
-        { label: "WORKING DAYS", value: fmtInt(totalWorkingDays) },
+        { label: "PAYABLE DAYS", value: payableDays % 1 === 0 ? fmtInt(payableDays) : payableDays.toFixed(1) },
+        { label: "ABSENT DAYS", value: fmtInt(S.absentDays) },
+        { label: "WEEKLY OFF", value: fmtInt(S.weekends) },
+        { label: "WORKING DAYS", value: fmtInt(S.totalWorkingDays) },
     ];
+
     const sumCW = CW / sumItems.length;
     const SUM_H = 14;
 
@@ -447,66 +489,72 @@ export const generatePayslipPDF = (p) => {
 
     /* ════════════════════════════════════════════════════
        7b. SALARY CALCULATION BREAKDOWN BOX
-       FIX 1: Uses actual monthlySalary from HR, not derived
+           Shows every step so the employee can verify
     ════════════════════════════════════════════════════ */
-    // ── Build all lines first ─────────────────────────
     const calcLines = [];
 
-    // Line 1
-    calcLines.push(`Monthly Salary  =  ${RS} ${fmt(monthlySalary)}`);
+    calcLines.push({
+        text: `Monthly Salary = ${RS} ${fmt(S.monthlySalary)}  |  Calendar Days = ${fmtInt(S.totalCalendarDays)}  |  Per Day = ${RS} ${fmt(S.perDaySalary)}`,
+        color: DARK_GRAY, bold: false,
+    });
 
-    // Line 2
-    calcLines.push(
-        `Basic Earnings  =  Per Day (${RS} ${fmt(perDaySalary)})  ×  Present Days (${fmtInt(presentDays)})  =  ${RS} ${fmt(basicEarnings)}`
-    );
-
-    // Line 3 (Half Day)
-    if (halfDays > 0) {
-        calcLines.push(
-            `Half Day Pay  =  Half Day Rate (${RS} ${fmt(halfDaySalary)})  ×  Half Days (${fmtInt(halfDays)})  =  ${RS} ${fmt(halfDayEarnings)}`
-        );
+    // Line 2: absent deduction (only if any)
+    if (S.absentDays > 0) {
+        calcLines.push({
+            text: `Absent = ${fmtInt(S.absentDays)} days × ${RS} ${fmt(S.perDaySalary)} = − ${RS} ${fmt(S.absentAmt)}`,
+            color: RED, bold: true,
+        });
     }
 
-    // Line 4 (Deduction)
-    if (totalDeductions > 0) {
-        const dedReason = buildDeductionReason();
-        calcLines.push(
-            `Deduction  =  ${dedReason}  ×  ${RS} ${fmt(perDaySalary)} / day  =  ${RS} ${fmt(totalDeductions)}`
-        );
+    // Line 3: half day deduction (only if any)
+    if (S.halfDays > 0) {
+        calcLines.push({
+            text: `Half Day = ${fmtInt(S.halfDays)} × ${RS} ${fmt(S.halfDaySalary)} (half of ${RS} ${fmt(S.perDaySalary)}) = − ${RS} ${fmt(S.halfDayDeduct)}`,
+            color: RED, bold: true,
+        });
     }
 
-    // ── Dynamic Height Calculation ───────────────────
+    // Line 4: paid leave note (only if any — no deduction)
+    if (S.paidLeave > 0) {
+        calcLines.push({
+            text: `Casual Leave = ${fmtInt(S.paidLeave)} days → ✅ No deduction (CL balance used)`,
+            color: [0, 100, 80], bold: false,
+        });
+    }
+
+    // Line 5: unpaid leave deduction (only if any)
+    if (S.unpaidLeave > 0) {
+        calcLines.push({
+            text: `Unpaid Leave = ${fmtInt(S.unpaidLeave)} days × ${RS} ${fmt(S.perDaySalary)} = − ${RS} ${fmt(S.unpaidLeaveAmt)}`,
+            color: RED, bold: true,
+        });
+    }
+
+    // Line 6: net salary (always shown)
+    calcLines.push({
+        text: `Net Salary = ${RS} ${fmt(S.monthlySalary)} − ${RS} ${fmt(S.totalDeductions)} = ${RS} ${fmt(S.netSalary)}`,
+        color: [0, 100, 80], bold: true,
+    });
+
     const lineHeight = 6;
-    const paddingTop = 6;
+    const paddingTop = 7;
     const paddingBottom = 4;
-
     const CALC_H = paddingTop + (calcLines.length * lineHeight) + paddingBottom;
 
-    // ── Draw Box ─────────────────────────────────────
     fillStrokeRect(doc, M, y, CW, CALC_H, TEAL_LIGHT, TEAL, 0.4);
 
-    // Title
     sf(doc, "bold", 8);
     doc.setTextColor(...TEAL_DARK);
-    doc.text("SALARY CALCULATION BREAKDOWN", M + 3, y + 5);
+    doc.text("SALARY CALCULATION BREAKDOWN", M + 3, y + 5.5);
 
-    // ── Print Lines ──────────────────────────────────
-    let textY = y + 11;
-
-    calcLines.forEach((line, index) => {
-        if (line.includes("Deduction")) {
-            sf(doc, "bold", 7.2);
-            doc.setTextColor(200, 50, 50);
-        } else {
-            sf(doc, "normal", 7.5);
-            doc.setTextColor(...DARK_GRAY);
-        }
-
-        doc.text(line, M + 3, textY);
+    let textY = y + 12;
+    calcLines.forEach(({ text, color, bold }) => {
+        sf(doc, bold ? "bold" : "normal", 7.2);
+        doc.setTextColor(...color);
+        doc.text(text, M + 3, textY);
         textY += lineHeight;
     });
 
-    // Move Y correctly
     y += CALC_H + 2;
 
     /* ════════════════════════════════════════════════════
@@ -541,66 +589,44 @@ export const generatePayslipPDF = (p) => {
 
     /* ════════════════════════════════════════════════════
        9. SALARY ROWS
+       Layout:
+         Row 1: Basic earnings      | Absent deduction
+         Row 2: Half-day earnings   | Unpaid leave deduction
+         Row 3: Paid leave earnings | (empty)
+         Row 4: (empty)             | (empty)
     ════════════════════════════════════════════════════ */
-    const salRows = [];
-
-    const ded1Label = absentDays > 0
-        ? `Absent (${absentDays}d × ${RS}${fmt(perDaySalary)})`
-        : unpaidLeave > 0
-            ? `Unpaid Leave (${unpaidLeave}d × ${RS}${fmt(perDaySalary)})`
-            : totalDeductions > 0
-                ? "Salary Adjustment"
-                : "";
-
-    const ded1Amt = absentDays > 0
-        ? fmt(absentAmt)
-        : unpaidLeave > 0
-            ? fmt(unpaidLeaveAmt)
-            : totalDeductions > 0 ? fmt(totalDeductions) : "";
-
-    salRows.push({
-        head: `Basic (${fmtInt(presentDays)}d × ${RS}${fmt(perDaySalary)})`,
-        amt: fmt(basicEarnings),
-        ded: ded1Label,
-        damt: ded1Amt,
-    });
-
-    const row2ded = (absentDays > 0 && unpaidLeave > 0)
-        ? `Unpaid Leave (${unpaidLeave}d × ${RS}${fmt(perDaySalary)})` : "";
-    const row2damt = (absentDays > 0 && unpaidLeave > 0)
-        ? fmt(unpaidLeaveAmt) : "";
-
-    if (halfDays > 0) {
-        salRows.push({
-            head: `Half Day Pay (${halfDays}d × ${RS}${fmt(halfDaySalary)})`,
-            amt: fmt(halfDayEarnings),
-            ded: row2ded,
-            damt: row2damt,
-        });
-    } else {
-        salRows.push({ head: "", amt: "", ded: row2ded, damt: row2damt });
-    }
-
-    if (paidLeave > 0) {
-        salRows.push({
-            head: `Paid Leave (${paidLeave}d × ${RS}${fmt(perDaySalary)})`,
-            amt: fmt(paidLeaveAmt),
-            ded: "", damt: "",
-        });
-    } else {
-        salRows.push({ head: "", amt: "", ded: "", damt: "" });
-    }
-
-    while (salRows.length < 4) {
-        salRows.push({ head: "", amt: "", ded: "", damt: "" });
-    }
+    const salRows = [
+        {
+            head: `Monthly Salary`,
+            amt: fmt(S.monthlySalary),
+            ded: S.absentDays > 0
+                ? `Absent (${fmtInt(S.absentDays)}d × ${RS} ${fmt(S.perDaySalary)})`
+                : "",
+            damt: S.absentDays > 0 ? fmt(S.absentAmt) : "",
+        },
+        {
+            head: S.paidLeave > 0 ? `Casual Leave (${fmtInt(S.paidLeave)}d) — Paid` : "",
+            amt: S.paidLeave > 0 ? "No Deduction" : "",
+            ded: S.halfDays > 0
+                ? `Half Day (${fmtInt(S.halfDays)}d × ${RS} ${fmt(S.halfDaySalary)})`
+                : "",
+            damt: S.halfDays > 0 ? fmt(S.halfDayDeduct) : "",
+        },
+        {
+            head: "",
+            amt: "",
+            ded: S.unpaidLeave > 0
+                ? `Unpaid Leave (${fmtInt(S.unpaidLeave)}d × ${RS} ${fmt(S.perDaySalary)})`
+                : "",
+            damt: S.unpaidLeave > 0 ? fmt(S.unpaidLeaveAmt) : "",
+        },
+        { head: "", amt: "", ded: "", damt: "" },
+    ];
 
     const SAL_ROW_H = 9;
-
     salRows.forEach((row, i) => {
         const ry = y + i * SAL_ROW_H;
         const bg = i % 2 === 0 ? WHITE : LIGHT_GRAY;
-
         [
             { x: Xhead, w: C.head, text: row.head, align: "left" },
             { x: Xamt1, w: C.amt1, text: row.amt, align: "right" },
@@ -612,7 +638,6 @@ export const generatePayslipPDF = (p) => {
             });
         });
     });
-
     y += salRows.length * SAL_ROW_H;
     y += 4;
 
@@ -626,16 +651,25 @@ export const generatePayslipPDF = (p) => {
     fillStrokeRect(doc, M, y, GROSS_LEFT, GROSS_H, LIGHT_GRAY, BORDER, 0.4);
     sf(doc, "bold", 8.5);
     doc.setTextColor(...BLACK);
-    doc.text("GROSS EARNINGS", M + 2.5, y + GROSS_H / 2 + 1.5);
-    doc.text(fmt(grossEarnings), M + GROSS_LEFT - 2.5, y + GROSS_H / 2 + 1.5, { align: "right" });
+    doc.text("MONTHLY SALARY", M + 2.5, y + GROSS_H / 2 + 1.5);
+    doc.text(fmt(S.monthlySalary), M + GROSS_LEFT - 2.5, y + GROSS_H / 2 + 1.5, { align: "right" });
 
     fillStrokeRect(doc, M + GROSS_LEFT, y, GROSS_RIGHT, GROSS_H, LIGHT_GRAY, BORDER, 0.4);
     sf(doc, "bold", 8.5);
     doc.setTextColor(...BLACK);
-    doc.text("GROSS DEDUCTIONS", M + GROSS_LEFT + 2.5, y + 3.5);
-    doc.text(fmt(totalDeductions), M + CW - 2.5, y + 3.5, { align: "right" });
+    doc.text("TOTAL DEDUCTIONS", M + GROSS_LEFT + 2.5, y + 3.5);
+    doc.text(fmt(S.totalDeductions), M + CW - 2.5, y + 3.5, { align: "right" });
 
-    const dedReason = buildDeductionReason();
+    // Show deduction reason
+    const dedParts = [];
+    if (S.absentDays > 0)
+        dedParts.push(`Absent: ${fmtInt(S.absentDays)} day${S.absentDays > 1 ? "s" : ""}`);
+    if (S.halfDays > 0)
+        dedParts.push(`Half Day: ${fmtInt(S.halfDays)} day${S.halfDays > 1 ? "s" : ""}`);
+    if (S.unpaidLeave > 0)
+        dedParts.push(`Unpaid Leave: ${fmtInt(S.unpaidLeave)} day${S.unpaidLeave > 1 ? "s" : ""}`);
+    const dedReason = dedParts.join(" + ");
+
     if (dedReason) {
         sf(doc, "normal", 6.2);
         doc.setTextColor(...DARK_GRAY);
@@ -646,7 +680,6 @@ export const generatePayslipPDF = (p) => {
 
     /* ════════════════════════════════════════════════════
        11. NET PAY BANNER
-       FIX 2: Uses corrected netSalary (never shows ₹0 wrongly)
     ════════════════════════════════════════════════════ */
     const NET_H = 10;
     fillStrokeRect(doc, M, y, CW, NET_H, TEAL, TEAL_DARK, 0.4);
@@ -655,12 +688,12 @@ export const generatePayslipPDF = (p) => {
     doc.setTextColor(...WHITE);
     doc.text("NET PAY", M + 4, y + 6.5);
 
-    const words = numberToWords(Math.round(netSalary));
+    const words = numberToWords(Math.round(S.netSalary));
     sf(doc, "normal", 7.5);
     doc.text(`RUPEES ${words.toUpperCase()} ONLY`, PW / 2, y + 6.5, { align: "center" });
 
     sf(doc, "bold", 12);
-    doc.text(`${RS} ${fmt(netSalary)}`, M + CW - 3, y + 7, { align: "right" });
+    doc.text(`${RS} ${fmt(S.netSalary)}`, M + CW - 3, y + 7, { align: "right" });
 
     y += NET_H;
 

@@ -489,7 +489,7 @@ const DetailModal = ({ open, lead, onClose, onLeadUpdated, showToast }) => {
                                 <StageBadge stage={lead.lead_stage} />
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 22px' }}>
-                                <Detail label="Report Date" value={fmtDate(lead.date || lead.createdAt)} />
+                                <Detail label="Lead Date" value={fmtDate(lead.date || lead.createdAt)} />
                                 <Detail label="Service" value={lead.services} />
                                 <Detail label="Country" value={lead.country} />
                                 <Detail label="Client Phone" value={lead.client_phone} />

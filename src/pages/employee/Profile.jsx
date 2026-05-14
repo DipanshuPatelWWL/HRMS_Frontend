@@ -1,7 +1,7 @@
 import { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import API, { BASE_URL } from "../../services/api";
+import API, { BASE_URL, QR_CODE_URL } from "../../services/api";
 
 // react-icons — lucide set
 import {
@@ -387,6 +387,21 @@ export default function Profile() {
     const [ifscLooking, setIfscLooking] = useState(false);
     const [bankVerification, setBankVerification] = useState(null);
 
+
+    /* ── documents ── */
+    const [docs, setDocs] = useState({ aadhaar: null, pan: null, passbook: null, others: [] });
+    const [docsFetching, setDocsFetching] = useState(true);
+    const [docUploading, setDocUploading] = useState({});
+    const [docMsg, setDocMsg] = useState(null);
+    const docFileRefs = {
+        aadhaar: useRef(null),
+        pan: useRef(null),
+        passbook: useRef(null),
+        other: useRef(null),
+    };
+
+    const otherRef = useRef(null);
+
     /* ════════════════════════════════════════
        COMPLETION
     ════════════════════════════════════════ */
@@ -425,6 +440,18 @@ export default function Profile() {
                 }
             } catch { }
             finally { setGovIdFetching(false); }
+        })();
+    }, []);
+
+
+    useEffect(() => {
+        (async () => {
+            setDocsFetching(true);
+            try {
+                const res = await API.get("/users/me/documents");
+                if (res.data.documents) setDocs(res.data.documents);
+            } catch { }
+            finally { setDocsFetching(false); }
         })();
     }, []);
 
@@ -473,6 +500,28 @@ export default function Profile() {
             setAvatarLoading(false); e.target.value = "";
         }
     };
+
+
+    const handleDocUpload = async (file, type, label = "") => {
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) { setDocMsg({ type: "error", text: "Max file size is 5 MB." }); return; }
+        setDocUploading(p => ({ ...p, [type]: true }));
+        setDocMsg(null);
+        try {
+            const fd = new FormData();
+            fd.append("document", file);
+            if (label) fd.append("label", label);
+            const { data } = await API.post(`/users/me/documents/${type}`, fd);
+            setDocs(data.documents);
+            setDocMsg({ type: "success", text: "Document uploaded!" });
+        } catch (err) {
+            setDocMsg({ type: "error", text: err?.response?.data?.message || "Upload failed." });
+        } finally {
+            setDocUploading(p => ({ ...p, [type]: false }));
+        }
+    };
+
+
 
     const handleRemoveAvatar = async () => {
         setAvatarLoading(true);
@@ -876,9 +925,6 @@ export default function Profile() {
                                     <option key={o.value} value={o.value}>{o.label}</option>
                                 ))}
                             </Select>
-                            <span style={{ fontSize: 11, color: T.muted, fontFamily: ff, marginTop: 4, display: "block" }}>
-                                Visible to HR &amp; managers
-                            </span>
                         </div>
                         <div>
                             <Label>Marital Status</Label>
@@ -891,23 +937,7 @@ export default function Profile() {
                                     <option key={o.value} value={o.value}>{o.label}</option>
                                 ))}
                             </Select>
-                            <span style={{ fontSize: 11, color: T.muted, fontFamily: ff, marginTop: 4, display: "block" }}>
-                                Visible to HR &amp; managers
-                            </span>
                         </div>
-                    </div>
-
-                    {/* HR visibility note */}
-                    <div style={{
-                        display: "flex", alignItems: "flex-start", gap: 8,
-                        background: T.accentLight, border: `1px solid ${T.border}`,
-                        borderRadius: 8, padding: "10px 14px",
-                        fontSize: 12.5, color: T.accent, fontFamily: ff,
-                    }}>
-                        <LuInfo size={14} style={{ flexShrink: 0, marginTop: 1 }} />
-                        <span>
-                            <strong>Note:</strong> Nationality and marital status are shared with HR and your reporting manager for payroll and compliance purposes.
-                        </span>
                     </div>
 
                     {selfMsg && <Alert {...selfMsg} />}
@@ -921,13 +951,13 @@ export default function Profile() {
             </div>
         ),
 
-        /* ── GOV ID ── */
         govid: (
             <div style={{ animation: "slideIn .25s ease" }}>
+                {/* ── Header ── */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
                     <div>
-                        <p style={{ fontFamily: ff, fontWeight: 800, fontSize: 16, color: T.text, margin: "0 0 3px" }}>Government ID</p>
-                        <p style={{ fontFamily: ff, fontSize: 13, color: T.textSub, margin: 0 }}>Required to unlock all dashboard features</p>
+                        <p style={{ fontFamily: ff, fontWeight: 800, fontSize: 16, color: T.text, margin: "0 0 3px" }}>Government ID & Documents</p>
+                        <p style={{ fontFamily: ff, fontSize: 13, color: T.textSub, margin: 0 }}>Enter your numbers and upload supporting documents</p>
                     </div>
                     <StatusPill done={govIdDone} />
                 </div>
@@ -936,28 +966,29 @@ export default function Profile() {
                     ? <StopwatchLoader />
                     : (
                         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+
+                            {/* ── PAN number ── */}
                             <div>
                                 <Label>PAN Number</Label>
                                 <Input
                                     name="pan"
+                                    placeholder="ABCDE1234F"
                                     value={govIds.pan}
                                     error={govIdErrors.pan}
-                                    onChange={(e) =>
-                                        setGovIds(p => ({ ...p, pan: e.target.value.toUpperCase() }))
-                                    }
+                                    onChange={e => setGovIds(p => ({ ...p, pan: e.target.value.toUpperCase() }))}
                                 />
                                 <FieldError error={govIdErrors.pan} touched={true} />
                             </div>
 
+                            {/* ── Aadhaar number ── */}
                             <div>
                                 <Label>Aadhaar Number</Label>
                                 <Input
                                     name="aadhaar"
+                                    placeholder="12-digit number"
                                     value={govIds.aadhaar}
                                     error={govIdErrors.aadhaar}
-                                    onChange={(e) =>
-                                        setGovIds(p => ({ ...p, aadhaar: e.target.value }))
-                                    }
+                                    onChange={e => setGovIds(p => ({ ...p, aadhaar: e.target.value }))}
                                 />
                                 <FieldError error={govIdErrors.aadhaar} touched={true} />
                             </div>
@@ -965,16 +996,162 @@ export default function Profile() {
                             {govIdMsg && <Alert {...govIdMsg} />}
                             <div>
                                 <Btn onClick={handleGovSave} loading={govIdLoading}>
-                                    {govIdLoading
-                                        ? <StopwatchLoader />
-                                        : govIdDone
-                                            ? <><LuRefreshCw size={13} /> Update ID</>
-                                            : <><LuSave size={13} /> Save Government ID</>}
+                                    {govIdDone
+                                        ? <><LuRefreshCw size={13} /> Update ID</>
+                                        : <><LuSave size={13} /> Save Government ID</>}
                                 </Btn>
                             </div>
-                        </div>
-                    )}
-            </div>
+
+                            {/* ══════════════════════════════
+                        DOCUMENT UPLOADS
+                    ══════════════════════════════ */}
+                            <div style={{ borderTop: `1.5px dashed ${T.border}`, paddingTop: 20, marginTop: 4 }}>
+                                <p style={{ fontFamily: ff, fontWeight: 700, fontSize: 13, color: T.text, margin: "0 0 14px", display: "flex", alignItems: "center", gap: 6 }}>
+                                    <LuFolder size={14} color={T.accent} /> Supporting Documents
+                                </p>
+
+                                {docsFetching
+                                    ? <StopwatchLoader />
+                                    : (
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+                                            {/* ── Aadhaar doc ── */}
+                                            {[
+                                                { key: "aadhaar", label: "Aadhaar Card" },
+                                                { key: "pan", label: "PAN Card" },
+                                                { key: "passbook", label: "Bank Passbook" },
+                                            ].map(({ key, label }) => {
+                                                const d = docs?.[key];
+                                                const isVerified = d?.verified;
+                                                const hasFile = !!d?.url;
+                                                return (
+                                                    <div key={key} style={{
+                                                        border: `1.5px solid ${isVerified ? "#a7f3d0" : hasFile ? T.border : T.border}`,
+                                                        borderRadius: 12, padding: "14px 16px",
+                                                        background: isVerified ? T.successLight : T.bg,
+                                                    }}>
+                                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                                                            <div>
+                                                                <p style={{ fontFamily: ff, fontWeight: 700, fontSize: 13, color: T.text, margin: "0 0 3px" }}>{label}</p>
+                                                                {hasFile && (
+                                                                    <p style={{ fontFamily: ff, fontSize: 11.5, color: T.muted, margin: 0 }}>
+                                                                        📎 {d.originalName}
+                                                                        {" · "}
+                                                                        {new Date(d.uploadedAt).toLocaleDateString("en-IN")}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                                                                {isVerified
+                                                                    ? <Pill color={T.success} bg={T.successLight}>✓ Verified</Pill>
+                                                                    : hasFile
+                                                                        ? <Pill color={T.warn} bg={T.warnLight}>⏳ Under Process</Pill>
+                                                                        : null}
+
+                                                                <input
+                                                                    ref={docFileRefs[key]}
+                                                                    type="file"
+                                                                    accept="image/*,application/pdf"
+                                                                    style={{ display: "none" }}
+                                                                    onChange={e => {
+                                                                        const f = e.target.files?.[0];
+                                                                        if (f) handleDocUpload(f, key);
+                                                                        e.target.value = "";
+                                                                    }}
+                                                                />
+                                                                <Btn
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    loading={docUploading[key]}
+                                                                    onClick={() => docFileRefs[key].current?.click()}
+                                                                >
+                                                                    <LuUpload size={12} />
+                                                                    {hasFile ? "Re-upload" : "Upload"}
+                                                                </Btn>
+
+                                                                {hasFile && (
+                                                                    <a
+                                                                        href={`${BASE_URL}${d.url}`}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                        style={{ fontSize: 12, color: T.accent, fontWeight: 600, fontFamily: ff, textDecoration: "none" }}
+                                                                    >
+                                                                        View
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+
+                                            {/* ── Other docs ── */}
+                                            {(docs?.others || []).map((od, idx) => (
+                                                <div key={od._id || idx} style={{
+                                                    border: `1.5px solid ${od.verified ? "#a7f3d0" : T.border}`,
+                                                    borderRadius: 12, padding: "14px 16px",
+                                                    background: od.verified ? T.successLight : T.bg,
+                                                }}>
+                                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                                                        <div>
+                                                            <p style={{ fontFamily: ff, fontWeight: 700, fontSize: 13, color: T.text, margin: "0 0 3px" }}>{od.label}</p>
+                                                            <p style={{ fontFamily: ff, fontSize: 11.5, color: T.muted, margin: 0 }}>📎 {od.originalName}</p>
+                                                        </div>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                            {od.verified
+                                                                ? <Pill color={T.success} bg={T.successLight}>✓ Verified</Pill>
+                                                                : <Pill color={T.warn} bg={T.warnLight}>⏳ Under Process</Pill>}
+                                                            <a
+                                                                href={`${BASE_URL}${od.url}`}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                style={{ fontSize: 12, color: T.accent, fontWeight: 600, fontFamily: ff, textDecoration: "none" }}
+                                                            >
+                                                                View
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {/* ── Add Other document ── */}
+
+                                            <div>
+                                                <input
+                                                    ref={otherRef}
+                                                    type="file"
+                                                    accept="image/*,application/pdf"
+                                                    style={{ display: "none" }}
+                                                    onChange={e => {
+                                                        const f = e.target.files?.[0];
+                                                        if (f) {
+                                                            const lbl = window.prompt("Enter a label for this document (e.g. 'NOC Certificate')", "Other Document") || "Other Document";
+                                                            handleDocUpload(f, "other", lbl);
+                                                        }
+                                                        e.target.value = "";
+                                                    }}
+                                                />
+                                                <Btn
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    loading={docUploading["other"]}
+                                                    onClick={() => otherRef.current?.click()}
+                                                    style={{ width: "100%", justifyContent: "center", borderStyle: "dashed", border: `1.5px dashed ${T.border}` }}
+                                                >
+                                                    <LuUpload size={12} /> + Add Other Document
+                                                </Btn>
+                                            </div>
+
+
+                                            {docMsg && <Alert {...docMsg} />}
+                                        </div>
+                                    )}
+                            </div>
+                        </div >
+                    )
+                }
+            </div >
         ),
 
         /* ── BANK ── */
@@ -1270,7 +1447,7 @@ export default function Profile() {
                                         display: "flex", flexDirection: "column", alignItems: "center", gap: 3
                                     }}>
                                         <QRCodeSVG
-                                            value={user.employeeId}
+                                            value={`${QR_CODE_URL}/employee/${user.employeeId}`}
                                             size={52}
                                             fgColor={T.accent}
                                             bgColor="#ffffff"
