@@ -1113,7 +1113,7 @@ const ManagerTasks = () => {
                             <h1>Task Management</h1>
                             <p>Full visibility into tasks across all departments, TLs and employees</p>
                         </div>
-                        <button className="mt-back-btn" onClick={() => navigate("/manager-dashboard")}>
+                        <button className="mt-back-btn" onClick={() => navigate("/manager")}>
                             <Ic d={IC.back} size={14} /> Dashboard
                         </button>
                     </div>

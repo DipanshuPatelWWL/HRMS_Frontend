@@ -171,8 +171,9 @@ const StatCard = ({ label, value, topColor, loading, active, onClick, icon: Icon
         style={{
             background: C.white, borderRadius: 16, padding: '20px 22px',
             borderTop: `4px solid ${topColor}`,
-            border: `1px solid ${active ? topColor : C.slate200}`,
-            borderTopColor: topColor,
+            borderRight: `1px solid ${active ? topColor : C.slate200}`,
+            borderBottom: `1px solid ${active ? topColor : C.slate200}`,
+            borderLeft: `1px solid ${active ? topColor : C.slate200}`,
             boxShadow: active ? `0 0 0 3px ${topColor}33, 0 4px 16px rgba(0,0,0,0.08)` : '0 1px 4px rgba(0,0,0,0.06)',
             cursor: onClick ? 'pointer' : 'default',
         }}
@@ -360,7 +361,7 @@ const DetailModal = ({ open, report, onClose, showToast }) => {
 
                             {/* Details Grid */}
                             <div className="modal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 22px' }}>
-                                <Detail label="Report Date" value={fmtDate(report.date || report.createdAt)} />
+                                <Detail label="Lead Date" value={fmtDate(report.date || report.createdAt)} />
                                 <Detail label="Marketer" value={report.marketer} />
                                 <Detail label="Service" value={report.services} />
                                 <Detail label="Country" value={report.country} />

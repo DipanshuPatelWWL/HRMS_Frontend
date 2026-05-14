@@ -916,7 +916,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                     }}>
                         <Icon d={icons.check} size={14} color="#15803D" />
                         Resolved on {formatDate(ticket.resolvedAt)}
-                        {ticket.resolvedBy && ` by ${ticket.resolvedBy.name}`}
+                        {ticket.resolvedBy?.name && ` by ${ticket.resolvedBy.name}`}
                     </div>
                 )}
 
@@ -925,7 +925,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                     Conversation ({ticket.replies?.length || 0})
                 </div>
 
-                <div className="hr-replies">
+                <div className="hr-replies" style={{ minHeight: 160, overflowY: "auto" }}>
                     {(!ticket.replies || ticket.replies.length === 0) && (
                         <div className="hr-no-replies" style={{ color: "#6B7280", fontWeight: 600 }}>No replies yet.</div>
                     )}

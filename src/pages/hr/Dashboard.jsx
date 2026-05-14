@@ -68,7 +68,7 @@ const HRDashboard = () => {
         { label: "Manage Employees", href: "/hr/employees", primary: true },
         { label: "Approve Leaves", href: "/hr/leave-approval", primary: false },
         { label: "Generate Payroll", href: "/hr/payroll-management", primary: false },
-        { label: "View Reports", href: "/hr/reports", primary: false },
+        { label: "Help Desk", href: "/hr/helpdesk", primary: false },
     ];
 
     return (

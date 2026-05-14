@@ -205,6 +205,7 @@ const HRAttendanceOverview = () => {
 
     const fetchData = async () => {
         setLoading(true);
+        setData(null);
         try {
             const res = await API.get(
                 `/attendance/hr-overview?month=${viewMonth}&year=${viewYear}`
@@ -219,12 +220,15 @@ const HRAttendanceOverview = () => {
 
     useEffect(() => {
         fetchData();
+        setFilterDept("all");
+        setSearch("");
     }, [viewMonth, viewYear]);
 
     const departments = [
-        ...new Set(
-            (data?.todaySummary || []).map((e) => e.department).filter(Boolean)
-        ),
+        ...new Set([
+            ...(data?.todaySummary || []).map((e) => e.department),
+            ...(data?.monthlyStats || []).map((e) => e.department),
+        ].filter(Boolean)),
     ];
 
     const applyFilters = (list) =>
@@ -239,12 +243,14 @@ const HRAttendanceOverview = () => {
         });
 
     const filteredToday = applyFilters(data?.todaySummary || []);
-    const filteredMonthly = (data?.monthlyStats || []).filter(
-        (e) =>
+    const filteredMonthly = (data?.monthlyStats || []).filter((e) => {
+        const matchSearch =
             e.name?.toLowerCase().includes(search.toLowerCase()) ||
             e.employeeId?.toLowerCase().includes(search.toLowerCase()) ||
-            e.department?.toLowerCase().includes(search.toLowerCase())
-    );
+            e.department?.toLowerCase().includes(search.toLowerCase());
+        const matchDept = filterDept === "all" || e.department === filterDept;
+        return matchSearch && matchDept;
+    });
     const filteredLeaves = (data?.leaves || []).filter(
         (l) =>
             l.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -638,21 +644,6 @@ const HRAttendanceOverview = () => {
                             </option>
                         ))}
                     </select>
-                    <span
-                        style={{
-                            fontSize: ".78rem",
-                            color: "#374151",
-                            marginLeft: "auto",
-                            fontWeight: 500,
-                        }}
-                    >
-                        {tab === "today"
-                            ? filteredToday.length
-                            : tab === "monthly"
-                                ? filteredMonthly.length
-                                : filteredLeaves.length}{" "}
-                        results
-                    </span>
                 </div>
 
                 {/* ── Loading ── */}

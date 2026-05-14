@@ -109,8 +109,10 @@ const LeaveApproval = () => {
                                 {leaves.map(l => (
                                     <tr key={l._id}>
                                         <td style={{ fontWeight: 500 }}>
-                                            <div>{l.userName || "—"}</div>
-                                            <div style={{ fontSize: ".75rem", color: "var(--text-3)" }}>{l.employeeId || ""}</div>
+                                            <div>{l.userName || l.user?.name || "—"}</div>
+                                            <div style={{ fontSize: ".75rem", color: "#707070", }}>
+                                                {l.employeeId || l.user?.employeeId || ""}
+                                            </div>
                                         </td>
                                         <td style={{ textTransform: "capitalize" }}>{l.type}</td>
                                         <td>{new Date(l.fromDate).toLocaleDateString()}</td>
@@ -175,7 +177,7 @@ const LeaveApproval = () => {
                                                     </div>
                                                 )}
                                                 {user?.role === "hr" && l.tlApproval?.status !== "approved" && (
-                                                    <span style={{ fontSize: ".78rem", color: "var(--text-3)" }}>⏳ Awaiting TL</span>
+                                                    <span style={{ fontSize: ".78rem", color: "#707070", }}>⏳ Awaiting TL</span>
                                                 )}
 
                                                 {/* Manager */}

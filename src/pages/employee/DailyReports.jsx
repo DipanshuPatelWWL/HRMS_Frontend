@@ -87,6 +87,7 @@ function Badge({ status }) {
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 function StatCard({ label, value, color, active, onClick, loading }) {
+    const [hovered, setHovered] = useState(false);
     const palette = {
         blue: { border: "#3b82f6", bg: active ? "#eff6ff" : "#fff", shadow: "rgba(59,130,246,0.18)" },
         amber: { border: "#f59e0b", bg: active ? "#fffbeb" : "#fff", shadow: "rgba(245,158,11,0.18)" },
@@ -96,11 +97,19 @@ function StatCard({ label, value, color, active, onClick, loading }) {
     return (
         <div className="emp-stat-card" style={{
             backgroundColor: p.bg, borderRadius: 14,
-            boxShadow: active ? `0 0 0 2px ${p.border}, 0 8px 24px ${p.shadow}` : "0 1px 4px rgba(0,0,0,0.07)",
-            border: `1px solid ${active ? p.border : "#f3f4f6"}`,
+            boxShadow: active
+                ? `0 0 0 2px ${p.border}, 0 8px 24px ${p.shadow}`
+                : hovered
+                    ? "0 8px 24px rgba(0,0,0,0.1)"
+                    : "0 1px 4px rgba(0,0,0,0.07)",
             borderTop: `4px solid ${p.border}`,
+            borderRight: `1px solid ${active ? p.border : "#f3f4f6"}`,
+            borderBottom: `1px solid ${active ? p.border : "#f3f4f6"}`,
+            borderLeft: `1px solid ${active ? p.border : "#f3f4f6"}`,
             padding: 24, flex: 1, minWidth: 0, cursor: "pointer",
-        }} onClick={onClick}>
+            transform: hovered && !active ? "translateY(-3px)" : "none",
+            transition: "transform 0.2s, box-shadow 0.2s",
+        }} onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
             <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", color: "#6b7280", margin: "0 0 8px" }}>{label}</p>
             {loading
                 ? <div style={{ width: 64, height: 40, borderRadius: 8, backgroundColor: "#f3f4f6", animation: "pulse 1.5s ease-in-out infinite" }} />
@@ -1215,7 +1224,7 @@ export default function DailyReports() {
         fetchReports();
     }, [fetchReports,]);
 
-    const activeFilter = statCardFilter || statusFilter;
+    const activeFilter = statusFilter;
     const filtered = useMemo(
         () =>
             activeFilter
@@ -1249,10 +1258,10 @@ export default function DailyReports() {
     const pageSlice = filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
 
     const goPage = (p) => { if (p >= 1 && p <= totalPages) setCurrentPage(p); };
-    useEffect(() => { setCurrentPage(1); }, [statusFilter, statCardFilter]);
+    useEffect(() => { setCurrentPage(1); }, [statusFilter]);
 
-    const handleDropdownFilter = (val) => { setStatusFilter(val); setStatCardFilter(""); };
-    const handleStatCard = (filter) => { setStatCardFilter((prev) => prev === filter ? "" : filter); setStatusFilter(""); };
+    const handleDropdownFilter = (val) => { setStatusFilter(val); };
+    const handleStatCard = (filter) => { setStatusFilter((prev) => prev === filter ? "" : filter); };
 
     const openAdd = () => { setEditData(null); setEditId(null); setModalOpen(true); };
     const openEdit = (e, report) => { e.stopPropagation(); setEditData(report); setEditId(report._id); setModalOpen(true); };
@@ -1325,9 +1334,17 @@ export default function DailyReports() {
     const thStyle = { padding: "12px 20px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#9ca3af", textAlign: "left" };
     const thCenterStyle = { ...thStyle, textAlign: "center" };
 
+    useEffect(() => {
+        if (!document.head.querySelector("[data-daily-reports]")) {
+            const tag = document.createElement("style");
+            tag.setAttribute("data-daily-reports", "1");
+            tag.textContent = globalStyles;
+            document.head.appendChild(tag);
+        }
+    }, []);
+
     return (
         <DashboardLayout>
-            <style>{globalStyles}</style>
 
             <div style={{ minHeight: "100vh", backgroundColor: "#f1f5f9", padding: 24, fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
                 {/* Header */}
@@ -1345,9 +1362,9 @@ export default function DailyReports() {
 
                 {/* Stat Cards */}
                 <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
-                    <StatCard label="Total" value={total} color="blue" loading={loading} active={statCardFilter === "" && statusFilter === ""} onClick={() => handleStatCard("")} />
-                    <StatCard label="Pending" value={pending} color="amber" loading={loading} active={statCardFilter === "pending"} onClick={() => handleStatCard("pending")} />
-                    <StatCard label="Completed" value={completed} color="green" loading={loading} active={statCardFilter === "completed"} onClick={() => handleStatCard("completed")} />
+                    <StatCard label="Total" value={total} color="blue" loading={loading} active={statusFilter === ""} onClick={() => handleStatCard("")} />
+                    <StatCard label="Pending" value={pending} color="amber" loading={loading} active={statusFilter === "pending"} onClick={() => handleStatCard("pending")} />
+                    <StatCard label="Completed" value={completed} color="green" loading={loading} active={statusFilter === "completed"} onClick={() => handleStatCard("completed")} />
                 </div>
 
                 {/* Table Card */}
