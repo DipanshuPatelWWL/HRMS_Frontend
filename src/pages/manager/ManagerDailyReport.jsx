@@ -107,8 +107,9 @@ function StatCard({ label, value, accent, loading, active, onClick }) {
         <div className="mgr-stat-card" onClick={onClick} style={{
             background: C.white, borderRadius: 16, padding: '22px 24px',
             borderTop: `4px solid ${accent}`,
-            border: `1px solid ${active ? accent : C.slate200}`,
-            borderTopColor: accent,
+            borderRight: `1px solid ${active ? accent : C.slate200}`,
+            borderBottom: `1px solid ${active ? accent : C.slate200}`,
+            borderLeft: `1px solid ${active ? accent : C.slate200}`,
             boxShadow: active ? `0 0 0 3px ${accent}22` : '0 1px 4px rgba(0,0,0,0.06)',
             cursor: 'pointer', transition: 'all 0.2s', flex: 1, minWidth: 0,
         }}>
@@ -387,7 +388,7 @@ const ManagerDailyReport = () => {
     const [search, setSearch] = useState('')
     const [searchFocused, setSearchFocused] = useState(false)
     const [filterStatus, setFilterStatus] = useState('')
-    const [statFilter, setStatFilter] = useState('')
+    // const [statFilter, setStatFilter] = useState('')
     const [activeDept, setActiveDept] = useState('All')
     const [activeEmp, setActiveEmp] = useState('All')
     const [page, setPage] = useState(1)
@@ -435,7 +436,7 @@ const ManagerDailyReport = () => {
     }, [reports, activeDept])
 
     // ── Filtering ──
-    const activeStatusFilter = statFilter || filterStatus
+    const activeStatusFilter = filterStatus
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase()
@@ -460,7 +461,7 @@ const ManagerDailyReport = () => {
     }), [reports])
 
     // ── Pagination ──
-    useEffect(() => { setPage(1) }, [search, filterStatus, statFilter, activeDept, activeEmp, pageSize])
+    useEffect(() => { setPage(1) }, [search, filterStatus, activeDept, activeEmp, pageSize])
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
     const paginated = filtered.slice((page - 1) * pageSize, page * pageSize)
@@ -470,12 +471,11 @@ const ManagerDailyReport = () => {
 
     // ── Stat card click ──
     const handleStatClick = (key) => {
-        setStatFilter(prev => prev === key ? '' : key)
-        setFilterStatus('')
+        setFilterStatus(prev => prev === key ? '' : key)
     }
 
     // ── Status dropdown (toolbar) ──
-    const handleStatusFilter = (val) => { setFilterStatus(val); setStatFilter('') }
+    const handleStatusFilter = (val) => { setFilterStatus(val) }
 
     // ── Update report status (from detail modal) ──
     const handleStatusChange = async (id, status) => {
@@ -507,9 +507,9 @@ const ManagerDailyReport = () => {
 
                 {/* Stat Cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-                    <StatCard label="Total reports" value={stats.total} accent="#3b82f6" loading={loading} active={statFilter === '' && filterStatus === ''} onClick={() => handleStatClick('')} />
-                    <StatCard label="Pending" value={stats.pending} accent="#f59e0b" loading={loading} active={statFilter === 'pending'} onClick={() => handleStatClick('pending')} />
-                    <StatCard label="Completed" value={stats.completed} accent="#10b981" loading={loading} active={statFilter === 'completed'} onClick={() => handleStatClick('completed')} />
+                    <StatCard label="Total reports" value={stats.total} accent="#3b82f6" loading={loading} active={filterStatus === ''} onClick={() => handleStatClick('')} />
+                    <StatCard label="Pending" value={stats.pending} accent="#f59e0b" loading={loading} active={filterStatus === 'pending'} onClick={() => handleStatClick('pending')} />
+                    <StatCard label="Completed" value={stats.completed} accent="#10b981" loading={loading} active={filterStatus === 'completed'} onClick={() => handleStatClick('completed')} />
                 </div>
 
                 {/* Main Panel */}

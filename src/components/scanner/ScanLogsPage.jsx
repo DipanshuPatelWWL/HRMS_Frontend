@@ -402,7 +402,12 @@ export default function ScanLogsPage() {
                         {stats.deviceBreakdown?.[0] && (
                             <StatCard
                                 label="Top Device"
-                                value={stats.deviceBreakdown[0]._id || "Desktop"}
+                                value={
+                                    stats.deviceBreakdown[0]._id
+                                        ? stats.deviceBreakdown[0]._id.charAt(0).toUpperCase() +
+                                        stats.deviceBreakdown[0]._id.slice(1).toLowerCase()
+                                        : "Desktop"
+                                }
                                 icon="💻"
                                 color="#1d4ed8"
                             />

@@ -839,7 +839,7 @@ const HRHoliday = () => {
                     background: linear-gradient(135deg, #fd7e1422, #fff5f5) !important;
                     color: #c2410c !important;
                 }
-                .react-calendar__month-view__weekdays__weekday:first-child abbr,
+                .react-calendar__month-view__weekdays__weekday:nth-child(6) abbr,
                 .react-calendar__month-view__weekdays__weekday:last-child abbr {
                     color: #b91c1c !important;
                 }

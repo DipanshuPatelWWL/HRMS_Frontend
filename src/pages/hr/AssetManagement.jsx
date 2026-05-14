@@ -480,8 +480,6 @@ export default function AssetManagement() {
 
                 const usersJson = await usersRes.json();
 
-                console.log("Users Response:", usersJson);
-
                 if (usersJson.success) {
 
                     setEmployees(usersJson.users || []);
@@ -505,8 +503,6 @@ export default function AssetManagement() {
                 );
 
                 const deptJson = await deptRes.json();
-
-                console.log("Departments Response:", deptJson);
 
                 if (deptJson.success) {
 

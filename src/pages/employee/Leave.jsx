@@ -154,7 +154,7 @@ const Leave = () => {
                 }
                 .leave-balance-sub {
                     font-size: .72rem;
-                    color: #4ade80;
+                    color: #16ae4d;
                     margin-top: 2px;
                 }
                 .leave-balance-zero {

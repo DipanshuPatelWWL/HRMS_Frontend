@@ -193,6 +193,12 @@ const injectStyles = () => {
         border-color: #cbd5e1;
     }
 
+    /* SAT & SUN header labels → red */
+    .hc2-cal-card .react-calendar__month-view__weekdays__weekday:nth-child(6) abbr,
+    .hc2-cal-card .react-calendar__month-view__weekdays__weekday:last-child abbr {
+       color: #dc2626;
+    }
+
     /* Today */
     .hc2-cal-card .react-calendar__tile--now:not(.react-calendar__tile--active) {
         background: #EFF6FF;
