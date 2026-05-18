@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import Swal from "sweetalert2";
 
 const roleBadge = (role) => {
     const map = {
@@ -67,7 +68,12 @@ const EmployeeLeaves = () => {
             setSelected(null);
             fetchEmployees();
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to update");
+            Swal.fire({
+                icon: "error",
+                title: "Action Failed",
+                text: err.response?.data?.message || "Failed to update",
+                confirmButtonColor: "#EF4444",
+            });
         } finally {
             setSaving(false);
         }

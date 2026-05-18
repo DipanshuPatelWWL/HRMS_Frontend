@@ -407,6 +407,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Team</div>
                             <NavItem to="/tl/team" label="My Team" iconKey="team" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/tl/daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/leave-approval" label="Leave Approvals" iconKey="leaveApprove" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/team-attendance" label="Team Attendance" iconKey="attendanceOverview" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />

@@ -2,6 +2,7 @@ import { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import API, { BASE_URL, QR_CODE_URL } from "../../services/api";
+import Swal from "sweetalert2";
 
 // react-icons — lucide set
 import {
@@ -478,8 +479,24 @@ export default function Profile() {
     const handleAvatarPick = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (!file.type.startsWith("image/")) { alert("Please pick an image file."); return; }
-        if (file.size > 2 * 1024 * 1024) { alert("Image must be under 2MB."); return; }
+        if (!file.type.startsWith("image/")) {
+            Swal.fire({
+                icon: "warning",
+                title: "Invalid File",
+                text: "Please pick an image file.",
+                confirmButtonColor: "#6c63ff",
+            });
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            Swal.fire({
+                icon: "warning",
+                title: "File Too Large",
+                text: "Image must be under 2MB.",
+                confirmButtonColor: "#6c63ff",
+            });
+            return;
+        }
         setAvatarPreview(URL.createObjectURL(file));
         setAvatarLoading(true); setAvatarMsg(null);
         try {
@@ -1118,11 +1135,27 @@ export default function Profile() {
                                                     type="file"
                                                     accept="image/*,application/pdf"
                                                     style={{ display: "none" }}
-                                                    onChange={e => {
+                                                    onChange={async e => {
                                                         const f = e.target.files?.[0];
                                                         if (f) {
-                                                            const lbl = window.prompt("Enter a label for this document (e.g. 'NOC Certificate')", "Other Document") || "Other Document";
-                                                            handleDocUpload(f, "other", lbl);
+                                                            const { value: lbl, isConfirmed } = await Swal.fire({
+                                                                title: "Document Label",
+                                                                input: "text",
+                                                                inputLabel: "Enter a label for this document",
+                                                                inputPlaceholder: "e.g. NOC Certificate",
+                                                                inputValue: "Other Document",
+                                                                showCancelButton: true,
+                                                                confirmButtonText: "Upload",
+                                                                cancelButtonText: "Cancel",
+                                                                confirmButtonColor: "#6c63ff",
+                                                                cancelButtonColor: "#6b7280",
+                                                                inputValidator: (value) => {
+                                                                    if (!value?.trim()) return "Please enter a label";
+                                                                },
+                                                            });
+                                                            if (isConfirmed) {
+                                                                handleDocUpload(f, "other", lbl || "Other Document");
+                                                            }
                                                         }
                                                         e.target.value = "";
                                                     }}
