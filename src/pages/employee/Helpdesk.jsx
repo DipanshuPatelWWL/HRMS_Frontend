@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import API, { BASE_URL } from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import Swal from "sweetalert2";
 
 /* ─── Icons ──────────────────────────────────────────────────────────────── */
 const Icon = ({ d, size = 16, color = "currentColor" }) => (
@@ -856,7 +857,12 @@ const RaiseModal = ({ onClose, onCreated }) => {
             onCreated(res.data.ticket);
             onClose();
         } catch (err) {
-            setError(err.response?.data?.message || "Failed to raise ticket");
+            Swal.fire({
+                icon: "error",
+                title: "Send Failed",
+                text: err.response?.data?.message || "Failed to send reply",
+                confirmButtonColor: "#EF4444",
+            });
         } finally {
             setSubmitting(false);
         }
@@ -1011,7 +1017,12 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
             onUpdate(res.data.ticket);
             setReply("");
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to send reply");
+            Swal.fire({
+                icon: "error",
+                title: "Send Failed",
+                text: err.response?.data?.message || "Failed to send reply",
+                confirmButtonColor: "#EF4444",
+            });
         } finally {
             setSending(false);
         }
@@ -1025,14 +1036,39 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
     };
 
     const handleCloseTicket = async () => {
-        if (!window.confirm("Close this ticket?")) return;
+        const result = await Swal.fire({
+            title: "Close this ticket?",
+            text: "Once closed, no further replies can be added.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Close it",
+            cancelButtonText: "Cancel",
+            confirmButtonColor: "#6366F1",
+            cancelButtonColor: "#6b7280",
+        });
+
+        if (!result.isConfirmed) return;
+
         try {
             setClosing(true);
             const res = await API.put(`/tickets/${ticket._id}/close`);
             setTicket(res.data.ticket);
             onUpdate(res.data.ticket);
+            Swal.fire({
+                icon: "success",
+                title: "Ticket Closed",
+                text: "This ticket has been marked as closed.",
+                confirmButtonColor: "#6366F1",
+                timer: 2500,
+                timerProgressBar: true,
+            });
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to close ticket");
+            Swal.fire({
+                icon: "error",
+                title: "Failed",
+                text: err.response?.data?.message || "Failed to close ticket",
+                confirmButtonColor: "#EF4444",
+            });
         } finally {
             setClosing(false);
         }

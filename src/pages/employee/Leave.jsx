@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import Swal from "sweetalert2";
 
 /* ─── Status badge ──────────────────────────────────────────────── */
 const statusBadge = (s) => {
@@ -108,19 +109,49 @@ const Leave = () => {
             fetchLeaves();
             fetchLeaveBalance();
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to submit leave");
+            Swal.fire({
+                icon: "error",
+                title: "Submission Failed",
+                text: err.response?.data?.message || "Failed to submit leave",
+                confirmButtonColor: "#EF4444",
+            });
         } finally {
             setSubmitting(false);
         }
     };
 
     const handleDelete = async (id) => {
-        if (!confirm("Permanently delete this leave record?")) return;
+        const result = await Swal.fire({
+            title: "Delete Leave Record?",
+            text: "This leave record will be permanently deleted and cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Delete",
+            cancelButtonText: "Cancel",
+            confirmButtonColor: "#EF4444",
+            cancelButtonColor: "#6b7280",
+        });
+
+        if (!result.isConfirmed) return;
+
         try {
             await API.delete(`/leave/${id}`);
             fetchLeaves();
+            Swal.fire({
+                icon: "success",
+                title: "Deleted",
+                text: "Leave record has been deleted successfully.",
+                confirmButtonColor: "#6366F1",
+                timer: 2500,
+                timerProgressBar: true,
+            });
         } catch (err) {
-            alert(err.response?.data?.message || "Cannot delete this leave");
+            Swal.fire({
+                icon: "error",
+                title: "Delete Failed",
+                text: err.response?.data?.message || "Cannot delete this leave",
+                confirmButtonColor: "#EF4444",
+            });
         }
     };
 

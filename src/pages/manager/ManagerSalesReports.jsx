@@ -10,6 +10,7 @@ import {
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import Swal from 'sweetalert2'
 
 const C = {
     indigo: '#4f46e5', indigoDark: '#3730a3', indigoLight: '#eef2ff', indigoBorder: '#a5b4fc',
@@ -828,7 +829,12 @@ const DownloadModal = ({ open, onClose, reports, salesUsers }) => {
         try {
             const filtered = applyFilters()
             if (filtered.length === 0) {
-                alert('No records match the selected filters.')
+                await Swal.fire({
+                    icon: 'warning',
+                    title: 'No records found',
+                    text: 'No records match the selected filters. Please adjust your filters and try again.',
+                    confirmButtonColor: '#4f46e5',
+                })
                 setDownloading(false)
                 return
             }
@@ -893,7 +899,12 @@ const DownloadModal = ({ open, onClose, reports, salesUsers }) => {
             onClose()
         } catch (err) {
             console.error(err)
-            alert('Download failed. Please try again.')
+            Swal.fire({
+                icon: 'error',
+                title: 'Download failed',
+                text: 'Something went wrong while generating the file. Please try again.',
+                confirmButtonColor: '#4f46e5',
+            })
         } finally {
             setDownloading(false)
         }
@@ -1116,6 +1127,17 @@ const ManagerSalesReports = () => {
 
     const handleApprove = async (e, id) => {
         e.stopPropagation()
+        const result = await Swal.fire({
+            title: 'Approve this report?',
+            text: 'The report will be marked as approved and can then be assigned to a BDE/BDM.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#047857',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, approve',
+            cancelButtonText: 'Cancel',
+        })
+        if (!result.isConfirmed) return
         setActioningId(id)
         try {
             const { data } = await API.put(`/manager/review/${id}`, { review_status: 'approved' })
