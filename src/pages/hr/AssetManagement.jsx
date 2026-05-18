@@ -11,7 +11,7 @@ import {
 } from "../../services/assetsServices";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { HistoryTimeline } from "../../components/common/AssetShared";
-import { BASE_URL } from "../../services/api";
+import API, { BASE_URL } from "../../services/api";
 
 // ─── Inline CSS ──────────────────────────────────────────────────────────────
 
@@ -47,14 +47,14 @@ style.textContent = `
   .am-row-hover:hover { background: #f7faf9 !important; }
   .am-btn-ghost {
     background: none; border: 1px solid #e2e8f0; border-radius: 7px;
-    padding: 5px 12px; font-size: 12px; cursor: pointer; color: #4a5568;
+    padding: 5px 12px; font-size: 12px; cursor: pointer; color: #404347;
     transition: background .18s, border-color .18s, color .18s;
   }
   .am-btn-ghost:hover { background: #f0faf6; border-color: #1D9E75; color: #1D9E75; }
   .am-icon-btn {
     background: none; border: none; cursor: pointer; padding: 6px;
     border-radius: 6px; display: inline-flex; align-items: center;
-    color: #718096; transition: background .15s, color .15s;
+    color: #45484d; transition: background .15s, color .15s;
   }
   .am-icon-btn:hover { background: #edf2f7; color: #1D9E75; }
   .am-search-input {
@@ -97,12 +97,12 @@ style.textContent = `
   .am-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
   .am-table th {
     padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .06em; color: #718096;
+    text-transform: uppercase; letter-spacing: .06em; color: #3f4347;
     border-bottom: 1.5px solid #edf2f7; background: #f8fafc; white-space: nowrap;
   }
   .am-table td {
     padding: 13px 14px; border-bottom: 1px solid #f0f4f8;
-    vertical-align: middle; color: #2d3748;
+    vertical-align: middle; color: #2f3135;
   }
   .am-table tbody tr {
     transition: background .15s;
@@ -115,13 +115,16 @@ style.textContent = `
   }
   .am-input:focus { border-color: #1D9E75; box-shadow: 0 0 0 3px rgba(29,158,117,.1); }
   select.am-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
-  .am-label { font-size: 11.5px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 5px; }
-  .am-card { background: #fff; border: 1px solid #edf2f7; border-radius: 12px; }
+  .am-label { font-size: 11.5px; font-weight: 600; color: #434649; text-transform: uppercase; letter-spacing: .04em; display: block; margin-bottom: 5px; }
+  .am-card { background: #fff; border: 1px solid #a4b4c4; border-radius: 12px; }
 `;
 if (!document.head.querySelector("style[data-am]")) {
     style.setAttribute("data-am", "1");
     document.head.appendChild(style);
 }
+
+const toUrl = (path) =>
+    !path ? "" : path.startsWith("http") ? path : `${BASE_URL}/${path.replace(/^\//, "")}`;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -462,73 +465,35 @@ export default function AssetManagement() {
     useEffect(() => {
 
         const fetchData = async () => {
-
             try {
-
-                const token = localStorage.getItem("token");
-
                 // ─── Fetch Employees ─────────────────────────────
-                const usersRes = await fetch(
-                    `${BASE_URL}/users?role=employee,hr,manager`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                const usersRes = await API.get("/users?role=employee,hr,manager");
 
-                const usersJson = await usersRes.json();
-
-                if (usersJson.success) {
-
-                    setEmployees(usersJson.users || []);
-
+                if (usersRes.data.success) {
+                    setEmployees(usersRes.data.users || []);
                 } else {
-
                     setEmployees([]);
-
                 }
 
                 // ─── Fetch Departments ───────────────────────────
-                const deptRes = await fetch(
-                    `${BASE_URL}/tasks/departments`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                const deptRes = await API.get("/tasks/departments");
 
-                const deptJson = await deptRes.json();
-
-                if (deptJson.success) {
-
+                if (deptRes.data.success) {
                     setDepartments([
                         "All",
-                        ...(deptJson.departments || [])
+                        ...(deptRes.data.departments || [])
                     ]);
-
                 } else {
-
                     setDepartments(["All"]);
-
                 }
 
             } catch (error) {
 
                 console.error("Dropdown fetch error:", error);
-
                 setEmployees([]);
                 setDepartments(["All"]);
-
             } finally {
-
                 setListLoading(false);
-
             }
         };
 
@@ -694,7 +659,7 @@ export default function AssetManagement() {
                             {/* Desk & password row */}
                             <div style={{
                                 marginTop: 16, paddingTop: 16,
-                                borderTop: "1px solid #edf2f7",
+                                borderTop: "1px solid #aecff0",
                                 display: "flex", gap: 14, flexWrap: "wrap",
                             }}>
                                 <InfoPill
@@ -726,8 +691,8 @@ export default function AssetManagement() {
                         }}>
                             <span style={{
                                 fontSize: 11.5, fontWeight: 700,
-                                textTransform: "uppercase", letterSpacing: ".07em",
-                                color: "#718096",
+                                textTransform: "uppercase", letterSpacing: ".04em",
+                                color: "#53575e",
                             }}>
                                 Assigned Assets ({empData.assets?.length})
                             </span>
@@ -941,7 +906,7 @@ export default function AssetManagement() {
                         {detailAsset.photoUrl && (
                             <div style={{ marginBottom: 18, textAlign: "center" }}>
                                 <img
-                                    src={`${BASE_URL}/${detailAsset.photoUrl.replace(/\\/g, "/")}`}
+                                    src={toUrl(detailAsset.photoUrl.replace(/\\/g, "/"))}
                                     alt="Asset"
                                     style={{
                                         maxWidth: "100%", maxHeight: 180,

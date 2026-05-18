@@ -143,6 +143,9 @@ const COND = {
     Fair: { bg: "#FEF9C3", color: "#854d0e", dot: "#ca8a04" },
 };
 
+const toUrl = (path) =>
+    !path ? "" : path.startsWith("http") ? path : `${BASE_URL}/${path.replace(/^\//, "")}`;
+
 /* ─── SVG Icons ──────────────────────────────────────────────────────────── */
 const Icons = {
     Laptop: ({ size = 20 }) => (
@@ -331,7 +334,7 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
                     {asset.photoUrl && (
                         <div style={{ marginBottom: 20 }}>
                             <img
-                                src={`${BASE_URL}/${asset.photoUrl.replace(/\\/g, "/")}`}
+                                src={toUrl(asset.photoUrl)}
                                 alt={asset.name}
                                 style={{
                                     width: "100%", maxHeight: 200, borderRadius: 12,

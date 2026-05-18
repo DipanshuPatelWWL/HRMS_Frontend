@@ -733,6 +733,10 @@ const css = `
 `;
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
+
+const toUrl = (path) =>
+    !path ? "" : path.startsWith("http") ? path : `${BASE_URL}/${path.replace(/^\//, "")}`;
+
 const initials = (name = "") =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
@@ -1105,13 +1109,13 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                             {ticket.attachments.map((att, i) => (
                                 <a
                                     key={i}
-                                    href={`${BASE_URL}${att.url}`}
+                                    href={toUrl(att.url)}
                                     target="_blank"
                                     rel="noreferrer"
                                     style={{ display: "block", borderRadius: 8, overflow: "hidden", border: "1.5px solid #94A3B8", width: 72, height: 72, flexShrink: 0 }}
                                 >
                                     <img
-                                        src={`${BASE_URL}${att.url}`}
+                                        src={toUrl(att.url)}
                                         alt={att.originalName}
                                         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                                     />

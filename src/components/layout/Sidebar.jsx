@@ -163,6 +163,13 @@ const SIDEBAR_STYLES = `
     position: relative;
   }
 
+ .sidebar-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    background: transparent !important;
+}
+
   .sidebar-collapsed .nav-item:hover::after {
     content: attr(title);
     position: absolute;
@@ -317,12 +324,31 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
         <div className={sidebarClass}>
             {/* ── Brand ── */}
             <div className="sidebar-brand">
-                <div className="sidebar-logo">HR</div>
-                <span className="sidebar-title" style={{ color: "#0a0a0a" }}>HRMS</span>
+                <img
+                    src="/logo4.png"
+                    alt="HRMS Logo"
+                    className="sidebar-logo"
+                />
 
-                <button className="sidebar-close" onClick={onClose} aria-label="Close menu">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <span className="sidebar-title" style={{ color: "#0a0a0a" }}>
+                    HRMS
+                </span>
+
+                <button
+                    className="sidebar-close"
+                    onClick={onClose}
+                    aria-label="Close menu"
+                >
+                    <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
                         <path d="M18 6L6 18M6 6l12 12" />
                     </svg>
                 </button>

@@ -51,11 +51,15 @@ const normalizeReport = (report) => {
     const normalized = filePath.replace(/\\/g, "/");
     const clean = normalized.startsWith("/") ? normalized.slice(1) : normalized;
     const isImg = clean && /\.(png|jpg|jpeg|gif|webp)$/i.test(clean);
+
+    const toUrl = (path) =>
+        !path ? "" : path.startsWith("http") ? path : `${BASE_URL}/${path.replace(/^\//, "")}`;
+
     return {
         ...report,
         fileName: clean ? clean.split("/").pop() : "",
-        filePreview: clean && isImg ? `${BASE_URL}/${clean}` : null,
-        fileUrl: clean ? `${BASE_URL}/${clean}` : null,
+        filePreview: clean && isImg ? toUrl(clean) : null,
+        fileUrl: clean ? toUrl(clean) : null,
     };
 };
 
@@ -837,7 +841,7 @@ function DetailModal({ report, onClose }) {
                                 }}
                             >
                                 <img
-                                    src={`${BASE_URL}/report.filePreview`}
+                                    src={report.filePreview}
                                     alt="preview"
                                     style={{
                                         width: "100%",

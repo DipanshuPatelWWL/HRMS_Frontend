@@ -172,7 +172,7 @@ export default function PublicProfile() {
     const theme = getTheme(emp.role);
     const initials = emp.name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?";
     const avatarSrc = emp.avatar
-        ? (emp.avatar.startsWith("http") ? emp.avatar : `${BASE_URL}${emp.avatar}`)
+        ? (emp.avatar.startsWith("http") ? emp.avatar : `${BASE_URL}/${emp.avatar}`)
         : null;
 
     return (

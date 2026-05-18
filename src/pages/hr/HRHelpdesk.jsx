@@ -629,6 +629,9 @@ const css = `
 const initials = (name = "") =>
     name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
+const toUrl = (path) =>
+    !path ? "" : path.startsWith("http") ? path : `${BASE_URL}/${path.replace(/^\//, "")}`;
+
 const timeAgo = (date) => {
     const diff = (Date.now() - new Date(date)) / 1000;
     if (diff < 60) return "just now";
@@ -826,7 +829,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                             {ticket.attachments.map((att, i) => (
                                 <a
                                     key={i}
-                                    href={`${BASE_URL}${att.url}`}
+                                    href={toUrl(att.url)}
                                     target="_blank"
                                     rel="noreferrer"
                                     style={{
@@ -839,7 +842,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                                     onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
                                 >
                                     <img
-                                        src={`${BASE_URL}${att.url}`}
+                                        src={toUrl(att.url)}
                                         alt={att.originalName}
                                         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                                     />

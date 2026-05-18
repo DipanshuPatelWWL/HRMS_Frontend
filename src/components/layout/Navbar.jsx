@@ -167,47 +167,6 @@ const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
 
                     <span className="user-chip-name">{user?.name}</span>
 
-                    {user?.role === "tl" && (
-                        <span style={{
-                            fontSize: ".68rem",
-                            fontWeight: 700,
-                            background: "var(--brand-light)",
-                            color: "var(--brand)",
-                            padding: ".15rem .4rem",
-                            borderRadius: "999px",
-                            letterSpacing: ".03em",
-                        }}>
-                            TL
-                        </span>
-                    )}
-
-                    {user?.role === "hr" && (
-                        <span style={{
-                            fontSize: ".68rem",
-                            fontWeight: 700,
-                            background: "#dcfce7",
-                            color: "#16a34a",
-                            padding: ".15rem .4rem",
-                            borderRadius: "999px",
-                            letterSpacing: ".03em",
-                        }}>
-                            HR
-                        </span>
-                    )}
-
-                    {user?.role === "manager" && (
-                        <span style={{
-                            fontSize: ".68rem",
-                            fontWeight: 700,
-                            background: "#fef3c7",
-                            color: "#d97706",
-                            padding: ".15rem .4rem",
-                            borderRadius: "999px",
-                            letterSpacing: ".03em",
-                        }}>
-                            MGR
-                        </span>
-                    )}
                 </div>
             </div>
         </div>

@@ -28,7 +28,7 @@ const getInitials = (name = '') => name.split(' ').map(w => w[0]).slice(0, 2).jo
 const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 const isPdf = (f = '') => f.toLowerCase().endsWith('.pdf')
 const isImage = (f = '') => /\.(png|jpg|jpeg|gif|webp)$/i.test(f)
-const fixPath = (f = '') => `${BASE_URL}/${f.replace(/\\/g, '/')}`
+const fixPath = (f = '') => `${BASE_URL}/${f.replace(/\\/g, '/').replace(/^\//, '')}`
 
 // ── Injected global styles ────────────────────────────────────────────────────
 const STYLES = `

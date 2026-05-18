@@ -45,6 +45,9 @@ const bankValidators = {
     },
 };
 
+const toUrl = (path) =>
+    !path ? "" : path.startsWith("http") ? path : `${BASE_URL}/${path.replace(/^\//, "")}`;
+
 /* ════════════════════════════════════════
    DESIGN TOKENS
 ════════════════════════════════════════ */
@@ -327,15 +330,7 @@ export default function Profile() {
         .toUpperCase()
         .slice(0, 2) || "U";
 
-    const getAvatarSrc = () => {
-        if (!user?.avatar) return null;
-
-        if (user.avatar.startsWith("http")) {
-            return user.avatar;
-        }
-
-        return `${BASE_URL}${user.avatar}`;
-    };
+    const getAvatarSrc = () => toUrl(user?.avatar || "") || null;
 
     const [tab, setTab] = useState("overview");
 
@@ -490,7 +485,7 @@ export default function Profile() {
         try {
             const fd = new FormData(); fd.append("avatar", file);
             const { data } = await API.post("/users/me/avatar", fd);
-            setAvatarPreview(`${BASE_URL}${data.avatarUrl}`);
+            setAvatarPreview(toUrl(data.avatarUrl));
             if (setUser) setUser(data.user);
             setAvatarMsg({ type: "success", text: "Photo updated!" });
         } catch (err) {
@@ -1072,7 +1067,7 @@ export default function Profile() {
 
                                                                 {hasFile && (
                                                                     <a
-                                                                        href={`${BASE_URL}${d.url}`}
+                                                                        href={toUrl(d.url)}
                                                                         target="_blank"
                                                                         rel="noreferrer"
                                                                         style={{ fontSize: 12, color: T.accent, fontWeight: 600, fontFamily: ff, textDecoration: "none" }}
@@ -1103,7 +1098,7 @@ export default function Profile() {
                                                                 ? <Pill color={T.success} bg={T.successLight}>✓ Verified</Pill>
                                                                 : <Pill color={T.warn} bg={T.warnLight}>⏳ Under Process</Pill>}
                                                             <a
-                                                                href={`${BASE_URL}${od.url}`}
+                                                                href={toUrl(od.url)}
                                                                 target="_blank"
                                                                 rel="noreferrer"
                                                                 style={{ fontSize: 12, color: T.accent, fontWeight: 600, fontFamily: ff, textDecoration: "none" }}

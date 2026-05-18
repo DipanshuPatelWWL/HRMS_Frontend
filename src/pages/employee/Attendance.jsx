@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import AttendanceModal from "../../components/common/AttendanceModal";
@@ -186,24 +186,24 @@ const css = `
 .cal-cell.s-weekend { background:#F3E8FF; border-color:#D8B4FE; color:#6B21A8; font-weight:600; }
 .cal-cell.s-late    { background:#FEE2E2; border-color:#FCA5A5; color:#7F1D1D; font-weight:700; }
 .cal-cell.s-halfday { background:#FEF3C7; border-color:#FCD34D; color:#78350F; font-weight:700; }
-.cal-cell.s-holiday { background:#DBEAFE; border-color:#60A5FA; color:#1E3A8A; font-weight:700; }
+.cal-cell.s-holiday { background:#FDF4FF; border-color:#D946EF; color:#701A75; font-weight:700;  }
 .cal-cell.is-today  { box-shadow: 0 0 0 2.5px #6366F1, 0 2px 8px rgba(99,102,241,.2) !important; border-color:#6366F1 !important; }
 .cal-cell.is-today.no-status { background:#EEF2FF; color:#3730A3; font-weight:700; }
-.cal-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
-.cal-cell.s-present  .cal-dot { background:#059669; }
-.cal-cell.s-late     .cal-dot { background:#DC2626; }
-.cal-cell.s-halfday  .cal-dot { background:#D97706; }
-.cal-cell.s-holiday  .cal-dot { background:#2563EB; }
-.cal-cell.s-weekend  .cal-dot { background:#7C3AED; }
-.cal-cell.s-absent   .cal-dot { background:#85b2f5; }
-.cal-cell.is-today.no-status .cal-dot { background:#6366F1; }
+.cal-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 1.5px rgba(0,0,0,.08); }
+.cal-cell.s-present  .cal-dot { background:#047857; }
+.cal-cell.s-late     .cal-dot { background:#B91C1C; }
+.cal-cell.s-halfday  .cal-dot { background:#B45309; }
+.cal-cell.s-holiday  .cal-dot { background:#D946EF; }
+.cal-cell.s-weekend  .cal-dot { background:#6D28D9; }
+.cal-cell.s-absent   .cal-dot { background:#3B6CB7; }
+.cal-cell.is-today.no-status .cal-dot { background:#4338CA; }
 .cal-legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:14px; padding-top:12px; border-top:1.5px solid #F0F1F5; }
 .leg-item { display:flex; align-items:center; gap:6px; font-size:.73rem; font-weight:600; color:#374151; }
 .leg-swatch { width:14px; height:14px; border-radius:4px; border:1.5px solid transparent; flex-shrink:0; }
 .leg-swatch.present { background:#D1FAE5; border-color:#6EE7B7; }
 .leg-swatch.late    { background:#FEE2E2; border-color:#FCA5A5; }
 .leg-swatch.halfday { background:#FEF3C7; border-color:#FCD34D; }
-.leg-swatch.holiday { background:#DBEAFE; border-color:#60A5FA; }
+.leg-swatch.holiday { background:#FDF4FF; border-color:#D946EF; }
 .leg-swatch.weekend { background:#F3E8FF; border-color:#D8B4FE; }
 .leg-swatch.absent  { background:#c5d6f3; border-color:#85b2f5; }
 .leg-swatch.today   { background:#EEF2FF; border-color:#6366F1; }
@@ -268,6 +268,10 @@ const isWeekend = (date) => {
     return day === 0 || day === 6;
 };
 
+const IS_DEV = import.meta.env.DEV;
+const OFFICE_LAT = 28.61597;
+const OFFICE_LNG = 77.37919;
+
 const Attendance = () => {
     const now = new Date();
     const [todayRec, setTodayRec] = useState(null);
@@ -278,27 +282,31 @@ const Attendance = () => {
     const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
     const [viewYear, setViewYear] = useState(now.getFullYear());
     const [monthlySummary, setMonthlySummary] = useState(null);
+    const viewMonthRef = useRef(now.getMonth() + 1);
+    const viewYearRef = useRef(now.getFullYear());
+
+    useEffect(() => { viewMonthRef.current = viewMonth; }, [viewMonth]);
+    useEffect(() => { viewYearRef.current = viewYear; }, [viewYear]);
 
     const todayDay = now.getDate();
     const todayMonth = now.getMonth() + 1;
     const todayYear = now.getFullYear();
     const { user } = useContext(AuthContext);
 
+
     const fetchToday = async () => {
         try {
             const r = await API.get("/attendance/today");
             const rec = r.data.attendance;
             if (Array.isArray(rec)) {
-                // Priority 1: open session (punched in, not yet out)
                 const open = rec.find(a => a.punchIn && !a.punchOut);
-                // Priority 2: any record with punchIn today (completed or half-day)
                 const completed = rec.find(a => a.punchIn && a.punchOut);
-                // Priority 3: last record as fallback
                 setTodayRec(open || completed || rec[rec.length - 1]);
             } else {
                 setTodayRec(rec);
             }
-        } catch { /* silent */ }
+        } catch {
+        }
     };
 
     const fetchMonthly = async (m, y) => {
@@ -333,7 +341,9 @@ const Attendance = () => {
         }
         localStorage.setItem("punchQueue", JSON.stringify(failed));
         if (!failed.length) localStorage.removeItem("punchQueue");
-        fetchToday(); fetchMonthly(viewMonth, viewYear);
+        // Use refs — not stale closure values
+        fetchToday();
+        fetchMonthly(viewMonthRef.current, viewYearRef.current);
     };
 
     useEffect(() => {
@@ -343,7 +353,8 @@ const Attendance = () => {
 
         const onFocus = () => {
             fetchToday();
-            fetchMonthly(viewMonth, viewYear);
+            // Reads from ref — always the current month/year
+            fetchMonthly(viewMonthRef.current, viewYearRef.current);
         };
         window.addEventListener("focus", onFocus);
 
@@ -363,39 +374,50 @@ const Attendance = () => {
         fetchHolidays(viewMonth, viewYear);
     }, [viewMonth, viewYear]);
 
-    // ✅ FIX: GPS accuracy check — block BAD accuracy (>100m = weak signal)
-    // Backend blocks accuracy < 5 (suspiciously perfect = mock GPS)
-    // Frontend blocks accuracy > 100 (too weak = bad GPS)
+    const doPunchIn = async (latitude, longitude, accuracy) => {
+        try {
+            setLoading(true);
+            await API.post("/attendance/punch-in", {
+                lat: latitude,
+                lng: longitude,
+                accuracy,
+                deviceId: navigator.userAgent,
+            });
+            await Promise.all([
+                fetchToday(),
+                fetchMonthly(viewMonth, viewYear),
+            ]);
+        } catch (e) {
+            const msg = e.response?.data?.message || "Punch-in failed";
+            alert(msg);
+            await fetchToday();
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handlePunchIn = () => {
         if (!navigator.onLine) { saveOfflinePunch("punch-in"); return; }
+
+        // In dev: skip GPS entirely, spoof office coordinates
+        if (IS_DEV) {
+            doPunchIn(OFFICE_LAT, OFFICE_LNG, 10);
+            return;
+        }
+
         navigator.geolocation.getCurrentPosition(
             async ({ coords: { latitude, longitude, accuracy } }) => {
-                // ✅ FIX: was "< 3" which blocked almost every real device
-                if (accuracy > 100) {
+                // Match backend threshold (150m)
+                if (accuracy > 150) {
                     alert("GPS signal too weak. Please move to an open area and try again.");
                     return;
                 }
-                try {
-                    setLoading(true);
-                    await API.post("/attendance/punch-in", {
-                        lat: latitude,
-                        lng: longitude,
-                        accuracy,
-                        deviceId: navigator.userAgent,
-                    });
-                    fetchToday();
-                    fetchMonthly(viewMonth, viewYear);
-                } catch (e) {
-                    const msg = e.response?.data?.message || "Punch-in failed";
-                    alert(msg);
-                    // ✅ FIX: Always re-fetch today on failure — device may have stale state
-                    // This re-syncs the button state if punched in from another device
-                    fetchToday();
-                } finally {
-                    setLoading(false);
-                }
+                doPunchIn(latitude, longitude, accuracy);
             },
-            () => alert("Location permission required to punch in."),
+            (err) => {
+                console.error("Geolocation error:", err);
+                alert("Location permission required to punch in.");
+            },
             { enableHighAccuracy: true, timeout: 10000 }
         );
     };
@@ -405,10 +427,14 @@ const Attendance = () => {
         try {
             setLoading(true);
             await API.post("/attendance/punch-out");
-            fetchToday();
-            fetchMonthly(viewMonth, viewYear);
+            // Await both so calendar + history update atomically
+            await Promise.all([
+                fetchToday(),
+                fetchMonthly(viewMonth, viewYear),
+            ]);
         } catch (e) {
             alert(e.response?.data?.message || "Punch-out failed");
+            await fetchToday();
         } finally {
             setLoading(false);
         }
@@ -511,7 +537,11 @@ const Attendance = () => {
     const getHoliday = (day) =>
         holidays.find(h => {
             const dt = new Date(h.date);
-            return dt.getDate() === day && dt.getMonth() + 1 === viewMonth && dt.getFullYear() === viewYear;
+            const istOffset = 5.5 * 60 * 60 * 1000;
+            const istDate = new Date(dt.getTime() + istOffset);
+            return istDate.getUTCDate() === day &&
+                istDate.getUTCMonth() + 1 === viewMonth &&
+                istDate.getUTCFullYear() === viewYear;
         });
 
     const isToday = (day) => day === todayDay && viewMonth === todayMonth && viewYear === todayYear;
@@ -571,19 +601,20 @@ const Attendance = () => {
 
     return (
         <>
-            <style>
-                {`
-                ${css}
-                /* ── Spinner ── */
-                .spinner {
-                    width: 14px; height: 14px;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    border-top-color: white;
-                    border-radius: 50%;
-                    display: inline-block;
-                    animation: spin 0.6s linear infinite;
-                    margin-right: 6px;
-                }`}
+            <style>{`
+    ${css}
+    .spinner {
+        width: 14px; height: 14px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        display: inline-block;
+        animation: spin 0.6s linear infinite;
+        margin-right: 6px;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }`}
             </style>
             <DashboardLayout>
                 <div className="att-root">
@@ -656,13 +687,15 @@ const Attendance = () => {
                         <div className="punch-btns">
                             <button
                                 onClick={handlePunchIn}
-                                // ✅ FIX: disable only if already punched in (has punchIn but no punchOut)
-                                disabled={loading || (!!todayRec?.punchIn && !todayRec?.punchOut)}
+                                disabled={loading || !!todayRec?.punchIn}
                                 className="btn-punch btn-punchin"
                             >
                                 <Icon d={icons.login} size={15} color="#052e16" />
-                                {loading ? <><span className="spinner" /> Punching In...</>
-                                    : navigator.onLine ? "Punch In" : "Punch In (Offline)"}
+                                {loading
+                                    ? <><span className="spinner" /> Punching In...</>
+                                    : IS_DEV
+                                        ? "Punch In "
+                                        : navigator.onLine ? "Punch In" : "Punch In (Offline)"}
                             </button>
                             <button
                                 onClick={navigator.onLine ? handlePunchOut : () => saveOfflinePunch("punch-out")}
@@ -845,10 +878,10 @@ const Attendance = () => {
                                     let sCls = "";
                                     const isBeforeJoining = joiningDate && currentDate < joiningDate;
 
-                                    if (isFuture && !holiday) {
-                                        sCls = "";
-                                    } else if (holiday) {
+                                    if (holiday) {
                                         sCls = "s-holiday";
+                                    } else if (isFuture) {
+                                        sCls = "";
                                     } else if (weekend) {
                                         sCls = "s-weekend";
                                     } else if (rec) {
@@ -870,9 +903,9 @@ const Attendance = () => {
                                     // const isBeforeJoining = joiningDate && currentDate < joiningDate;
 
                                     const hasRecord =
-                                        !isFuture &&
                                         !isBeforeJoining &&
-                                        !!(rec || holiday || weekend || sCls === "s-absent");
+                                        !!(rec || holiday || (!isFuture && (weekend || sCls === "s-absent")));
+
                                     const noStatus = !sCls ? "no-status" : "";
 
                                     const cls = ["cal-cell", sCls, today ? "is-today" : "", noStatus, hasRecord ? "has-record" : ""]
@@ -885,7 +918,8 @@ const Attendance = () => {
                                             onClick={() => {
                                                 const isBeforeJoining = joiningDate && currentDate < joiningDate;
 
-                                                if (isFuture || isBeforeJoining) return;
+                                                if (isBeforeJoining) return;
+                                                if (isFuture && !holiday) return;
 
                                                 if (holiday) {
                                                     setSelected({ ...holiday, type: "holiday", date: holiday.date || currentDate.toISOString() });

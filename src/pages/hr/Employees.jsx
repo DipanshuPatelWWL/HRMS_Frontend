@@ -19,6 +19,9 @@ const getDaysInMonth = (year, month) => {
     return new Date(y, m, 0).getDate();
 };
 
+const toUrl = (path) =>
+    !path ? "" : path.startsWith("http") ? path : `${BASE_URL}/${path.replace(/^\//, "")}`;
+
 const getRoleLabel = (role) => {
     if (!role) return "—";
     const r = role.toLowerCase();
@@ -603,7 +606,7 @@ const GovernmentIdTab = ({ employeeId }) => {
 
                                 <div style={{ display: "flex", gap: 8 }}>
                                     <a
-                                        href={`${BASE_URL}${d.url}`}
+                                        href={toUrl(d.url)}
                                         target="_blank"
                                         rel="noreferrer"
                                         style={{
@@ -686,7 +689,7 @@ const GovernmentIdTab = ({ employeeId }) => {
 
                             <div style={{ display: "flex", gap: 8 }}>
                                 <a
-                                    href={`${BASE_URL}${od.url}`}
+                                    href={toUrl(od.url)}
                                     target="_blank"
                                     rel="noreferrer"
                                     style={{
@@ -2054,7 +2057,8 @@ const Employees = () => {
                                                         </p>
                                                     </div>
                                                     <div style={{ display: "flex", gap: 8 }}>
-                                                        <a href={`${BASE_URL}${d.url}`} target="_blank" rel="noreferrer"
+                                                        <a href={toUrl(d.url)}
+                                                            target="_blank" rel="noreferrer"
                                                             style={{ fontSize: 12, color: "#6c63ff", fontWeight: 600, textDecoration: "none" }}>
                                                             View
                                                         </a>
@@ -2087,7 +2091,7 @@ const Employees = () => {
                                                     </p>
                                                 </div>
                                                 <div style={{ display: "flex", gap: 8 }}>
-                                                    <a href={`${BASE_URL}${od.url}`} target="_blank" rel="noreferrer"
+                                                    <a href={toUrl(od.url)} target="_blank" rel="noreferrer"
                                                         style={{ fontSize: 12, color: "#6c63ff", fontWeight: 600, textDecoration: "none" }}>
                                                         View
                                                     </a>

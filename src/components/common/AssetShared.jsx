@@ -93,7 +93,9 @@ export const AssetCard = ({ asset, onHistory, onCondChange, onPhotoUpload }) => 
             borderBottom: "1px solid #eee",
         }}>
             {asset.photoUrl
-                ? <img src={`${BASE_URL}/${asset.photoUrl}`} alt={asset.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ? <img
+                    src={`${BASE_URL}/${asset.photoUrl.replace(/^\//, "")}`}
+                    alt={asset.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 : <span style={{ fontSize: 36, opacity: 0.3 }}>📦</span>
             }
             <span style={{

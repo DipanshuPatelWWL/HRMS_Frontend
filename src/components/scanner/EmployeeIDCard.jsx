@@ -76,7 +76,9 @@ const CardHeader = ({ logoImg }) => (
             padding: "14px 14px 0",
         }}>
             {logoImg
-                ? <img src={`${BASE_URL}/logoImg`} alt="World WebLogic" style={{ height: 48, maxWidth: 180, objectFit: "contain" }} />
+                ? <img
+                    src={logoImg}
+                    alt="World WebLogic" style={{ height: 48, maxWidth: 180, objectFit: "contain" }} />
                 : <GlobeMark size={34} />
             }
         </div>
@@ -96,9 +98,9 @@ const CardHeader = ({ logoImg }) => (
 /* ════════════════════════════════════════
    FRONT FACE
 ════════════════════════════════════════ */
-function CardFront({ user, logoImg, BASE_URL }) {
+function CardFront({ user, logoImg }) {
     const avatarSrc = user?.avatar
-        ? (user.avatar.startsWith("http") ? user.avatar : `${BASE_URL}${user.avatar}`)
+        ? (user.avatar.startsWith("http") ? user.avatar : `${BASE_URL}/${user.avatar}`)
         : null;
 
     const joiningDate = user?.joiningDate
@@ -372,7 +374,7 @@ function CardBack({ user, logoImg }) {
 /* ════════════════════════════════════════
    MAIN EXPORT — EmployeeIDCard panel
 ════════════════════════════════════════ */
-export default function EmployeeIDCard({ user, logoImg, BASE_URL }) {
+export default function EmployeeIDCard({ user, logoImg }) {
     const frontRef = useRef(null);
     const backRef = useRef(null);
 
@@ -441,7 +443,7 @@ export default function EmployeeIDCard({ user, logoImg, BASE_URL }) {
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: ".08em" }}>Front</span>
                     <div ref={frontRef}>
-                        <CardFront user={user} logoImg={logoImg} BASE_URL={BASE_URL} />
+                        <CardFront user={user} logoImg={logoImg} />
                     </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>

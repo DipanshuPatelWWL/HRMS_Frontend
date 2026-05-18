@@ -265,7 +265,19 @@ const AttendanceCorrectionApproval = () => {
 
             {/* ── Reject modal with optional remark ─────────────────────── */}
             {remarkModal && (
-                <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setRemarkModal(null)}>
+                <div
+                    onClick={e => e.target === e.currentTarget && setRemarkModal(null)}
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.55)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 9999,
+                        padding: "16px",
+                    }}
+                >
                     <div className="modal" style={{ maxWidth: 420 }}>
                         <div className="modal-header">
                             <span className="modal-title">Reject correction request</span>

@@ -304,7 +304,7 @@ const EmailPreview = ({
                     >
                         {profileImage ? (
                             <img
-                                src={`${BASE_URL}/profileImage`}
+                                src={profileImage}
                                 alt={employeeName}
                                 style={{
                                     width: "100%",
@@ -676,7 +676,7 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
                                 }}
                             >
                                 <img
-                                    src={`${BASE_URL}/uploadedImage`}
+                                    src={uploadedImage}
                                     alt="Preview"
                                     style={{
                                         width: 90,
@@ -767,8 +767,10 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
                                 display: "flex", alignItems: "center", gap: 8,
                             }}
                         >
-                            {saving ? <FaSpinner style={{ animation: "spin 1s linear infinite" }} /> : <FaCheck />}
-                            {editData ? (<><span className="spinner" /> Save Changes</>) : ("Schedule")}
+                            {saving
+                                ? <><FaSpinner style={{ animation: "spin 1s linear infinite" }} /> {editData ? "Saving..." : "Scheduling..."}</>
+                                : <><FaCheck /> {editData ? "Save Changes" : "Schedule"}</>
+                            }
                         </button>
                     </div>
                 </div>
