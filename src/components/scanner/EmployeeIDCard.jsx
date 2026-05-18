@@ -100,7 +100,7 @@ const CardHeader = ({ logoImg }) => (
 ════════════════════════════════════════ */
 function CardFront({ user, logoImg }) {
     const avatarSrc = user?.avatar
-        ? (user.avatar.startsWith("http") ? user.avatar : `${BASE_URL}/${user.avatar}`)
+        ? (user.avatar.startsWith("http") ? user.avatar : `${BASE_URL}${user.avatar}`)
         : null;
 
     const joiningDate = user?.joiningDate

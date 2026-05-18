@@ -375,12 +375,16 @@ const Attendance = () => {
     }, [viewMonth, viewYear]);
 
     const doPunchIn = async (latitude, longitude, accuracy) => {
+        if (latitude === undefined || longitude === undefined || latitude === null || longitude === null) {
+            alert("Could not determine your location. Please try again.");
+            return;
+        }
         try {
             setLoading(true);
             await API.post("/attendance/punch-in", {
                 lat: latitude,
                 lng: longitude,
-                accuracy,
+                accuracy: accuracy ?? 0,
                 deviceId: navigator.userAgent,
             });
             await Promise.all([
@@ -405,22 +409,35 @@ const Attendance = () => {
             return;
         }
 
+        if (!navigator.geolocation) {
+            alert("Your browser does not support GPS location. Please use Chrome or Firefox.");
+            return;
+        }
+
         navigator.geolocation.getCurrentPosition(
             async ({ coords: { latitude, longitude, accuracy } }) => {
-                // Match backend threshold (150m)
+                if (!latitude || !longitude) {
+                    alert("Could not get your location. Please check GPS is enabled and try again.");
+                    return;
+                }
                 if (accuracy > 150) {
-                    alert("GPS signal too weak. Please move to an open area and try again.");
+                    alert(`GPS accuracy too low (${Math.round(accuracy)}m). Move to an open area and try again.`);
                     return;
                 }
                 doPunchIn(latitude, longitude, accuracy);
             },
             (err) => {
                 console.error("Geolocation error:", err);
-                alert("Location permission required to punch in.");
+                const messages = {
+                    1: "Location permission denied. Please allow location access in your browser settings and try again.",
+                    2: "Location unavailable. Please check your GPS or network connection.",
+                    3: "Location request timed out. Please move to an area with better GPS signal and try again.",
+                };
+                alert(messages[err.code] || "Could not get your location. Please try again.");
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
         );
-    };
+    }
 
     const handlePunchOut = async () => {
         if (!navigator.onLine) { saveOfflinePunch("punch-out"); return; }

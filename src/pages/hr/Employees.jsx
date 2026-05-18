@@ -231,6 +231,7 @@ const EMPTY_FORM = {
     dob: "", joiningDate: "",
     phone: "",
     _isAdd: false,
+    _creatorRole: "",
 };
 
 const FormFields = ({ form, onChange }) => {
@@ -248,14 +249,31 @@ const FormFields = ({ form, onChange }) => {
                 <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
                     Full name <span style={{ color: "var(--danger)" }}>*</span>
                 </label>
-                <input name="name" className="input" placeholder="e.g., Jane Doe" value={form.name} onChange={onChange} required />
+                <input
+                    name="name"
+                    className="input"
+                    placeholder="e.g., Jane Doe"
+                    value={form.name}
+                    onChange={onChange}
+                    required
+                    autoComplete="new-password"
+                />
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
                     Email <span style={{ color: "var(--danger)" }}>*</span>
                 </label>
-                <input name="email" className="input" placeholder="jane.doe@company.com" type="email" value={form.email} onChange={onChange} required />
+                <input
+                    name="email"
+                    className="input"
+                    placeholder="jane.doe@company.com"
+                    type="email"
+                    value={form.email}
+                    onChange={onChange}
+                    required
+                    autoComplete="new-password"
+                />
             </div>
 
             {form._isAdd && (
@@ -348,8 +366,12 @@ const FormFields = ({ form, onChange }) => {
                     <select name="role" className="input select" value={form.role} onChange={onChange}>
                         <option value="employee">Employee</option>
                         <option value="tl">Team Leader</option>
-                        <option value="manager">Manager</option>
-                        <option value="hr">HR</option>
+                        {(form._creatorRole === "manager" || form._creatorRole === "superadmin") && (
+                            <option value="hr">HR</option>
+                        )}
+                        {form._creatorRole === "superadmin" && (
+                            <option value="manager">Manager</option>
+                        )}
                     </select>
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
@@ -375,7 +397,7 @@ const FormFields = ({ form, onChange }) => {
                         {designations.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                 </div>
-                {form.role === "employee" && (
+                {(form.role === "employee" || form.role === "tl") && (
                     <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
                             Monthly Salary <span style={{ color: "var(--danger)" }}>*</span>
@@ -1180,7 +1202,7 @@ const Employees = () => {
 
     const openAdd = () => {
         if (!isHR && !isManager) return;
-        setForm({ ...EMPTY_FORM, _isAdd: true });
+        setForm({ ...EMPTY_FORM, _isAdd: true, _creatorRole: user?.role });
         setAddModal(true);
     };
 
@@ -1200,6 +1222,7 @@ const Employees = () => {
             dob: emp.dob ? emp.dob.slice(0, 10) : "",
             joiningDate: emp.joiningDate ? emp.joiningDate.slice(0, 10) : "",
             _isAdd: false,
+            _creatorRole: user?.role,
         });
         setEditTarget(emp);
         setEditTab("basic");
@@ -1208,20 +1231,20 @@ const Employees = () => {
     const handleCreate = async () => {
         if (!isHR && !isManager) return;
         if (!form.name || !form.email || !form.password) { alert("Please fill in all required fields"); return; }
-        if (form.role === "employee" && !form.monthlySalary) { alert("Salary is required for employees"); return; }
+        if ((form.role === "employee" || form.role === "tl") && !form.monthlySalary) { alert("Salary is required for employees and team leaders"); return; }
         if (form.password.length < 8) { alert("Password must be at least 8 characters"); return; }
         if (form.phone && form.phone.length !== 12) { alert("Please enter a valid mobile number with country code (e.g. 919876543210 — 12 digits total)"); return; }
         if (form.phone && !form.phone.startsWith("91")) { alert("Phone must start with 91 (India country code)"); return; }
         setSubmitting(true);
         try {
             const payload = {
-                name: form.name, email: form.email, password: form.password,
-                role: form.role,
-                monthlySalary: form.role === "employee" ? Number(form.monthlySalary) : 0,
+                name: form.name, email: form.email, role: form.role,
                 department: form.department || null, designation: form.designation || "",
-                maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
                 dob: form.dob || undefined, joiningDate: form.joiningDate || undefined,
-                phone: form.phone ? form.phone.toString().replace(/[\s+\-()]/g, "") : undefined,
+                maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
+                salary: (form.role === "employee" || form.role === "tl")
+                    ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth }
+                    : undefined,
             };
             const res = await API.post("/users/create", payload);
             setEmployees(prev => [...prev, res.data.user]);
@@ -1236,7 +1259,7 @@ const Employees = () => {
     const handleUpdate = async () => {
         if (!isHR && !isManager) return;
         if (!form.name || !form.email) { alert("Please fill in all required fields"); return; }
-        if (form.role === "employee" && !form.monthlySalary) { alert("Salary is required for employees"); return; }
+        if ((form.role === "employee" || form.role === "tl") && !form.monthlySalary) { alert("Salary is required for employees and team leaders"); return; }
         setSubmitting(true);
         try {
             const daysInMonth = getDaysInMonth();
@@ -1744,6 +1767,8 @@ const Employees = () => {
                                 placeholder="Search by name, email or ID…"
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
+                                autoComplete="off"
+                                name="employee-search"
                                 style={{ color: "#0f172a", paddingLeft: "34px", width: "100%" }}
                             />
                             {search && (
@@ -1935,7 +1960,7 @@ const Employees = () => {
             {/* ─── Add Modal ─── */}
             {addModal && (isHR || isManager) && (
                 <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setAddModal(false)}>
-                    <div className="modal enhanced-modal">
+                    <div className="modal enhanced-modal" autoComplete="off">
                         <div className="modal-header">
                             <div>
                                 <span className="modal-title" style={{ color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>

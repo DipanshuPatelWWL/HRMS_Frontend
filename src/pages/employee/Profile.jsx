@@ -339,14 +339,29 @@ export default function Profile() {
     const [avatarLoading, setAvatarLoading] = useState(false);
     const [avatarMsg, setAvatarMsg] = useState(null);
 
-    /* ── personal ── */
+    const stripCountryCode = (phone) => {
+        if (!phone) return "";
+        const s = phone.toString().replace(/\D/g, "");
+        if (s.startsWith("91") && s.length === 12) return s.slice(2);
+        return s;
+    };
+
+    const isPrivilegedUser = ["hr", "manager", "superadmin"].includes(user?.role);
+
     const [selfForm, setSelfForm] = useState({
-        phone: user?.phone || "",
+        name: user?.name || "",
+        email: user?.email || "",
+        phone: stripCountryCode(user?.phone),
         dob: user?.dob ? user.dob.slice(0, 10) : "",
         maritalStatus: user?.maritalStatus || "",
-        nationality: user?.nationality || "",
+        nationality: user?.nationality || "Indian",   // ← default Indian
         guardianName: user?.guardianName || "",
+        bloodGroup: user?.bloodGroup || "",
+        emergencyContactName: user?.emergencyContact?.name || "",
+        emergencyContactPhone: user?.emergencyContact?.phone || "",
+        emergencyContactRelation: user?.emergencyContact?.relation || "",
     });
+
     const [selfMsg, setSelfMsg] = useState(null);
     const [selfLoading, setSelfLoading] = useState(false);
 
@@ -534,15 +549,40 @@ export default function Profile() {
     const handleSelfSave = async (e) => {
         e.preventDefault(); setSelfLoading(true); setSelfMsg(null);
         try {
-            const { data } = await API.put("/users/me/profile", {
+            const payload = {
                 phone: selfForm.phone,
                 dob: selfForm.dob,
                 maritalStatus: selfForm.maritalStatus,
                 nationality: selfForm.nationality,
                 guardianName: selfForm.guardianName,
-            });
+                bloodGroup: selfForm.bloodGroup,
+                emergencyContact: {
+                    name: selfForm.emergencyContactName,
+                    phone: selfForm.emergencyContactPhone,
+                    relation: selfForm.emergencyContactRelation,
+                },
+            };
+            // HR/Manager can also update name and email
+            if (isPrivilegedUser) {
+                payload.name = selfForm.name;
+                payload.email = selfForm.email;
+            }
+            const { data } = await API.put("/users/me/profile", payload);
             setSelfMsg({ type: "success", text: "Profile updated!" });
             if (setUser) setUser(data.user);
+            setSelfForm({
+                name: data.user?.name || "",
+                email: data.user?.email || "",
+                phone: stripCountryCode(data.user?.phone),
+                dob: data.user?.dob ? data.user.dob.slice(0, 10) : "",
+                maritalStatus: data.user?.maritalStatus || "",
+                nationality: data.user?.nationality || "Indian",
+                guardianName: data.user?.guardianName || "",
+                bloodGroup: data.user?.bloodGroup || "",
+                emergencyContactName: data.user?.emergencyContact?.name || "",
+                emergencyContactPhone: data.user?.emergencyContact?.phone || "",
+                emergencyContactRelation: data.user?.emergencyContact?.relation || "",
+            });
         } catch (err) {
             setSelfMsg({ type: "error", text: err?.response?.data?.message || "Update failed." });
         } finally { setSelfLoading(false); }
@@ -683,6 +723,19 @@ export default function Profile() {
                 setBankVerification(v);
                 setBank(p => ({ ...p, bankName: v.bank || p.bankName, branchName: v.branch || p.branchName }));
             }
+            // Instantly reflect saved bank details from server response
+            if (res.data.bankDetails) {
+                const b = res.data.bankDetails;
+                setBank({
+                    accountHolderName: b.accountHolderName || "",
+                    accountNumber: b.accountNumber || "",
+                    confirmAccountNumber: b.accountNumber || "",
+                    bankName: b.bankName || "",
+                    ifscCode: b.ifscCode || "",
+                    branchName: b.branchName || "",
+                    accountType: b.accountType || "savings",
+                });
+            }
             setBankMsg({ type: "success", text: "Bank details saved!" });
             setBankDone(true);
         } catch (err) {
@@ -773,7 +826,7 @@ export default function Profile() {
                             Icon={LuCalendar}
                         />
                         <InfoRow label="Status" value={user?.status} Icon={LuCircleDot} />
-                        <InfoRow label="Phone" value={user?.phone || selfForm.phone} Icon={LuPhone} />
+                        <InfoRow label="Phone" value={stripCountryCode(user?.phone) || selfForm.phone} Icon={LuPhone} />
                         <InfoRow
                             label="Date of Birth"
                             value={(user?.dob || selfForm.dob)
@@ -798,6 +851,18 @@ export default function Profile() {
                             }
                             Icon={LuHeart}
                         />
+                        <InfoRow
+                            label="Blood Group"
+                            value={user?.bloodGroup || selfForm.bloodGroup || null}
+                            Icon={LuCircleDot}
+                        />
+                        {(user?.emergencyContact?.name || selfForm.emergencyContactName) && (
+                            <InfoRow
+                                label="Emergency Contact"
+                                value={`${user?.emergencyContact?.name || selfForm.emergencyContactName} (${user?.emergencyContact?.relation || selfForm.emergencyContactRelation || "—"}) · ${user?.emergencyContact?.phone || selfForm.emergencyContactPhone || "—"}`}
+                                Icon={LuPhone}
+                            />
+                        )}
                     </div>
                 </div>
 
@@ -888,6 +953,7 @@ export default function Profile() {
                         <div>
                             <Label>Phone Number</Label>
                             <Input placeholder="10-digit number" value={selfForm.phone} maxLength={10} inputMode="numeric"
+                                readOnly
                                 onChange={e => setSelfForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, "") }))} />
                         </div>
                         <div>
@@ -895,6 +961,29 @@ export default function Profile() {
                             <Input type="date" value={selfForm.dob} onChange={e => setSelfForm(p => ({ ...p, dob: e.target.value }))} />
                         </div>
                     </div>
+
+                    {/* ── HR/Manager: Name + Email editable ── */}
+                    {isPrivilegedUser && (
+                        <div className="pf-grid-2" style={g2}>
+                            <div>
+                                <Label>Full Name</Label>
+                                <Input
+                                    placeholder="Your full name"
+                                    value={selfForm.name}
+                                    onChange={e => setSelfForm(p => ({ ...p, name: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <Label>Email Address</Label>
+                                <Input
+                                    type="email"
+                                    placeholder="your@email.com"
+                                    value={selfForm.email}
+                                    onChange={e => setSelfForm(p => ({ ...p, email: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div>
                         <Label>Father / Guardian Name</Label>
@@ -905,6 +994,58 @@ export default function Profile() {
                                 setSelfForm(p => ({ ...p, guardianName: e.target.value }))
                             }
                         />
+                    </div>
+
+                    {/* ── Blood Group ── */}
+                    <div>
+                        <Label>Blood Group</Label>
+                        <Select
+                            value={selfForm.bloodGroup}
+                            onChange={e => setSelfForm(p => ({ ...p, bloodGroup: e.target.value }))}
+                            touched={!!selfForm.bloodGroup}
+                        >
+                            <option value="">Select blood group</option>
+                            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
+                                <option key={bg} value={bg}>{bg}</option>
+                            ))}
+                        </Select>
+                    </div>
+
+                    {/* ── Emergency Contact ── */}
+                    <div style={{ border: `1.5px solid ${T.border}`, borderRadius: 12, padding: "16px 18px", background: T.bg }}>
+                        <p style={{ fontFamily: ff, fontWeight: 700, fontSize: 12, color: T.muted, letterSpacing: ".06em", textTransform: "uppercase", margin: "0 0 14px" }}>
+                            Emergency Contact
+                        </p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                            <div className="pf-grid-2" style={g2}>
+                                <div>
+                                    <Label>Contact Name</Label>
+                                    <Input
+                                        placeholder="Full name"
+                                        value={selfForm.emergencyContactName}
+                                        onChange={e => setSelfForm(p => ({ ...p, emergencyContactName: e.target.value }))}
+                                    />
+                                </div>
+                                <div>
+                                    <Label>Relation</Label>
+                                    <Input
+                                        placeholder="e.g. Spouse, Parent"
+                                        value={selfForm.emergencyContactRelation}
+                                        onChange={e => setSelfForm(p => ({ ...p, emergencyContactRelation: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <Label>Emergency Phone</Label>
+                                <Input
+                                    placeholder="10-digit number"
+                                    value={selfForm.emergencyContactPhone}
+                                    maxLength={10}
+                                    inputMode="numeric"
+                                    onChange={e => setSelfForm(p => ({ ...p, emergencyContactPhone: e.target.value.replace(/\D/g, "") }))}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     {/* ── Nationality + Marital Status ── */}
@@ -1163,7 +1304,13 @@ export default function Profile() {
                 {bankFetching
                     ? <StopwatchLoader />
                     : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                        <div
+                            style={{ display: "flex", flexDirection: "column", gap: 16 }}
+                            onSubmit={e => e.preventDefault()}
+                        >
+                            {/* Hidden honeypot fields to trick browser autocomplete away from real fields */}
+                            <input type="text" name="username" style={{ display: "none" }} autoComplete="username" readOnly />
+                            <input type="password" name="password" style={{ display: "none" }} autoComplete="current-password" readOnly />
                             <div>
                                 {bank.accountHolderName && !isNameMatching() && (
                                     <span style={{
@@ -1177,7 +1324,8 @@ export default function Profile() {
                                 <Label required>Account Holder Name</Label>
                                 <Input name="accountHolderName" placeholder="As per bank records"
                                     value={bank.accountHolderName} error={bankErrors.accountHolderName} touched={bankTouched.accountHolderName}
-                                    onChange={handleBankChange} />
+                                    onChange={handleBankChange}
+                                    autoComplete="off" />
                                 <FieldError error={bankErrors.accountHolderName} touched={bankTouched.accountHolderName} />
                             </div>
 
@@ -1187,6 +1335,8 @@ export default function Profile() {
                                     <Input name="accountNumber" placeholder="9–18 digits"
                                         value={bank.accountNumber} error={bankErrors.accountNumber} touched={bankTouched.accountNumber}
                                         onChange={handleBankChange}
+                                        autoComplete="off"
+                                        data-form-type="other"
                                         style={{ fontFamily: "monospace", letterSpacing: "1px" }} />
                                     <FieldError error={bankErrors.accountNumber} touched={bankTouched.accountNumber} />
                                 </div>
@@ -1202,13 +1352,16 @@ export default function Profile() {
                                 <Label required>Confirm Account Number</Label>
                                 <Input
                                     name="confirmAccountNumber"
-                                    type="password"
+                                    type="text"
                                     placeholder="Re-enter account number to confirm"
                                     value={bank.confirmAccountNumber}
                                     error={bankErrors.confirmAccountNumber}
                                     touched={bankTouched.confirmAccountNumber}
                                     onChange={handleBankChange}
                                     onPaste={e => e.preventDefault()}
+                                    autoComplete="off"
+                                    data-form-type="other"
+                                    inputMode="numeric"
                                     style={{ fontFamily: "monospace", letterSpacing: "1px" }}
                                 />
                                 <FieldError error={bankErrors.confirmAccountNumber} touched={bankTouched.confirmAccountNumber} />

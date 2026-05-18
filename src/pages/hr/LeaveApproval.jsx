@@ -11,6 +11,15 @@ const LeaveApproval = () => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const definedRoles = user?.role || "";
 
+    const shouldSkipTL = (leave) => {
+        return (
+            leave.skipTLApproval === true ||
+            leave.userRole === "tl" ||
+            leave.userDesignation === "Business Development Manager" ||
+            leave.userDesignation === "Business Development Executive"
+        );
+    };
+
     const fetch = async () => {
         setLoading(true);
         try {
@@ -122,9 +131,22 @@ const LeaveApproval = () => {
                                         </td>
 
                                         {/* TL Approval */}
+                                        {/* TL Approval */}
                                         {(definedRoles === "hr" || definedRoles === "manager") &&
                                             <td>
-                                                {l.tlApproval?.status === "approved" ? (
+                                                {shouldSkipTL(l) ? (
+                                                    <span
+                                                        className="badge"
+                                                        style={{
+                                                            background: "#f3f4f6",
+                                                            color: "#9ca3af",
+                                                            fontSize: ".72rem",
+                                                            fontStyle: "italic",
+                                                        }}
+                                                    >
+                                                        Not Required
+                                                    </span>
+                                                ) : l.tlApproval?.status === "approved" ? (
                                                     <span className="badge badge-success">Approved</span>
                                                 ) : l.tlApproval?.status === "rejected" ? (
                                                     <span className="badge badge-danger">Rejected</span>
@@ -169,15 +191,15 @@ const LeaveApproval = () => {
                                                     <span style={{ fontSize: ".78rem", color: "var(--text-3)" }}>Already acted</span>
                                                 )}
 
-                                                {/* HR — can only act after TL approves */}
-                                                {user?.role === "hr" && l.tlApproval?.status === "approved" && (
+                                                {/* HR — can act directly if TL skipped, otherwise needs TL approval first */}
+                                                {user?.role === "hr" && (shouldSkipTL(l) || l.tlApproval?.status === "approved") && (
                                                     <div style={{ display: "flex", gap: ".4rem" }}>
                                                         <button onClick={() => action(l._id, "approved")} className="btn btn-success btn-sm">Approve</button>
                                                         <button onClick={() => action(l._id, "rejected")} className="btn btn-sm" style={{ background: "var(--danger-bg)", color: "var(--danger)", border: "1px solid #fecaca" }}>Reject</button>
                                                     </div>
                                                 )}
-                                                {user?.role === "hr" && l.tlApproval?.status !== "approved" && (
-                                                    <span style={{ fontSize: ".78rem", color: "#707070", }}>⏳ Awaiting TL</span>
+                                                {user?.role === "hr" && !shouldSkipTL(l) && l.tlApproval?.status !== "approved" && (
+                                                    <span style={{ fontSize: ".78rem", color: "#707070" }}>⏳ Awaiting TL</span>
                                                 )}
 
                                                 {/* Manager */}

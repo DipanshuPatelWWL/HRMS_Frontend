@@ -157,6 +157,7 @@ const AppRoutes = () => (
 
         {/* ── HR ROUTES ── */}
         <Route path="/hr" element={<Protected allowedRoles={["hr"]}><HRDashboard /></Protected>} />
+        <Route path="/hr/profile" element={<Protected allowedRoles={["hr"]}><Profile /></Protected>} />
         <Route path="/hr/employees" element={<Protected allowedRoles={["hr"]}><Employees /></Protected>} />
         <Route path="/hr/leave-approval" element={<Protected allowedRoles={["hr"]}><LeaveApproval /></Protected>} />
         <Route path="/hr/payroll-management" element={<Protected allowedRoles={["hr"]}><PayrollMgmt /></Protected>} />
@@ -176,6 +177,7 @@ const AppRoutes = () => (
 
         {/* Manager Routes */}
         <Route path="/manager" element={<Protected allowedRoles={["manager"]}><ManagerDashboard /></Protected>} />
+        <Route path="/manager/profile" element={<Protected allowedRoles={["manager"]}><Profile /></Protected>} />
         <Route path="/manager-employees" element={<Protected allowedRoles={["manager"]}><Employees /></Protected>} />
         <Route path="/manager-leave-approval" element={<Protected allowedRoles={["manager"]}><LeaveApproval /></Protected>} />
         <Route path="/manager-payroll-management" element={<Protected allowedRoles={["manager"]}><PayrollMgmt /></Protected>} />

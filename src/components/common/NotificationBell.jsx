@@ -476,14 +476,18 @@ const NotificationBell = () => {
     /* ── Mark all read ── */
     const markAll = async () => {
         try {
-            const unread = items.filter(n => !n.isRead);
-            await Promise.all(unread.map(n => API.put(`/notifications/${n._id}`)));
+            await API.put("/notifications/mark-all-read");
             setItems(prev => prev.map(n => ({ ...n, isRead: true })));
         } catch { }
     };
 
     /* ── Clear all (local only — extend with API if needed) ── */
-    const clearAll = () => setItems([]);
+    const clearAll = async () => {
+        try {
+            await API.delete("/notifications/clear");
+            setItems([]);
+        } catch { }
+    };
 
     /* ── Derived ── */
     const unreadCount = items.filter(n => !n.isRead).length;

@@ -48,6 +48,7 @@ const pageTitles = {
     "/hr/upcoming-events": "Upcoming Events",
     "/hr/ai-training": "AI Training",
     "/hr/assets": "Assets Management",
+    "/hr/profile": "Profile",
 
     // ── HR – Management ───────────────────────────────────────
     "/hr/leave-approval": "Leave Approvals",
@@ -68,6 +69,7 @@ const pageTitles = {
     "/manager-sales-reports": "Sales Reports",
     "/manager-daily-report": "Daily Report",
     "/manager-assets": "Assets Management",
+    "/manager/profile": "Profile",
 
     // ── Manager – Management ──────────────────────────────────
     "/manager-leave-approval": "Leave Approvals",

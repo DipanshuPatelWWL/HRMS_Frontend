@@ -428,6 +428,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/ai-training" label="AI Training" iconKey="aiTraining" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>
@@ -457,6 +458,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager-sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>

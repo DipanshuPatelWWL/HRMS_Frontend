@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import React, { useState, useMemo, useEffect, useCallback, useContext } from 'react'
+import { AuthContext } from '../../context/AuthContext'
 import {
     Search, RefreshCw, Plus, Edit2, Send, CheckCircle2, Clock,
     XCircle, ChevronLeft, ChevronRight, X, User, Calendar,
@@ -65,8 +66,8 @@ const SERVICES_LIST = [
     'UI/UX Design', 'Cloud Solutions', 'Data Analytics', 'Other',
 ]
 
-const EMPTY_FORM = {
-    marketer: '',
+const getEmptyForm = (marketerName = '') => ({
+    marketer: marketerName,
     date: new Date().toISOString().split('T')[0],
     client_name: '',
     client_email: '',
@@ -76,7 +77,7 @@ const EMPTY_FORM = {
     message: '',
     priority: 'medium',
     lead_source: 'website',
-}
+})
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50]
 
@@ -243,19 +244,19 @@ const FormField = ({ label, required, error, children }) => (
 )
 
 /* ─── ReportModal ────────────────────────────────────────────────────────────── */
-const ReportModal = ({ open, onClose, onSave, editData, saving }) => {
-    const [form, setForm] = useState(EMPTY_FORM)
+const ReportModal = ({ open, onClose, onSave, editData, saving, currentUserName }) => {
+    const [form, setForm] = useState(getEmptyForm(currentUserName))
     const [errors, setErrors] = useState({})
     const [focused, setFocused] = useState(null)
 
     useEffect(() => {
         if (open) {
             setForm(editData
-                ? { ...EMPTY_FORM, ...editData, date: editData.date?.split('T')[0] || editData.date }
-                : EMPTY_FORM)
+                ? { ...getEmptyForm(currentUserName), ...editData, date: editData.date?.split('T')[0] || editData.date }
+                : getEmptyForm(currentUserName))
             setErrors({})
         }
-    }, [open, editData])
+    }, [open, editData, currentUserName])
 
     const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
 
@@ -323,9 +324,30 @@ const ReportModal = ({ open, onClose, onSave, editData, saving }) => {
                 {/* Scrollable Body */}
                 <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto', flex: 1 }}>
                     <FormField label="Marketer Name">
-                        <input style={fs('marketer', false)} placeholder="e.g. John Smith"
-                            value={form.marketer} onChange={set('marketer')}
-                            onFocus={() => setFocused('marketer')} onBlur={() => setFocused(null)} />
+                        <div style={{ position: 'relative' }}>
+                            <input
+                                style={{ ...fs('marketer', false), paddingRight: 44 }}
+                                placeholder="e.g. John Smith"
+                                value={form.marketer}
+                                onChange={set('marketer')}
+                                onFocus={() => setFocused('marketer')}
+                                onBlur={() => setFocused(null)}
+                            />
+                            {form.marketer === currentUserName && currentUserName && (
+                                <span style={{
+                                    position: 'absolute', right: 10, top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    fontSize: 10, fontWeight: 700,
+                                    color: C.emerald,
+                                    background: C.emeraldLight,
+                                    padding: '2px 7px', borderRadius: 20,
+                                    pointerEvents: 'none',
+                                    border: `1px solid ${C.emeraldBorder}`,
+                                }}>
+                                    Auto
+                                </span>
+                            )}
+                        </div>
                     </FormField>
 
                     <FormField label="Client Name" required error={errors.client_name}>
@@ -745,6 +767,8 @@ const PriorityBadge = ({ priority }) => {
 
 /* ─── Main Component ─────────────────────────────────────────────────────────── */
 const SalesReports = () => {
+    const { user } = useContext(AuthContext)
+    const currentUserName = user?.fullName || ''
     const [reports, setReports] = useState([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -1190,6 +1214,7 @@ const SalesReports = () => {
                 onSave={handleSave}
                 editData={editData}
                 saving={saving}
+                currentUserName={currentUserName}
             />
 
             <Toast message={toast.message} type={toast.type} visible={toast.visible} />
