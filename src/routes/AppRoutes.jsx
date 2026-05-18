@@ -133,6 +133,7 @@ const AppRoutes = () => (
 
         {/* Team management – reuse HR components (they already handle role-based filtering on backend) */}
         <Route path="/tl/team" element={<Protected allowedRoles={["tl"]}><Employees /></Protected>} />
+        <Route path="/tl/daily-report" element={<Protected allowedRoles={["tl"]}><DailyReports /></Protected>} />
         <Route path="/tl/leave-approval" element={<Protected allowedRoles={["tl"]}><LeaveApproval /></Protected>} />
         <Route path="/tl/attendance" element={<Protected allowedRoles={["tl"]}><Attendance /></Protected>} />
 

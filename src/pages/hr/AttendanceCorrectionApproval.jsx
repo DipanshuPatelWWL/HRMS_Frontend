@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
+import Swal from "sweetalert2";
 
 const TYPE_LABELS = {
     punch_in: "Punch In",
@@ -48,7 +49,12 @@ const AttendanceCorrectionApproval = () => {
             fetchAll();
             fetchStats();
         } catch (err) {
-            alert(err.response?.data?.message || "Action failed");
+            Swal.fire({
+                icon: "error",
+                title: "Action Failed",
+                text: err.response?.data?.message || "Action failed",
+                confirmButtonColor: "#EF4444",
+            });
         } finally {
             setActionLoading(null);
         }

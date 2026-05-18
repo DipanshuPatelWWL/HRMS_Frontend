@@ -3,6 +3,7 @@ import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { generatePayslipPDF } from "../../utils/payslipPDF";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
+import Swal from "sweetalert2";
 
 const DownloadIcon = () => (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -122,7 +123,12 @@ const Payroll = () => {
             generatePayslipPDF(enriched);
         } catch (err) {
             console.error("PDF generation error:", err);
-            alert("Could not generate PDF. Please try again.");
+            Swal.fire({
+                icon: "error",
+                title: "Download Failed",
+                text: "Could not generate PDF. Please try again.",
+                confirmButtonColor: "#EF4444",
+            });
         } finally {
             setDlLoading(null);
         }

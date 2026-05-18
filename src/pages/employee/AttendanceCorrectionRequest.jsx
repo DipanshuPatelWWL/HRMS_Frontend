@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import Swal from "sweetalert2";
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const TYPE_LABELS = {
@@ -103,12 +104,37 @@ const AttendanceCorrectionRequest = () => {
     };
 
     const handleWithdraw = async (id) => {
-        if (!confirm("Withdraw this request?")) return;
+        const result = await Swal.fire({
+            title: "Withdraw Request?",
+            text: "This correction request will be permanently withdrawn.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Withdraw",
+            cancelButtonText: "Cancel",
+            confirmButtonColor: "#dc2626",
+            cancelButtonColor: "#6b7280",
+        });
+
+        if (!result.isConfirmed) return;
+
         try {
             await API.delete(`/attendance-corrections/${id}`);
             fetchMine();
+            Swal.fire({
+                icon: "success",
+                title: "Withdrawn",
+                text: "Your correction request has been withdrawn.",
+                confirmButtonColor: "#6366F1",
+                timer: 2500,
+                timerProgressBar: true,
+            });
         } catch (err) {
-            alert(err.response?.data?.message || "Could not withdraw");
+            Swal.fire({
+                icon: "error",
+                title: "Failed",
+                text: err.response?.data?.message || "Could not withdraw the request.",
+                confirmButtonColor: "#EF4444",
+            });
         }
     };
 

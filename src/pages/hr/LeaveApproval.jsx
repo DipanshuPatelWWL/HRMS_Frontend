@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
+import Swal from "sweetalert2";
 
 const LeaveApproval = () => {
     const [leaves, setLeaves] = useState([]);
@@ -42,10 +43,27 @@ const LeaveApproval = () => {
     useEffect(() => { fetch(); }, [filter]);
 
     const action = async (id, status) => {
+        const isApproving = status === "approved";
+
+        const result = await Swal.fire({
+            title: isApproving ? "Approve this leave?" : "Reject this leave?",
+            text: isApproving
+                ? "The employee will be notified of the approval."
+                : "The employee will be notified of the rejection.",
+            icon: isApproving ? "question" : "warning",
+            showCancelButton: true,
+            confirmButtonColor: isApproving ? "#22C55E" : "#EF4444",
+            cancelButtonColor: "#6B7280",
+            confirmButtonText: isApproving ? "Yes, approve" : "Yes, reject",
+            cancelButtonText: "Cancel",
+        });
+
+        if (!result.isConfirmed) return;
+
         try {
             let url = "";
 
-            const role = user?.role; // ✅ get from auth
+            const role = user?.role;
 
             if (role === "hr") {
                 url = `/leave/hr-approve/${id}`;
@@ -54,18 +72,39 @@ const LeaveApproval = () => {
             } else if (role === "tl") {
                 url = `/leave/tl-approve/${id}`;
             } else {
-                return alert("Unauthorized role");
+                return Swal.fire({
+                    icon: "error",
+                    title: "Unauthorized",
+                    text: "You do not have permission to perform this action.",
+                    confirmButtonColor: "#6366F1",
+                });
             }
 
             await API.put(url, {
-                action: status   // ✅ IMPORTANT FIX
+                action: status
+            });
+
+            Swal.fire({
+                icon: "success",
+                title: isApproving ? "Leave Approved" : "Leave Rejected",
+                text: isApproving
+                    ? "The leave request has been approved successfully."
+                    : "The leave request has been rejected.",
+                confirmButtonColor: "#6366F1",
+                timer: 2000,
+                showConfirmButton: false,
             });
 
             fetch();
 
         } catch (err) {
             console.log(err);
-            alert(err.response?.data?.message || "Action failed");
+            Swal.fire({
+                icon: "error",
+                title: "Action failed",
+                text: err.response?.data?.message || "Something went wrong. Please try again.",
+                confirmButtonColor: "#6366F1",
+            });
         }
     };
 

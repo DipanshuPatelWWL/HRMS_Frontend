@@ -35,6 +35,7 @@ const pageTitles = {
 
     // ── TL – Team ─────────────────────────────────────────────
     "/tl/team": "My Team",
+    "/tl/daily-report": "Daily Report",
     "/tl/leave-approval": "Leave Approvals",
     "/tl/team-attendance": "Team Attendance",
 

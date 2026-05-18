@@ -6,6 +6,7 @@ import StopwatchLoader from "../../components/common/StopwatchLoader";
 import EmployeeScanner from "../../components/scanner/EmployeeScanner"
 import { EmployeeIDCard } from "../../components/scanner/EmployeeScanner";
 import { QRCodeSVG } from "qrcode.react";
+import Swal from "sweetalert2";
 
 // ─────────────────────────────────────────────
 //  Helpers
@@ -234,6 +235,59 @@ const EMPTY_FORM = {
     _creatorRole: "",
 };
 
+
+const PasswordInput = ({ name, placeholder, value, onChange }) => {
+    const [show, setShow] = useState(false);
+    return (
+        <div style={{ position: "relative" }}>
+            <input
+                name={name}
+                className="input"
+                placeholder={placeholder}
+                type={show ? "text" : "password"}
+                value={value}
+                onChange={onChange}
+                required
+                style={{ paddingRight: 42 }}
+            />
+            <button
+                type="button"
+                onClick={() => setShow(prev => !prev)}
+                style={{
+                    position: "absolute",
+                    right: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 4,
+                    display: "flex",
+                    alignItems: "center",
+                    color: "#64748b",
+                }}
+                tabIndex={-1}
+                title={show ? "Hide password" : "Show password"}
+            >
+                {show ? (
+                    /* Eye-off icon */
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                ) : (
+                    /* Eye icon */
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                )}
+            </button>
+        </div>
+    );
+};
+
 const FormFields = ({ form, onChange }) => {
     const designations = DEPARTMENT_DESIGNATIONS[form.department] || [];
 
@@ -281,7 +335,7 @@ const FormFields = ({ form, onChange }) => {
                     <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
                         Password <span style={{ color: "var(--danger)" }}>*</span>
                     </label>
-                    <input name="password" className="input" placeholder="Minimum 8 characters" type="password" value={form.password} onChange={onChange} required />
+                    <PasswordInput name="password" placeholder="Minimum 8 characters" value={form.password} onChange={onChange} />
                 </div>
             )}
 
@@ -491,7 +545,12 @@ const GovernmentIdTab = ({ employeeId }) => {
 
             setEmpDocs(r.data.documents);
         } catch (err) {
-            alert(err.response?.data?.message || "Verification failed");
+            Swal.fire({
+                icon: "error",
+                title: "Verification Failed",
+                text: err.response?.data?.message || "Verification failed",
+                confirmButtonColor: "#EF4444",
+            });
         }
     };
 
@@ -503,7 +562,12 @@ const GovernmentIdTab = ({ employeeId }) => {
 
             setEmpDocs(r.data.documents);
         } catch (err) {
-            alert(err.response?.data?.message || "Verification failed");
+            Swal.fire({
+                icon: "error",
+                title: "Verification Failed",
+                text: err.response?.data?.message || "Verification failed",
+                confirmButtonColor: "#EF4444",
+            });
         }
     };
 
@@ -1141,7 +1205,12 @@ const Employees = () => {
             setEmployees(res.data.users || res.data.employees || res.data.data || []);
         } catch (err) {
             console.error("Failed to fetch employees:", err);
-            alert("Failed to load employees");
+            Swal.fire({
+                icon: "error",
+                title: "Load Failed",
+                text: "Failed to load employees",
+                confirmButtonColor: "#EF4444",
+            });
         } finally { setLoading(false); }
     };
 
@@ -1154,19 +1223,36 @@ const Employees = () => {
 
     const handleAssignTeam = async () => {
         if (!selectedTL || selectedEmployeeIds.length === 0) {
-            alert("Please select a TL and at least one employee");
+            Swal.fire({
+                icon: "warning",
+                title: "Selection Required",
+                text: "Please select a TL and at least one employee",
+                confirmButtonColor: "#6366F1",
+            });
             return;
         }
         setAssignLoading(true);
         try {
             await API.patch("/users/assign-team", { tlId: selectedTL, employeeIds: selectedEmployeeIds });
-            alert(`${selectedEmployeeIds.length} employee(s) assigned successfully!`);
+            Swal.fire({
+                icon: "success",
+                title: "Team Assigned",
+                text: `${selectedEmployeeIds.length} employee(s) assigned successfully!`,
+                confirmButtonColor: "#6366F1",
+                timer: 2500,
+                timerProgressBar: true,
+            });
             setAssignModal(false);
             setSelectedTL("");
             setSelectedEmployeeIds([]);
             fetchEmployees();
         } catch (err) {
-            alert(err.response?.data?.message || "Assignment failed");
+            Swal.fire({
+                icon: "error",
+                title: "Assignment Failed",
+                text: err.response?.data?.message || "Assignment failed",
+                confirmButtonColor: "#EF4444",
+            });
         } finally { setAssignLoading(false); }
     };
 
@@ -1230,11 +1316,26 @@ const Employees = () => {
 
     const handleCreate = async () => {
         if (!isHR && !isManager) return;
-        if (!form.name || !form.email || !form.password) { alert("Please fill in all required fields"); return; }
-        if ((form.role === "employee" || form.role === "tl") && !form.monthlySalary) { alert("Salary is required for employees and team leaders"); return; }
-        if (form.password.length < 8) { alert("Password must be at least 8 characters"); return; }
-        if (form.phone && form.phone.length !== 12) { alert("Please enter a valid mobile number with country code (e.g. 919876543210 — 12 digits total)"); return; }
-        if (form.phone && !form.phone.startsWith("91")) { alert("Phone must start with 91 (India country code)"); return; }
+        if (!form.name || !form.email || !form.password) {
+            Swal.fire({ icon: "warning", title: "Missing Fields", text: "Please fill in all required fields", confirmButtonColor: "#6366F1" });
+            return;
+        }
+        if (form.role === "employee" && !form.monthlySalary) {
+            Swal.fire({ icon: "warning", title: "Salary Required", text: "Salary is required for employees", confirmButtonColor: "#6366F1" });
+            return;
+        }
+        if (form.password.length < 8) {
+            Swal.fire({ icon: "warning", title: "Weak Password", text: "Password must be at least 8 characters", confirmButtonColor: "#6366F1" });
+            return;
+        }
+        if (form.phone && form.phone.length !== 12) {
+            Swal.fire({ icon: "warning", title: "Invalid Phone", text: "Please enter a valid mobile number with country code (e.g. 919876543210 — 12 digits total)", confirmButtonColor: "#6366F1" });
+            return;
+        }
+        if (form.phone && !form.phone.startsWith("91")) {
+            Swal.fire({ icon: "warning", title: "Invalid Phone", text: "Phone must start with 91 (India country code)", confirmButtonColor: "#6366F1" });
+            return;
+        }
         setSubmitting(true);
         try {
             const payload = {
@@ -1250,16 +1351,36 @@ const Employees = () => {
             setEmployees(prev => [...prev, res.data.user]);
             setAddModal(false);
             setForm(EMPTY_FORM);
-            alert(form.phone ? "Employee added successfully! Login credentials sent on Email." : "Employee added successfully! (No email provided — Email not sent)");
+            Swal.fire({
+                icon: "success",
+                title: "Employee Added",
+                text: form.phone
+                    ? "Employee added successfully! Login credentials sent on Email."
+                    : "Employee added successfully! (No phone provided — SMS not sent)",
+                confirmButtonColor: "#6366F1",
+                timer: 3000,
+                timerProgressBar: true,
+            });
         } catch (err) {
-            alert(err.response?.data?.message || "Error creating employee");
+            Swal.fire({
+                icon: "error",
+                title: "Create Failed",
+                text: err.response?.data?.message || "Error creating employee",
+                confirmButtonColor: "#EF4444",
+            });
         } finally { setSubmitting(false); }
     };
 
     const handleUpdate = async () => {
         if (!isHR && !isManager) return;
-        if (!form.name || !form.email) { alert("Please fill in all required fields"); return; }
-        if ((form.role === "employee" || form.role === "tl") && !form.monthlySalary) { alert("Salary is required for employees and team leaders"); return; }
+        if (!form.name || !form.email) {
+            Swal.fire({ icon: "warning", title: "Missing Fields", text: "Please fill in all required fields", confirmButtonColor: "#6366F1" });
+            return;
+        }
+        if (form.role === "employee" && !form.monthlySalary) {
+            Swal.fire({ icon: "warning", title: "Salary Required", text: "Salary is required for employees", confirmButtonColor: "#6366F1" });
+            return;
+        }
         setSubmitting(true);
         try {
             const daysInMonth = getDaysInMonth();
@@ -1274,9 +1395,21 @@ const Employees = () => {
             const updated = res.data.user || { ...editTarget, ...payload };
             setEmployees(prev => prev.map(e => e._id === editTarget._id ? updated : e));
             setEditTarget(null);
-            alert("Employee updated successfully!");
+            Swal.fire({
+                icon: "success",
+                title: "Updated",
+                text: "Employee updated successfully!",
+                confirmButtonColor: "#6366F1",
+                timer: 2500,
+                timerProgressBar: true,
+            });
         } catch (err) {
-            alert(err.response?.data?.message || "Error updating employee");
+            Swal.fire({
+                icon: "error",
+                title: "Update Failed",
+                text: err.response?.data?.message || "Error updating employee",
+                confirmButtonColor: "#EF4444",
+            });
         } finally { setSubmitting(false); }
     };
 
@@ -1289,24 +1422,29 @@ const Employees = () => {
                 await API.delete(`/users/delete/${employee._id}`);
                 setEmployees(prev => prev.filter(e => e._id !== employee._id));
                 if (editTarget?._id === employee._id) setEditTarget(null);
-                alert("Employee deleted successfully");
+                Swal.fire({ icon: "success", title: "Deleted", text: "Employee deleted successfully", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
             } else if (type === "terminate") {
                 await API.put(`/users/update-status/${employee._id}`, { status: "terminated" });
                 setEmployees(prev => prev.map(e => e._id === employee._id ? { ...e, status: "terminated" } : e));
                 if (editTarget?._id === employee._id) setEditTarget(null);
-                alert("Employee terminated successfully");
+                Swal.fire({ icon: "success", title: "Terminated", text: "Employee terminated successfully", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
             } else if (type === "deactivate") {
                 await API.put(`/users/update-status/${employee._id}`, { status: "inactive" });
                 setEmployees(prev => prev.map(e => e._id === employee._id ? { ...e, status: "inactive" } : e));
-                alert("Employee deactivated");
+                Swal.fire({ icon: "success", title: "Deactivated", text: "Employee deactivated", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
             } else if (type === "activate") {
                 await API.put(`/users/update-status/${employee._id}`, { status: "active" });
                 setEmployees(prev => prev.map(e => e._id === employee._id ? { ...e, status: "active" } : e));
-                alert("Employee activated");
+                Swal.fire({ icon: "success", title: "Activated", text: "Employee activated", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
             }
             setConfirm(null);
         } catch (err) {
-            alert(err.response?.data?.message || "Action failed");
+            Swal.fire({
+                icon: "error",
+                title: "Action Failed",
+                text: err.response?.data?.message || "Action failed",
+                confirmButtonColor: "#EF4444",
+            });
         } finally { setActionLoading(false); }
     };
 
@@ -1314,18 +1452,25 @@ const Employees = () => {
         if (!editTarget?._id) return;
 
         try {
-            await API.put(`/users/${editTarget._id}/government-id`, {
-                governmentIds: editGovIds,
+            await API.put(`/users/${editTarget._id}/government-id`, { governmentIds: editGovIds });
+            Swal.fire({
+                icon: "success",
+                title: "Saved",
+                text: "Government ID saved successfully",
+                confirmButtonColor: "#6366F1",
+                timer: 2500,
+                timerProgressBar: true,
             });
-
-            alert("Government ID saved successfully");
-
-            // refresh documents
             const r = await API.get(`/users/${editTarget._id}/documents`);
             setEmpDocs(r.data.documents);
 
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to save Government ID");
+            Swal.fire({
+                icon: "error",
+                title: "Save Failed",
+                text: err.response?.data?.message || "Failed to save Government ID",
+                confirmButtonColor: "#EF4444",
+            });
         }
     };
 
@@ -1335,10 +1480,21 @@ const Employees = () => {
 
             const r = await API.get(`/users/${employeeId}/documents`);
             setEmpDocs(r.data.documents);
-
-            alert(`${type.toUpperCase()} verified successfully`);
+            Swal.fire({
+                icon: "success",
+                title: "Verified",
+                text: `${type.toUpperCase()} verified successfully`,
+                confirmButtonColor: "#6366F1",
+                timer: 2500,
+                timerProgressBar: true,
+            });
         } catch (err) {
-            alert(err.response?.data?.message || "Verification failed");
+            Swal.fire({
+                icon: "error",
+                title: "Verification Failed",
+                text: err.response?.data?.message || "Verification failed",
+                confirmButtonColor: "#EF4444",
+            });
         }
     };
 
@@ -1348,10 +1504,21 @@ const Employees = () => {
 
             const r = await API.get(`/users/${employeeId}/documents`);
             setEmpDocs(r.data.documents);
-
-            alert("Document verified successfully");
+            Swal.fire({
+                icon: "success",
+                title: "Verified",
+                text: "Document verified successfully",
+                confirmButtonColor: "#6366F1",
+                timer: 2500,
+                timerProgressBar: true,
+            });
         } catch (err) {
-            alert(err.response?.data?.message || "Verification failed");
+            Swal.fire({
+                icon: "error",
+                title: "Verification Failed",
+                text: err.response?.data?.message || "Verification failed",
+                confirmButtonColor: "#EF4444",
+            });
         }
     };
 
@@ -1371,7 +1538,12 @@ const Employees = () => {
             const res = await API.get(`/salary/${selectedEmployee._id}/monthly?month=${selectedMonth}&year=${selectedYear}`);
             setSalaryData(res.data.data);
         } catch (err) {
-            alert(err.response?.data?.message || "Error fetching salary");
+            Swal.fire({
+                icon: "error",
+                title: "Fetch Failed",
+                text: err.response?.data?.message || "Error fetching salary",
+                confirmButtonColor: "#EF4444",
+            });
             setSalaryData(null);
         } finally { setSalaryLoading(false); }
     };

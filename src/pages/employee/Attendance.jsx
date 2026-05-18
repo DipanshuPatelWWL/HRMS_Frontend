@@ -16,6 +16,7 @@ import {
 } from "chart.js";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import Swal from "sweetalert2";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -327,7 +328,14 @@ const Attendance = () => {
         const q = JSON.parse(localStorage.getItem("punchQueue") || "[]");
         q.push({ type, timestamp: new Date().toISOString() });
         localStorage.setItem("punchQueue", JSON.stringify(q));
-        alert("No internet — punch saved offline. Will sync when reconnected.");
+        Swal.fire({
+            icon: "info",
+            title: "Saved Offline",
+            text: "No internet — punch saved offline. Will sync when reconnected.",
+            confirmButtonColor: "#6366F1",
+            timer: 3000,
+            timerProgressBar: true,
+        });
     };
 
     const syncOfflinePunches = async () => {
@@ -393,7 +401,12 @@ const Attendance = () => {
             ]);
         } catch (e) {
             const msg = e.response?.data?.message || "Punch-in failed";
-            alert(msg);
+            Swal.fire({
+                icon: "error",
+                title: "Punch-In Failed",
+                text: msg,
+                confirmButtonColor: "#EF4444",
+            });
             await fetchToday();
         } finally {
             setLoading(false);
@@ -421,19 +434,24 @@ const Attendance = () => {
                     return;
                 }
                 if (accuracy > 150) {
-                    alert(`GPS accuracy too low (${Math.round(accuracy)}m). Move to an open area and try again.`);
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Weak GPS Signal",
+                        text: "GPS signal too weak. Please move to an open area and try again.",
+                        confirmButtonColor: "#F97316",
+                    });
                     return;
                 }
                 doPunchIn(latitude, longitude, accuracy);
             },
             (err) => {
                 console.error("Geolocation error:", err);
-                const messages = {
-                    1: "Location permission denied. Please allow location access in your browser settings and try again.",
-                    2: "Location unavailable. Please check your GPS or network connection.",
-                    3: "Location request timed out. Please move to an area with better GPS signal and try again.",
-                };
-                alert(messages[err.code] || "Could not get your location. Please try again.");
+                Swal.fire({
+                    icon: "error",
+                    title: "Location Required",
+                    text: "Location permission is required to punch in. Please enable it in your browser settings.",
+                    confirmButtonColor: "#EF4444",
+                });
             },
             { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
         );
@@ -450,7 +468,12 @@ const Attendance = () => {
                 fetchMonthly(viewMonth, viewYear),
             ]);
         } catch (e) {
-            alert(e.response?.data?.message || "Punch-out failed");
+            Swal.fire({
+                icon: "error",
+                title: "Punch-Out Failed",
+                text: e.response?.data?.message || "Punch-out failed",
+                confirmButtonColor: "#EF4444",
+            });
             await fetchToday();
         } finally {
             setLoading(false);

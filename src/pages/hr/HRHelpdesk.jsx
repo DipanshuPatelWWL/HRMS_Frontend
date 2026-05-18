@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import API, { BASE_URL } from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
+import Swal from "sweetalert2";
 
 /* ─── Icons ──────────────────────────────────────────────────────────────── */
 const Icon = ({ d, size = 16, color = "currentColor" }) => (
@@ -708,7 +709,12 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
             onUpdate(res.data.ticket);
             setReply("");
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to send reply");
+            Swal.fire({
+                icon: "error",
+                title: "Failed to send reply",
+                text: err.response?.data?.message || "Something went wrong. Please try again.",
+                confirmButtonColor: "#6366F1",
+            });
         } finally {
             setSending(false);
         }
@@ -732,21 +738,51 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
             setTicket(res.data.ticket);
             onUpdate(res.data.ticket);
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to update ticket");
+            Swal.fire({
+                icon: "error",
+                title: "Update failed",
+                text: err.response?.data?.message || "Failed to update ticket. Please try again.",
+                confirmButtonColor: "#6366F1",
+            });
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!window.confirm("Permanently delete this ticket? This cannot be undone.")) return;
+        const result = await Swal.fire({
+            title: "Delete this ticket?",
+            text: "This action is permanent and cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#EF4444",
+            cancelButtonColor: "#6B7280",
+            confirmButtonText: "Yes, delete it",
+            cancelButtonText: "Cancel",
+        });
+
+        if (!result.isConfirmed) return;
+
         try {
             setDeleting(true);
             await API.delete(`/tickets/${ticket._id}`);
             onDelete(ticket._id);
             onClose();
+            Swal.fire({
+                icon: "success",
+                title: "Ticket deleted",
+                text: "The ticket has been permanently removed.",
+                confirmButtonColor: "#6366F1",
+                timer: 2000,
+                showConfirmButton: false,
+            });
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to delete ticket");
+            Swal.fire({
+                icon: "error",
+                title: "Delete failed",
+                text: err.response?.data?.message || "Failed to delete ticket. Please try again.",
+                confirmButtonColor: "#6366F1",
+            });
         } finally {
             setDeleting(false);
         }
