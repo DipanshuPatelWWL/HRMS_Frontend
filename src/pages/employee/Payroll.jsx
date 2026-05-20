@@ -79,48 +79,54 @@ const Payroll = () => {
     });
 
     useEffect(() => {
-        API.get("/payroll/my")
-            .then(res => setData(res.data.payrolls || []))
-            .catch(console.error)
-            .finally(() => setLoading(false));
+        let cancelled = false;
 
-        Promise.all([
-            API.get("/users/me/bank-details").catch(() => null),
-            API.get("/users/me/government-id").catch(() => null),
-        ]).then(([bankRes, govRes]) => {
-            setUserExtras({
-                bankDetails: bankRes?.data?.bankDetails || null,
-                governmentIds: govRes?.data?.governmentIds || null,
-                guardianName: null,
-            });
-        });
+        const fetchAll = async () => {
+            try {
+                const [payrollRes, bankRes, govRes] = await Promise.all([
+                    API.get("/payroll/my"),
+                    API.get("/users/me/bank-details").catch(() => null),
+                    API.get("/users/me/government-id").catch(() => null),
+                ]);
+                if (cancelled) return;
+                setData(payrollRes.data.payrolls || []);
+                setUserExtras({
+                    bankDetails: bankRes?.data?.bankDetails || null,
+                    governmentIds: govRes?.data?.governmentIds || null,
+                    guardianName: null,
+                });
+            } catch (err) {
+                console.error(err);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+
+        fetchAll();
+        return () => { cancelled = true; };
     }, []);
 
     // FIX 2: Total earnings uses resolved net salary too
     const totalEarnings = data.reduce((s, p) => s + resolveNetSalary(p), 0);
 
-    const handleDownload = (p) => {
+    const handleDownload = async (p) => {
         setDlLoading(p._id);
         try {
             const baseEmp = (p.employee && typeof p.employee === "object") ? p.employee : {};
-
             const enrichedEmp = {
                 ...baseEmp,
                 bankDetails: userExtras.bankDetails || baseEmp.bankDetails,
                 governmentIds: userExtras.governmentIds || baseEmp.governmentIds,
                 guardianName: userExtras.guardianName || baseEmp.guardianName,
             };
-
             const enriched = {
                 ...p,
                 employee: enrichedEmp,
                 month: typeof p.month === "number" ? p.month : parseMonthNumber(p.month),
                 year: p.year || new Date().getFullYear(),
-                // FIX 2: Pass resolved netSalary to PDF generator too
                 netSalary: resolveNetSalary(p),
             };
-
-            generatePayslipPDF(enriched);
+            await generatePayslipPDF(enriched); // make it awaitable
         } catch (err) {
             console.error("PDF generation error:", err);
             Swal.fire({

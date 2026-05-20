@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import API from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import logo from "/logo4.png";
 
 const EyeIcon = ({ open }) =>
     open ? (
@@ -61,7 +62,12 @@ const Login = () => {
                 }`}
             </style>
             <div className="login-card">
-                <div className="login-logo">HR</div>
+                <img
+                    src={logo}
+                    alt="HR Logo"
+                    className="login-logo"
+                    style={{ width: "70px", height: "70px", objectFit: "cover" }}
+                />
                 <h1 style={{ textAlign: "center", fontSize: "1.2rem", fontWeight: 600, marginBottom: ".25rem" }}>
                     Welcome back
                 </h1>

@@ -10,8 +10,6 @@ const injectStyles = () => {
     const s = document.createElement("style");
     s.setAttribute("data-ma2", "1");
     s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
-
     @keyframes ma2-rise    { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:none } }
     @keyframes ma2-pop     { 0%{transform:scale(.9);opacity:0} 60%{transform:scale(1.02)} 100%{transform:scale(1);opacity:1} }
     @keyframes ma2-spin    { to { transform:rotate(360deg) } }

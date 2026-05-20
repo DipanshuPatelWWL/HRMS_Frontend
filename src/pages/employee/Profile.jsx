@@ -76,8 +76,6 @@ const T = {
    GLOBAL CSS
 ════════════════════════════════════════ */
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-* { box-sizing: border-box; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 @keyframes spin { to { transform:rotate(360deg); } }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }

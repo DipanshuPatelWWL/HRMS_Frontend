@@ -14,7 +14,6 @@ const TI = ({ name, size = 16, style = {} }) => (
 
 /* ─── Styles ─────────────────────────────────────────────────────────────── */
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
 
 .an-root *,

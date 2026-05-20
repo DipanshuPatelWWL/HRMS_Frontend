@@ -1107,18 +1107,11 @@ const CONFIRM_CONFIG = {
 //  Edit Modal Tabs
 // ─────────────────────────────────────────────
 const EDIT_TABS = [
-    {
-        key: "basic", label: "Basic Info",
-        icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>,
-    },
-    {
-        key: "govid", label: "Gov. ID",
-        icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /><path d="M7 15h4" /><path d="M15 15h2" /></svg>,
-    },
-    {
-        key: "bank", label: "Bank",
-        icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><line x1="12" y1="15" x2="12" y2="17" /></svg>,
-    },
+    { key: "basic", label: "Basic Info", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> },
+    { key: "salary", label: "Salary", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg> },
+    { key: "govid", label: "Gov. ID", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /><path d="M7 15h4" /><path d="M15 15h2" /></svg> },
+    { key: "bank", label: "Bank", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /><line x1="12" y1="15" x2="12" y2="17" /></svg> },
+    { key: "shift", label: "Shift", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg> },
 ];
 
 // ─────────────────────────────────────────────
@@ -1155,6 +1148,572 @@ const TLEmployeeCard = ({ employee }) => (
         </div>
     </div>
 );
+
+
+
+const SalaryStructureTab = ({ employeeId }) => {
+    const COMPONENT_KEYS = ["basic", "hra", "specialAllowance", "conveyance", "otherAllowance"];
+    const COMPONENT_LABELS = {
+        basic: "Basic Salary",
+        hra: "HRA (House Rent Allowance)",
+        specialAllowance: "Special Allowance",
+        conveyance: "Conveyance / Internet",
+        otherAllowance: "Other Allowance",
+    };
+    const DEFAULT_PERCENTS = { basic: 40, hra: 20, specialAllowance: 25, conveyance: 10, otherAllowance: 5 };
+
+    const [monthlySalary, setMonthlySalary] = useState(0);
+    const [structure, setStructure] = useState({
+        basic: { enabled: true, percent: 40 },
+        hra: { enabled: true, percent: 20 },
+        specialAllowance: { enabled: true, percent: 25 },
+        conveyance: { enabled: true, percent: 10 },
+        otherAllowance: { enabled: true, percent: 5 },
+    });
+    const [deductions, setDeductions] = useState({
+        pf: { enabled: false, percent: 12, pfNumber: "" },
+        esi: { enabled: false, percent: 0.75, esiNumber: "" },
+        professionalTax: { enabled: false, fixedAmount: 0 },
+    });
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [result, setResult] = useState(null);
+
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            try {
+                const res = await API.get(`/users/${employeeId}`);
+                const sal = res.data.user?.salary || res.data.salary || {};
+                setMonthlySalary(sal.monthly || 0);
+                if (sal.structure) setStructure(prev => ({ ...prev, ...sal.structure }));
+                if (sal.deductions) {
+                    setDeductions(prev => ({
+                        ...prev,
+                        ...sal.deductions,
+                        pf: {
+                            enabled: false, percent: 12, pfNumber: "",
+                            ...sal.deductions.pf,
+                            pfNumber: sal.deductions.pf?.pfNumber || "",
+                        },
+                        esi: {
+                            enabled: false, percent: 0.75, esiNumber: "",
+                            ...sal.deductions.esi,
+                            esiNumber: sal.deductions.esi?.esiNumber || "",
+                        },
+                    }));
+                }
+            } catch { }
+            finally { setLoading(false); }
+        };
+        load();
+    }, [employeeId]);
+
+    // Live totals
+    const totalPercent = COMPONENT_KEYS.reduce((s, k) => s + (structure[k].enabled ? Number(structure[k].percent || 0) : 0), 0);
+    const grossEarnings = monthlySalary;
+
+    const basicAmt = structure.basic.enabled ? round2((structure.basic.percent / 100) * grossEarnings) : 0;
+    const pfAmt = deductions.pf.enabled ? round2((deductions.pf.percent / 100) * basicAmt) : 0;
+    const esiAmt = deductions.esi.enabled ? round2((deductions.esi.percent / 100) * grossEarnings) : 0;
+    const ptAmt = deductions.professionalTax.enabled ? Number(deductions.professionalTax.fixedAmount || 0) : 0;
+    const totalStatutory = round2(pfAmt + esiAmt + ptAmt);
+    const netPreview = round2(grossEarnings - totalStatutory);
+
+    function round2(n) { return Math.round(n * 100) / 100; }
+
+    const handleStructureToggle = (key) => {
+        setStructure(prev => ({ ...prev, [key]: { ...prev[key], enabled: !prev[key].enabled } }));
+        setResult(null);
+    };
+    const handleStructurePercent = (key, val) => {
+        setStructure(prev => ({ ...prev, [key]: { ...prev[key], percent: Number(val) } }));
+        setResult(null);
+    };
+    const handleDeductionToggle = (key) => {
+        setDeductions(prev => ({ ...prev, [key]: { ...prev[key], enabled: !prev[key].enabled } }));
+        setResult(null);
+    };
+    const handleDeductionValue = (key, field, val) => {
+        // pfNumber and esiNumber are strings, everything else is a number
+        const stringFields = ["pfNumber", "esiNumber"];
+        setDeductions(prev => ({
+            ...prev,
+            [key]: {
+                ...prev[key],
+                [field]: stringFields.includes(field) ? val : Number(val),
+            },
+        }));
+        setResult(null);
+    };
+
+    const handleSave = async () => {
+        if (Math.round(totalPercent) !== 100) {
+            setResult({ success: false, message: `Component percents must add up to 100% (currently ${totalPercent}%)` });
+            return;
+        }
+        setSaving(true); setResult(null);
+        try {
+            await API.put(`/salary/${employeeId}/structure`, { structure, deductions });
+            setResult({ success: true, message: "Salary structure saved successfully" });
+        } catch (err) {
+            setResult({ success: false, message: err.response?.data?.message || "Save failed" });
+        } finally { setSaving(false); }
+    };
+
+    if (loading) return <StopwatchLoader />;
+
+    return (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+
+            {/* Monthly salary display */}
+            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "8px", padding: ".75rem 1rem", fontSize: ".85rem", fontWeight: 600, color: "#1e40af" }}>
+                Monthly CTC: ₹{monthlySalary.toLocaleString("en-IN")}
+                <span style={{ fontSize: ".72rem", color: "#3b82f6", marginLeft: ".5rem", fontWeight: 500 }}>
+                    (Edit in Basic Info tab)
+                </span>
+            </div>
+
+            {/* ── Salary Components ── */}
+            <div>
+                <p style={{ fontWeight: 700, fontSize: ".8rem", color: "#374151", marginBottom: ".5rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
+                    Salary Components
+                    <span style={{ marginLeft: ".5rem", color: Math.round(totalPercent) === 100 ? "#16a34a" : "#dc2626", fontWeight: 800 }}>
+                        ({totalPercent}% / 100%)
+                    </span>
+                </p>
+
+                {COMPONENT_KEYS.map(key => (
+                    <div key={key} style={{
+                        display: "flex", alignItems: "center", gap: ".75rem",
+                        padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
+                        background: structure[key].enabled ? "#f0fdf4" : "#f9fafb",
+                        border: `1px solid ${structure[key].enabled ? "#bbf7d0" : "#e5e7eb"}`,
+                    }}>
+                        <input type="checkbox" checked={structure[key].enabled}
+                            onChange={() => handleStructureToggle(key)}
+                            style={{ accentColor: "#16a34a", width: 15, height: 15, cursor: "pointer" }} />
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: structure[key].enabled ? "#0f172a" : "#9ca3af" }}>
+                            {COMPONENT_LABELS[key]}
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
+                            <input
+                                type="number" min="0" max="100"
+                                value={structure[key].percent}
+                                onChange={e => handleStructurePercent(key, e.target.value)}
+                                disabled={!structure[key].enabled}
+                                style={{
+                                    width: 58, padding: "4px 8px", borderRadius: "6px",
+                                    border: "1px solid #d1d5db", fontSize: ".82rem", fontWeight: 700,
+                                    color: "#0f172a", background: structure[key].enabled ? "#fff" : "#f3f4f6",
+                                    textAlign: "right",
+                                }}
+                            />
+                            <span style={{ fontSize: ".75rem", color: "#64748b" }}>%</span>
+                        </div>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#0f172a", minWidth: 72, textAlign: "right" }}>
+                            {structure[key].enabled
+                                ? `₹${round2((structure[key].percent / 100) * grossEarnings).toLocaleString("en-IN")}`
+                                : "—"}
+                        </span>
+                    </div>
+                ))}
+
+                {/* Gross total row */}
+                <div style={{ display: "flex", justifyContent: "space-between", padding: ".65rem .85rem", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", fontWeight: 800, fontSize: ".88rem" }}>
+                    <span>Gross Salary</span>
+                    <span>₹{grossEarnings.toLocaleString("en-IN")}</span>
+                </div>
+            </div>
+
+            {/* ── Deductions ── */}
+            <div>
+                <p style={{ fontWeight: 700, fontSize: ".8rem", color: "#374151", marginBottom: ".5rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
+                    Statutory Deductions
+                </p>
+
+                {/* PF */}
+                <div style={{
+                    padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
+                    background: deductions.pf.enabled ? "#fef2f2" : "#f9fafb",
+                    border: `1px solid ${deductions.pf.enabled ? "#fecaca" : "#e5e7eb"}`,
+                }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
+                        <input type="checkbox" checked={deductions.pf.enabled}
+                            onChange={() => handleDeductionToggle("pf")}
+                            style={{ accentColor: "#dc2626", width: 15, height: 15, cursor: "pointer" }} />
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.pf.enabled ? "#0f172a" : "#9ca3af" }}>
+                            Provident Fund (PF) — 12% of Basic
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
+                            <input type="number" min="0" max="100"
+                                value={deductions.pf.percent}
+                                onChange={e => handleDeductionValue("pf", "percent", e.target.value)}
+                                disabled={!deductions.pf.enabled}
+                                style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: ".82rem", fontWeight: 700, color: "#0f172a", background: deductions.pf.enabled ? "#fff" : "#f3f4f6", textAlign: "right" }}
+                            />
+                            <span style={{ fontSize: ".75rem", color: "#64748b" }}>%</span>
+                        </div>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>
+                            {deductions.pf.enabled ? `− ₹${pfAmt.toLocaleString("en-IN")}` : "—"}
+                        </span>
+                    </div>
+                    {deductions.pf.enabled && (
+                        <>
+                            <p style={{ fontSize: ".72rem", color: "#6b7280", marginTop: ".3rem", marginLeft: "1.75rem" }}>
+                                Basic: ₹{basicAmt.toLocaleString("en-IN")} × {deductions.pf.percent}% = ₹{pfAmt.toLocaleString("en-IN")}
+                            </p>
+                            <div style={{ marginTop: ".55rem", marginLeft: "1.75rem" }}>
+                                <label style={{ fontSize: ".72rem", fontWeight: 700, color: "#374151", display: "block", marginBottom: ".25rem" }}>
+                                    PF / UAN Number <span style={{ color: "#9ca3af", fontWeight: 500 }}>(optional)</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. MH/BAN/12345/000/0000001 or 12-digit UAN"
+                                    value={deductions.pf.pfNumber || ""}
+                                    onChange={e => handleDeductionValue("pf", "pfNumber", e.target.value.toUpperCase())}
+                                    style={{
+                                        width: "100%", padding: "5px 10px", borderRadius: "6px",
+                                        border: "1px solid #fca5a5", fontSize: ".8rem",
+                                        fontFamily: "monospace", letterSpacing: ".5px",
+                                        color: "#0f172a", background: "#fff", outline: "none",
+                                    }}
+                                />
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {/* ESI */}
+                <div style={{
+                    padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
+                    background: deductions.esi.enabled ? "#fef2f2" : "#f9fafb",
+                    border: `1px solid ${deductions.esi.enabled ? "#fecaca" : "#e5e7eb"}`,
+                }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
+                        <input type="checkbox" checked={deductions.esi.enabled}
+                            onChange={() => handleDeductionToggle("esi")}
+                            style={{ accentColor: "#dc2626", width: 15, height: 15, cursor: "pointer" }} />
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.esi.enabled ? "#0f172a" : "#9ca3af" }}>
+                            ESI — % of Gross
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
+                            <input type="number" min="0" max="100" step="0.01"
+                                value={deductions.esi.percent}
+                                onChange={e => handleDeductionValue("esi", "percent", e.target.value)}
+                                disabled={!deductions.esi.enabled}
+                                style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: ".82rem", fontWeight: 700, color: "#0f172a", background: deductions.esi.enabled ? "#fff" : "#f3f4f6", textAlign: "right" }}
+                            />
+                            <span style={{ fontSize: ".75rem", color: "#64748b" }}>%</span>
+                        </div>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>
+                            {deductions.esi.enabled ? `− ₹${esiAmt.toLocaleString("en-IN")}` : "—"}
+                        </span>
+                    </div>
+                    {deductions.esi.enabled && (
+                        <div style={{ marginTop: ".55rem", marginLeft: "1.75rem" }}>
+                            <label style={{ fontSize: ".72rem", fontWeight: 700, color: "#374151", display: "block", marginBottom: ".25rem" }}>
+                                ESI Number <span style={{ color: "#9ca3af", fontWeight: 500 }}>(optional — 17 digits)</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="e.g. 12345678901234567"
+                                value={deductions.esi.esiNumber || ""}
+                                maxLength={17}
+                                onChange={e => handleDeductionValue("esi", "esiNumber", e.target.value.replace(/\D/g, ""))}
+                                style={{
+                                    width: "100%", padding: "5px 10px", borderRadius: "6px",
+                                    border: `1px solid ${deductions.esi.esiNumber && deductions.esi.esiNumber.length !== 17 ? "#fbbf24" : "#fca5a5"}`,
+                                    fontSize: ".8rem", fontFamily: "monospace", letterSpacing: ".5px",
+                                    color: "#0f172a", background: "#fff", outline: "none",
+                                }}
+                            />
+                            {deductions.esi.esiNumber && deductions.esi.esiNumber.length !== 17 && (
+                                <span style={{ fontSize: ".7rem", color: "#d97706", marginTop: "3px", display: "block", fontWeight: 600 }}>
+                                    ⚠ {17 - deductions.esi.esiNumber.length} more digit(s) required
+                                </span>
+                            )}
+                            {deductions.esi.esiNumber && deductions.esi.esiNumber.length === 17 && (
+                                <span style={{ fontSize: ".7rem", color: "#16a34a", marginTop: "3px", display: "block", fontWeight: 600 }}>
+                                    ✓ Valid ESI number length
+                                </span>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Professional Tax */}
+                <div style={{
+                    padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
+                    background: deductions.professionalTax.enabled ? "#fef2f2" : "#f9fafb",
+                    border: `1px solid ${deductions.professionalTax.enabled ? "#fecaca" : "#e5e7eb"}`,
+                }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
+                        <input type="checkbox" checked={deductions.professionalTax.enabled}
+                            onChange={() => handleDeductionToggle("professionalTax")}
+                            style={{ accentColor: "#dc2626", width: 15, height: 15, cursor: "pointer" }} />
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.professionalTax.enabled ? "#0f172a" : "#9ca3af" }}>
+                            Professional Tax — Fixed Amount
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
+                            <span style={{ fontSize: ".75rem", color: "#64748b" }}>₹</span>
+                            <input type="number" min="0"
+                                value={deductions.professionalTax.fixedAmount}
+                                onChange={e => handleDeductionValue("professionalTax", "fixedAmount", e.target.value)}
+                                disabled={!deductions.professionalTax.enabled}
+                                style={{ width: 72, padding: "4px 8px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: ".82rem", fontWeight: 700, color: "#0f172a", background: deductions.professionalTax.enabled ? "#fff" : "#f3f4f6", textAlign: "right" }}
+                            />
+                        </div>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>
+                            {deductions.professionalTax.enabled ? `− ₹${ptAmt.toLocaleString("en-IN")}` : "—"}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Total statutory deduction */}
+                <div style={{ display: "flex", justifyContent: "space-between", padding: ".65rem .85rem", background: "#fef2f2", borderRadius: "8px", border: "1px solid #fecaca", fontWeight: 800, fontSize: ".88rem", color: "#991b1b" }}>
+                    <span>Total Statutory Deductions</span>
+                    <span>− ₹{totalStatutory.toLocaleString("en-IN")}</span>
+                </div>
+            </div>
+
+            {/* ── Net Preview ── */}
+            <div style={{ background: "linear-gradient(135deg, #dcfce7, #bbf7d0)", border: "2px solid #86efac", borderRadius: "10px", padding: "1rem", textAlign: "center" }}>
+                <p style={{ fontSize: ".75rem", fontWeight: 700, color: "#052e16", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: ".35rem" }}>
+                    Estimated Net In-Hand (before attendance deductions)
+                </p>
+                <p style={{ fontSize: "1.6rem", fontWeight: 800, color: "#052e16" }}>
+                    ₹{netPreview.toLocaleString("en-IN")}
+                </p>
+            </div>
+
+            {result && (
+                <div style={{
+                    background: result.success ? "#dcfce7" : "#fee2e2",
+                    border: `1px solid ${result.success ? "#86efac" : "#fca5a5"}`,
+                    borderRadius: "8px", padding: "10px 14px", fontSize: ".82rem",
+                    color: result.success ? "#052e16" : "#450a0a",
+                    display: "flex", gap: "8px", alignItems: "center", fontWeight: 600
+                }}>
+                    {result.success ? "✅" : "❌"} {result.message}
+                </div>
+            )}
+
+            <button className="btn btn-primary" onClick={handleSave}
+                disabled={saving || Math.round(totalPercent) !== 100}
+                style={{ justifyContent: "center" }}>
+                {saving ? <><span className="spinner" />Saving...</> : "💾 Save Salary Structure"}
+            </button>
+        </div>
+    );
+};
+
+
+
+// ─────────────────────────────────────────────
+//  Shift Tab
+// ─────────────────────────────────────────────
+const SHIFT_PRESETS = [
+    { label: "Default (10:00 AM – 7:00 PM)", startHour: 10, startMinute: 0, endHour: 19, endMinute: 0, graceMinutes: 15, halfDayAfterMinutes: 30 },
+    { label: "Morning  (8:00 AM – 5:00 PM)", startHour: 8, startMinute: 0, endHour: 17, endMinute: 0, graceMinutes: 15, halfDayAfterMinutes: 30 },
+    { label: "Evening  (2:00 PM – 11:00 PM)", startHour: 14, startMinute: 0, endHour: 23, endMinute: 0, graceMinutes: 15, halfDayAfterMinutes: 30 },
+    { label: "Night    (10:00 PM – 7:00 AM)", startHour: 22, startMinute: 0, endHour: 7, endMinute: 0, graceMinutes: 15, halfDayAfterMinutes: 30 },
+];
+
+const pad2 = (n) => String(n).padStart(2, "0");
+
+const to12h = (h, m) => {
+    const ampm = h >= 12 ? "PM" : "AM";
+    const h12 = h % 12 || 12;
+    return `${h12}:${pad2(m)} ${ampm}`;
+};
+
+const ShiftTab = ({ employeeId }) => {
+    const EMPTY = {
+        type: "default", label: "",
+        startHour: 10, startMinute: 0,
+        endHour: 19, endMinute: 0,
+        graceMinutes: 15, halfDayAfterMinutes: 30,
+    };
+
+    const [shift, setShift] = useState(EMPTY);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [result, setResult] = useState(null);
+
+    // ── hours / minutes options ──
+    const HOURS = Array.from({ length: 24 }, (_, i) => i);
+    const MINUTES = [0, 15, 30, 45];
+
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            try {
+                const res = await API.get(`/users/${employeeId}`);
+                const s = res.data.user?.shift;
+                if (s) setShift({ ...EMPTY, ...s });
+            } catch { /* silent */ }
+            finally { setLoading(false); }
+        };
+        load();
+    }, [employeeId]);
+
+    const applyPreset = (preset) => {
+        setShift(prev => ({
+            ...prev,
+            type: (preset.startHour === 10 && preset.startMinute === 0 &&
+                preset.endHour === 19 && preset.endMinute === 0)
+                ? "default" : "custom",
+            startHour: preset.startHour, startMinute: preset.startMinute,
+            endHour: preset.endHour, endMinute: preset.endMinute,
+            graceMinutes: preset.graceMinutes,
+            halfDayAfterMinutes: preset.halfDayAfterMinutes,
+            label: preset.label,
+        }));
+        setResult(null);
+    };
+
+    const handleChange = (field, value) => {
+        setShift(prev => {
+            const next = { ...prev, [field]: value };
+            // auto-detect type when hours change
+            if (["startHour", "startMinute", "endHour", "endMinute"].includes(field)) {
+                next.type = (next.startHour === 10 && next.startMinute === 0 &&
+                    next.endHour === 19 && next.endMinute === 0)
+                    ? "default" : "custom";
+            }
+            return next;
+        });
+        setResult(null);
+    };
+
+    const handleSave = async () => {
+        if (shift.graceMinutes >= shift.halfDayAfterMinutes) {
+            setResult({ success: false, message: "Half-day threshold must be greater than grace/late window" });
+            return;
+        }
+        setSaving(true); setResult(null);
+        try {
+            await API.put(`/users/${employeeId}/shift`, { shift });
+            setResult({ success: true, message: "Shift saved successfully" });
+        } catch (err) {
+            setResult({ success: false, message: err.response?.data?.message || "Save failed" });
+        } finally { setSaving(false); }
+    };
+
+    const isDefault = shift.type === "default";
+
+    if (loading) return <StopwatchLoader />;
+
+    return (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+
+            {/* Info banner */}
+            <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: 8, padding: "10px 14px", fontSize: ".8rem", color: "#0c4a6e", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <span>ℹ️</span>
+                <span style={{ fontWeight: 500 }}>
+                    The <strong>3-quota late rule</strong> (Phase 1 / Phase 2) applies <strong>only</strong> to the default 10:00 AM – 7:00 PM shift.
+                    Custom shifts use simple Late / Half-Day logic with no quota.
+                </span>
+            </div>
+
+            {/* Current shift badge */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, background: isDefault ? "#f0fdf4" : "#eff6ff", border: `1px solid ${isDefault ? "#bbf7d0" : "#bfdbfe"}` }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isDefault ? "#16a34a" : "#2563eb"} strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                <div>
+                    <p style={{ fontWeight: 700, fontSize: ".82rem", color: isDefault ? "#14532d" : "#1e3a8a" }}>
+                        {isDefault ? "Default Shift (Quota Rules Active)" : "Custom Shift (Simple Logic)"}
+                    </p>
+                    <p style={{ fontSize: ".75rem", color: isDefault ? "#15803d" : "#1d4ed8", marginTop: 1 }}>
+                        {to12h(shift.startHour, shift.startMinute)} → {to12h(shift.endHour, shift.endMinute)}
+                        &nbsp;·&nbsp;Grace: {shift.graceMinutes}m
+                        &nbsp;·&nbsp;Half-day after: {shift.halfDayAfterMinutes}m
+                    </p>
+                </div>
+            </div>
+
+            {/* Presets */}
+            <div>
+                <p style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "#374151", marginBottom: ".4rem" }}>Quick Presets</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: ".4rem" }}>
+                    {SHIFT_PRESETS.map(p => (
+                        <button key={p.label} onClick={() => applyPreset(p)}
+                            style={{ fontSize: ".75rem", fontWeight: 600, padding: "5px 12px", borderRadius: 8, cursor: "pointer", border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#374151", transition: "all .15s" }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "#eff6ff"; e.currentTarget.style.borderColor = "#bfdbfe"; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.borderColor = "#e2e8f0"; }}>
+                            {p.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Start / End time */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Shift Start</label>
+                    <div style={{ display: "flex", gap: 6 }}>
+                        <select className="input select" value={shift.startHour} onChange={e => handleChange("startHour", Number(e.target.value))} style={{ flex: 1 }}>
+                            {HOURS.map(h => <option key={h} value={h}>{pad2(h)}:00 ({to12h(h, 0)})</option>)}
+                        </select>
+                        <select className="input select" value={shift.startMinute} onChange={e => handleChange("startMinute", Number(e.target.value))} style={{ width: 72 }}>
+                            {MINUTES.map(m => <option key={m} value={m}>{pad2(m)}</option>)}
+                        </select>
+                    </div>
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Shift End</label>
+                    <div style={{ display: "flex", gap: 6 }}>
+                        <select className="input select" value={shift.endHour} onChange={e => handleChange("endHour", Number(e.target.value))} style={{ flex: 1 }}>
+                            {HOURS.map(h => <option key={h} value={h}>{pad2(h)}:00 ({to12h(h, 0)})</option>)}
+                        </select>
+                        <select className="input select" value={shift.endMinute} onChange={e => handleChange("endMinute", Number(e.target.value))} style={{ width: 72 }}>
+                            {MINUTES.map(m => <option key={m} value={m}>{pad2(m)}</option>)}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {/* Grace & Half-day windows */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Late Grace Window (minutes)</label>
+                    <input type="number" min="0" max="120" className="input" value={shift.graceMinutes}
+                        onChange={e => handleChange("graceMinutes", Number(e.target.value))} />
+                    <span style={{ fontSize: ".72rem", color: "#64748b", marginTop: 3, display: "block" }}>
+                        Arrivals within this window after shift start are marked <strong>Late</strong>
+                    </span>
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Half-Day Threshold (minutes)</label>
+                    <input type="number" min="1" max="240" className="input" value={shift.halfDayAfterMinutes}
+                        onChange={e => handleChange("halfDayAfterMinutes", Number(e.target.value))} />
+                    <span style={{ fontSize: ".72rem", color: "#64748b", marginTop: 3, display: "block" }}>
+                        Arrivals beyond this window are marked <strong>Half-Day</strong>
+                    </span>
+                </div>
+            </div>
+
+            {/* Optional label */}
+            <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Shift Label <span style={{ fontWeight: 400, color: "#94a3b8" }}>(optional)</span></label>
+                <input className="input" placeholder="e.g. Morning Shift, US Shift…" value={shift.label}
+                    onChange={e => handleChange("label", e.target.value)} />
+            </div>
+
+            {result && (
+                <div style={{ background: result.success ? "#dcfce7" : "#fee2e2", border: `1px solid ${result.success ? "#86efac" : "#fca5a5"}`, borderRadius: 8, padding: "10px 14px", fontSize: ".82rem", color: result.success ? "#052e16" : "#450a0a", display: "flex", gap: 8, alignItems: "center", fontWeight: 600 }}>
+                    {result.success ? "✅" : "❌"} {result.message}
+                </div>
+            )}
+
+            <button className="btn btn-primary" onClick={handleSave} disabled={saving} style={{ justifyContent: "center" }}>
+                {saving ? <><span className="spinner" />Saving...</> : "💾 Save Shift"}
+            </button>
+        </div>
+    );
+};
+
+
 
 // ─────────────────────────────────────────────
 //  Main Component
@@ -1594,8 +2153,6 @@ const Employees = () => {
     return (
         <DashboardLayout>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
                 * { box-sizing: border-box; }
 
                 .emp-root { font-family: 'Inter', -apple-system, sans-serif; }
@@ -2402,8 +2959,11 @@ const Employees = () => {
                                     </div>
                                 </div>
                             )}
+                            {editTab === "salary" && <SalaryStructureTab employeeId={editEmp._id} />}
                             {editTab === "govid" && <GovernmentIdTab employeeId={editEmp._id} />}
                             {editTab === "bank" && <BankDetailsTab employeeId={editEmp._id} />}
+                            {editTab === "shift" && <ShiftTab employeeId={editEmp._id} />}
+
                         </div>
 
                         {editTab === "basic" && (
@@ -2462,56 +3022,7 @@ const Employees = () => {
                                 </div>
                             )}
 
-                            {!salaryLoading && salaryData && (
-                                <div>
-                                    <div style={{ background: "#f8fafc", padding: "1rem", borderRadius: "10px", border: "1px solid #e2e8f0", marginBottom: "1rem" }}>
-                                        <div style={{ fontSize: ".85rem", color: "#0f172a" }}>
-                                            <span style={{ color: "#1e293b", fontWeight: 600 }}>Monthly Salary:</span>
-                                            <span style={{ fontWeight: 800, marginLeft: ".5rem", color: "#0f172a" }}>₹{salaryData.monthlySalary?.toLocaleString()}</span>
-                                        </div>
-                                    </div>
-                                    <div className="salary-grid">
-                                        <div className="salary-item">
-                                            <div className="salary-item-label">Present Days</div>
-                                            <div className="salary-item-value" style={{ color: "#052e16" }}>{salaryData.presentDays}</div>
-                                        </div>
-                                        <div className="salary-item">
-                                            <div className="salary-item-label">Half Days</div>
-                                            <div className="salary-item-value" style={{ color: "#7c2d12" }}>{salaryData.halfDays}</div>
-                                        </div>
-                                        <div className="salary-item">
-                                            <div className="salary-item-label">Paid Leave</div>
-                                            <div className="salary-item-value" style={{ color: "#1e3a8a" }}>{salaryData.paidLeave ?? 0}</div>
-                                        </div>
-                                        <div className="salary-item">
-                                            <div className="salary-item-label">Unpaid Leave</div>
-                                            <div className="salary-item-value" style={{ color: "#7f1d1d" }}>{salaryData.unpaidLeave ?? 0}</div>
-                                        </div>
-                                        <div className="salary-item">
-                                            <div className="salary-item-label">Absent Days</div>
-                                            <div className="salary-item-value" style={{ color: "#7f1d1d" }}>{salaryData.absentDays}</div>
-                                        </div>
-                                        <div className="salary-item">
-                                            <div className="salary-item-label">Holidays (Paid)</div>
-                                            <div className="salary-item-value" style={{ color: "#3b0764" }}>{salaryData.holidays ?? 0}</div>
-                                        </div>
-                                    </div>
-                                    <div style={{
-                                        background: "#fffbeb", border: "1px solid #fde68a",
-                                        borderRadius: "8px", padding: ".75rem 1rem",
-                                        fontSize: ".8rem", color: "#451a03", marginTop: "1rem", fontWeight: 600
-                                    }}>
-                                        <strong>Working Days:</strong> {salaryData.totalWorkingDays}&nbsp;·&nbsp;
-                                        <strong>Weekends (Paid):</strong> {salaryData.totalWeekends}&nbsp;·&nbsp;
-                                        <strong>Holidays (Paid):</strong> {salaryData.holidays}&nbsp;·&nbsp;
-                                        <strong>Total Calendar Days:</strong> {salaryData.totalCalendarDays}
-                                    </div>
-                                    <div className="salary-total">
-                                        <div className="salary-total-label">Total Salary</div>
-                                        <div className="salary-total-value">₹{salaryData.totalSalary?.toLocaleString()}</div>
-                                    </div>
-                                </div>
-                            )}
+
 
                             {!salaryLoading && !salaryData && selectedMonth && selectedYear && (
                                 <div style={{ textAlign: "center", padding: "2rem 0", color: "#1e293b", fontWeight: 500 }}>

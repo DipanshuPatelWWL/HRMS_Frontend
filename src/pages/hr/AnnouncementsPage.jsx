@@ -7,7 +7,6 @@ import AnalyticsModal from "../../components/announcements/AnalyticsModal";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Nunito:wght@400;500;600;700&display=swap');
   * { box-sizing: border-box; }
 
   .ann-page {

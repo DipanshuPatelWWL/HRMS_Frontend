@@ -36,8 +36,6 @@ const icons = {
 
 /* ─── Styles ─────────────────────────────────────────────────────────────── */
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-
 .hr-root * { box-sizing: border-box; margin: 0; padding: 0; }
 .hr-root {
     font-family: 'DM Sans', sans-serif;

@@ -295,7 +295,7 @@ function CardBack({ user, logoImg }) {
                     {[
                         { label: "BLOOD GROUP", value: user?.bloodGroup || "N/A" },
                         { label: "PHONE NO.", value: user?.phone || "—" },
-                        { label: "EMR. CONTACT NO.", value: user?.phone || "—" },
+                        { label: "EMR. CONTACT NO.", value: user?.emergencyContact?.phone || "—" },
                     ].map(({ label, value }) => (
                         <div key={label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                             <span style={{ fontFamily: ff, fontSize: 9.5, fontWeight: 700, color: THEME.textDark, minWidth: 110, letterSpacing: ".03em" }}>
@@ -384,7 +384,6 @@ export default function EmployeeIDCard({ user, logoImg }) {
         if (!frontHTML || !backHTML) return;
 
         const sharedStyles = `
-            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;600;700&display=swap');
             * { box-sizing: border-box; margin: 0; padding: 0; }
             body {
                 background: white;

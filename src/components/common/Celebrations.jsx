@@ -457,7 +457,8 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
                 eventType: editData.eventType || "birthday",
                 sendToEmployee: editData.sendToEmployee ?? true,
                 sendToOthers: editData.sendToOthers ?? false,
-                recipients: editData.recipients?.map(r => r._id || r) || [],
+                recipients: editData.recipients?.map(r => r._id || r) ||
+                    (editData.employeeId ? [editData.employeeId?._id || editData.employeeId] : []),
                 customMessage: editData.customMessage || "",
                 scheduledAt: editData.scheduledAt ? new Date(editData.scheduledAt).toISOString().slice(0, 16) : "",
             });
@@ -690,58 +691,44 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
                         )}
                     </div>
 
-                    {/* Send Options */}
+                    {/* Send To — single recipients list, includes the employee themselves */}
                     <div style={{ marginBottom: 20 }}>
-                        <label style={labelStyle}>Send Options</label>
-                        <div style={{ display: "flex", gap: 10 }}>
-                            {[
-                                { key: "sendToEmployee", label: "📧 To Employee" },
-                                { key: "sendToOthers", label: "👥 To Team" },
-                            ].map(opt => (
-                                <label
-                                    key={opt.key}
-                                    style={{
-                                        flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-                                        gap: 8, fontSize: 13, cursor: "pointer", padding: "8px 12px",
-                                        border: form[opt.key] ? "2px solid #5b4cf5" : "1px solid #e5e7eb",
-                                        borderRadius: 10, background: form[opt.key] ? "#ede9fe" : "#f9fafb",
-                                        color: form[opt.key] ? "#5b21b6" : "#374151",
-                                        fontWeight: form[opt.key] ? 700 : 500,
-                                        transition: "all 0.15s",
-                                    }}
-                                >
+                        <label style={labelStyle}>Send Email To</label>
+                        <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 8 }}>
+                            Select who should receive this celebration email.
+                        </p>
+                        <div style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: "8px 12px", maxHeight: 160, overflowY: "auto" }}>
+                            {users.map(u => (
+                                <label key={u._id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", fontSize: 14, color: "#111827", cursor: "pointer", borderBottom: "1px solid #f3f4f6" }}>
                                     <input
                                         type="checkbox"
-                                        checked={form[opt.key]}
-                                        onChange={e => set(opt.key, e.target.checked)}
-                                        style={{ display: "none" }}
+                                        checked={form.recipients.includes(u._id)}
+                                        onChange={e =>
+                                            set("recipients", e.target.checked
+                                                ? [...form.recipients, u._id]
+                                                : form.recipients.filter(id => id !== u._id)
+                                            )
+                                        }
+                                        style={{ accentColor: "#5b4cf5" }}
                                     />
-                                    {opt.label}
+                                    <div style={{ flex: 1 }}>
+                                        <span style={{ fontWeight: 600 }}>{u.name}</span>
+                                        {u._id === form.employeeId && (
+                                            <span style={{ marginLeft: 6, fontSize: 10, background: "#ede9fe", color: "#5b21b6", padding: "1px 6px", borderRadius: 20, fontWeight: 700 }}>
+                                                Employee
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span style={{ fontSize: 11, color: "#6b7280" }}>{u.email}</span>
                                 </label>
                             ))}
                         </div>
+                        {form.recipients.length > 0 && (
+                            <p style={{ fontSize: 11, color: "#5b21b6", marginTop: 6, fontWeight: 600 }}>
+                                ✓ {form.recipients.length} recipient{form.recipients.length > 1 ? "s" : ""} selected
+                            </p>
+                        )}
                     </div>
-
-                    {/* Recipients */}
-                    {form.sendToOthers && (
-                        <div style={{ marginBottom: 20 }}>
-                            <label style={labelStyle}>Recipients</label>
-                            <div style={{ border: "1px solid #d1d5db", borderRadius: 10, padding: "8px 12px", maxHeight: 140, overflowY: "auto" }}>
-                                {users.filter(u => u._id !== form.employeeId).map(u => (
-                                    <label key={u._id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", fontSize: 14, color: "#111827", cursor: "pointer" }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={form.recipients.includes(u._id)}
-                                            onChange={e => set("recipients", e.target.checked ? [...form.recipients, u._id] : form.recipients.filter(id => id !== u._id))}
-                                            style={{ accentColor: "#5b4cf5" }}
-                                        />
-                                        {u.name}
-                                        <span style={{ fontSize: 11, color: "#6b7280" }}>{u.email}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
                     {/* Footer */}
                     <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 16, borderTop: "1px solid #f3f4f6" }}>
@@ -918,6 +905,7 @@ const Celebrations = () => {
     }, []);
 
     const handleSave = async (form, id) => {
+        if (saving) return;   // ← prevent double submit
         if (!form.employeeId || !form.scheduledAt) {
             toast.error("Employee and scheduled date are required.");
             return;
@@ -957,7 +945,11 @@ const Celebrations = () => {
     const openCreate = () => { setEditData(null); setModalOpen(true); };
     const openEdit = (item) => { setEditData(item); setModalOpen(true); };
     const openScheduleFromEvent = (event) => {
-        setEditData({ employeeId: { _id: event.employeeId }, eventType: event.eventType });
+        setEditData({
+            employeeId: { _id: event.employeeId },
+            eventType: event.eventType,
+            recipients: [event.employeeId],  // auto-check the employee
+        });
         setModalOpen(true);
     };
 

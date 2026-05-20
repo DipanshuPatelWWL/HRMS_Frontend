@@ -303,8 +303,6 @@ const PayrollMgmt = () => {
     return (
         <DashboardLayout>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
-
                 .pr-root { font-family: 'DM Sans', sans-serif; }
 
                 .pr-stats {
@@ -757,22 +755,48 @@ const PayrollMgmt = () => {
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <span style={{ color: "#111827", fontWeight: 600, fontSize: ".9rem" }}>
-                                                        ₹{p.monthlySalary ? p.monthlySalary.toLocaleString("en-IN") : "—"}
-                                                    </span>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                                        {p.deductions > 0
+                                                            ? <span className="deduction-val">− ₹{p.deductions.toLocaleString("en-IN")}</span>
+                                                            : <span style={{ color: "#9ca3af", fontWeight: 500 }}>—</span>
+                                                        }
+                                                        {p.totalStatutoryDeductions > 0 && (
+                                                            <span style={{ fontSize: ".72rem", color: "#6b7280", fontWeight: 500 }}>
+                                                                incl. PF/ESI: ₹{p.totalStatutoryDeductions.toLocaleString("en-IN")}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td>
-                                                    {p.deductions > 0
-                                                        ? <span className="deduction-val">− ₹{p.deductions.toLocaleString("en-IN")}</span>
-                                                        : <span style={{ color: "#9ca3af", fontWeight: 500 }}>—</span>
-                                                    }
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                                        <span className="net-salary">
+                                                            ₹{(p.netSalary || 0).toLocaleString("en-IN")}
+                                                        </span>
+                                                        {p.grossEarnings && p.grossEarnings !== p.monthlySalary && (
+                                                            <span style={{ fontSize: ".72rem", color: "#6b7280", fontWeight: 500 }}>
+                                                                Gross: ₹{p.grossEarnings.toLocaleString("en-IN")}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <span className="net-salary">
                                                         ₹{(p.netSalary || 0).toLocaleString("en-IN")}
                                                     </span>
                                                 </td>
-                                                <td><StatusBadge status={p.status} /></td>
+                                                <td>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                                        <StatusBadge status={p.status} />
+                                                        {p.isReleased
+                                                            ? <span style={{ fontSize: ".68rem", color: "#15803d", fontWeight: 700, display: "flex", alignItems: "center", gap: 3 }}>
+                                                                <FiCheck size={10} /> Visible to employee
+                                                            </span>
+                                                            : <span style={{ fontSize: ".68rem", color: "#9ca3af", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+                                                                <FiClock size={10} /> HR only
+                                                            </span>
+                                                        }
+                                                    </div>
+                                                </td>
                                                 <td>
                                                     <div className="pr-actions">
                                                         <IconBtn

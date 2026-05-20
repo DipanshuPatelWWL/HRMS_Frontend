@@ -47,7 +47,6 @@ function LoadingScreen() {
             background: "#f5f4f7", fontFamily: ff,
         }}>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
                 @keyframes spin { to { transform: rotate(360deg); } }
                 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
                 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -77,7 +76,6 @@ function ErrorScreen({ message }) {
             background: "#f5f4f7", fontFamily: ff, padding: 24,
         }}>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
                 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
                 * { box-sizing: border-box; margin: 0; padding: 0; }
             `}</style>
@@ -182,7 +180,6 @@ export default function PublicProfile() {
             fontFamily: ff, padding: "24px 16px 48px",
         }}>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
                 * { box-sizing: border-box; margin: 0; padding: 0; }
                 @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
                 @keyframes scaleIn { from { opacity:0; transform:scale(.95); } to { opacity:1; transform:scale(1); } }

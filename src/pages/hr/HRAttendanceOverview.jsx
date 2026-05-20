@@ -267,7 +267,6 @@ const HRAttendanceOverview = () => {
     return (
         <DashboardLayout>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
                 .hr-ov-root { font-family: 'DM Sans', sans-serif; padding-bottom: 40px; }
                 .hr-ov-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
                 .hr-tabs { display: flex; gap: 4px; background: #F1F5F9; border-radius: 10px; padding: 4px; margin-bottom: 20px; width: fit-content; }

@@ -83,8 +83,6 @@ const injectStyles = () => {
     const s = document.createElement("style");
     s.setAttribute("data-hc2", "1");
     s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
     @keyframes hc2-rise { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:none } }
     @keyframes hc2-pop  { 0%{transform:scale(.95);opacity:0} 70%{transform:scale(1.01)} 100%{transform:scale(1);opacity:1} }
 

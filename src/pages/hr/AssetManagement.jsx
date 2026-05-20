@@ -309,6 +309,9 @@ export default function AssetManagement() {
     const [newAsset, setNewAsset] = useState(EMPTY_ASSET);
     const [assetSaving, setAssetSaving] = useState(false);
 
+    const [scanLoading, setScanLoading] = useState(false);
+    const [scanPreview, setScanPreview] = useState(null);
+
     const [historyModal, setHistoryModal] = useState(null);
     const [historyLoading, setHistoryLoading] = useState(false);
 
@@ -401,6 +404,29 @@ export default function AssetManagement() {
             toast(err.response?.data?.message || "Failed to add asset");
         } finally {
             setAssetSaving(false);
+        }
+    };
+
+    // ── OCR Barcode Scan ───────────────────────────────────────────────────────
+
+    const handleBarcodeSccan = async (file) => {
+        if (!file) return;
+        setScanLoading(true);
+        setScanPreview(URL.createObjectURL(file));
+        const fd = new FormData();
+        fd.append("image", file);
+        try {
+            const res = await API.post("/assets/scan", fd);
+            if (res.data.code) {
+                setNewAsset((p) => ({ ...p, barcode: res.data.code }));
+                toast(`Barcode scanned: ${res.data.code}`);
+            } else {
+                toast("No barcode found — enter manually");
+            }
+        } catch {
+            toast("Scan failed — enter barcode manually");
+        } finally {
+            setScanLoading(false);
         }
     };
 
@@ -714,9 +740,9 @@ export default function AssetManagement() {
                                             opts: ["", ...ASSET_TYPES], ph: "Select type",
                                         },
                                         { key: "name", label: "Asset Name / Model", ph: "Dell Latitude 5520" },
-                                        { key: "barcode", label: "Barcode", ph: "BC-XX-YEAR-0000" },
+                                        { key: "barcode", label: "Barcode", ph: "BC-XX-YEAR-0000", scannable: true },
                                         { key: "condition", label: "Condition", type: "select", opts: CONDITIONS },
-                                    ].map(({ key, label, type = "text", opts, ph }) => (
+                                    ].map(({ key, label, type = "text", opts, ph, scannable }) => (
                                         <div key={key}>
                                             <label className="am-label">{label}</label>
                                             {opts ? (
@@ -728,14 +754,45 @@ export default function AssetManagement() {
                                                     {opts.map((o) => <option key={o} value={o}>{o || "Select type"}</option>)}
                                                 </select>
                                             ) : (
-                                                <input
-                                                    className="am-input"
-                                                    type={type}
-                                                    min={type === "number" ? 0 : undefined}
-                                                    value={newAsset[key]}
-                                                    placeholder={ph}
-                                                    onChange={(e) => setNewAsset((p) => ({ ...p, [key]: e.target.value }))}
-                                                />
+                                                <div>
+                                                    <div style={{ display: "flex", gap: 8 }}>
+                                                        <input
+                                                            className="am-input"
+                                                            type={type}
+                                                            value={newAsset[key]}
+                                                            placeholder={ph}
+                                                            onChange={(e) => setNewAsset((p) => ({ ...p, [key]: e.target.value }))}
+                                                            style={{ flex: 1 }}
+                                                        />
+                                                        {scannable && (
+                                                            <label style={{
+                                                                display: "inline-flex", alignItems: "center", gap: 5,
+                                                                padding: "9px 12px", background: "#E1F5EE",
+                                                                border: "1.5px solid #9FE1CB", borderRadius: 8,
+                                                                cursor: "pointer", fontSize: 12, fontWeight: 600,
+                                                                color: "#0F6E56", whiteSpace: "nowrap",
+                                                                opacity: scanLoading ? 0.6 : 1,
+                                                            }}>
+                                                                {scanLoading ? <Icon.Spinner /> : <Icon.Camera />}
+                                                                {scanLoading ? "Scanning…" : "Scan"}
+                                                                <input
+                                                                    type="file" accept="image/*"
+                                                                    style={{ display: "none" }}
+                                                                    onChange={(e) => e.target.files[0] && handleBarcodeSccan(e.target.files[0])}
+                                                                />
+                                                            </label>
+                                                        )}
+                                                    </div>
+                                                    {scannable && scanPreview && (
+                                                        <img src={scanPreview} alt="scan preview"
+                                                            style={{ marginTop: 6, height: 48, borderRadius: 6, objectFit: "cover", border: "1px solid #e2e8f0" }} />
+                                                    )}
+                                                    {scannable && (
+                                                        <p style={{ fontSize: 11, color: "#718096", margin: "5px 0 0" }}>
+                                                            📸 Tip: Take a close-up photo with the label fully visible and right-side up for best results
+                                                        </p>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     ))}

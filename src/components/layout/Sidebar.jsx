@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useContext, useEffect, useLayoutEffect, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import { useNotificationDots } from "../common/NotificationDot";
 
 import {
     MdDashboard,
@@ -43,10 +44,23 @@ const SIDEBAR_STYLES = `
     color: #0a0a0a !important;
   }
 
-  .sidebar-logo,
-  .sidebar-brand .sidebar-logo {
-    color: #ffffff !important;
-    background: #4f46e5 !important;
+  /* ── FIXED: logo gets NO background – transparent always ── */
+  .sidebar-logo {
+    width: 44px !important;
+    height: 44px !important;
+    object-fit: contain !important;
+    background: transparent !important;
+    border-radius: 8px !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ── Brand row ── */
+  .sidebar-brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 14px 14px 10px !important;
   }
 
   .sidebar-footer .nav-item,
@@ -90,9 +104,9 @@ const SIDEBAR_STYLES = `
 
   /* ── Nav item base ── */
   .nav-item {
-    transition: background 0.15s ease !important;
+   transition: background 0.15s ease !important;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
@@ -114,7 +128,6 @@ const SIDEBAR_STYLES = `
     background: #625be79a !important;
   }
 
-  /* Icon always fixed width so labels align */
   .nav-icon {
     flex-shrink: 0 !important;
     width: 18px !important;
@@ -133,7 +146,6 @@ const SIDEBAR_STYLES = `
     line-height: 1;
   }
 
-  /* Collapsed mode: hide label, show tooltip */
   .sidebar-collapsed .nav-item-label {
     display: none !important;
   }
@@ -158,18 +170,24 @@ const SIDEBAR_STYLES = `
     padding-top: 4px !important;
   }
 
-  /* Tooltip on hover in collapsed mode */
-  .sidebar-collapsed .nav-item {
-    position: relative;
+  /* Collapsed: hide title and logo gets centered */
+  .sidebar-collapsed .sidebar-brand {
+    justify-content: center !important;
+    padding: 14px 0 10px !important;
   }
 
- .sidebar-logo {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
-    background: transparent !important;
-}
+  .sidebar-collapsed .sidebar-title,
+  .sidebar-collapsed .sidebar-close {
+    display: none !important;
+  }
 
+  /* Collapsed logo slightly smaller */
+  .sidebar-collapsed .sidebar-logo {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  /* Tooltip on hover in collapsed mode */
   .sidebar-collapsed .nav-item:hover::after {
     content: attr(title);
     position: absolute;
@@ -188,7 +206,7 @@ const SIDEBAR_STYLES = `
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
 
-  .sidebar-collapsed .nav-item:hover::before {
+ .sidebar-collapsed .nav-item:hover::before {
     content: '';
     position: absolute;
     left: calc(100% + 4px);
@@ -199,9 +217,17 @@ const SIDEBAR_STYLES = `
     pointer-events: none;
     z-index: 9999;
   }
+
+  /* Notification dot — collapsed: absolute top-right of icon */
+    .sidebar-collapsed .nb-nav-dot {
+    position: absolute !important;
+    top: -8px !important;
+    right: -10px !important;
+    margin-left: 0 !important;
+  }
 `;
 
-/* ─── Icon map: iconKey → React Icon component ─── */
+/* ─── Icon map ─── */
 const ICON_MAP = {
     dashboard: MdDashboard,
     attendance: MdAccessTime,
@@ -227,16 +253,15 @@ const ICON_MAP = {
     aiTraining: MdPsychology,
     salesReport: MdTrendingUp,
     dailyReport: MdAssignment,
-    assets: MdInventory2,      // ✅ dedicated assets icon
-    assetsMgmt: MdManageAccounts,  // ✅ dedicated assets management icon
-    viewTasks: MdSpaceDashboard,  // ✅ distinct icon for "View Tasks"
+    assets: MdInventory2,
+    assetsMgmt: MdManageAccounts,
+    viewTasks: MdSpaceDashboard,
 };
 
-/**
- * NavItem – renders a Link with icon + label.
- */
 const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
     const { pathname } = useLocation();
+    const { hasDot, clearDot } = useNotificationDots();
+
     const active =
         pathname === to ||
         (
@@ -247,6 +272,14 @@ const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
             pathname.startsWith(to + "/")
         );
 
+    // Clear dot when this tab becomes active
+    useEffect(() => {
+        if (active && hasDot(to)) {
+            clearDot(to);
+        }
+    }, [active, to, hasDot, clearDot]);
+
+    const showDot = hasDot(to) && !active;
     const IconComponent = ICON_MAP[iconKey] || MdDashboard;
 
     return (
@@ -255,27 +288,69 @@ const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
             className={`nav-item ${active ? "active" : ""}`}
             style={{ textDecoration: "none", color: "#0a0a0a" }}
             onClick={onClick}
-            title={label}                  /* always set for collapsed tooltip */
+            title={label}
         >
-            <IconComponent size={18} className="nav-icon" />
+            {/* Icon wrapper — relative so dot can anchor to it in collapsed mode */}
+            <span style={{ position: "relative", display: "flex", alignItems: "center", flexShrink: 0 }}>
+                <IconComponent size={18} className="nav-icon" />
+                {/* Collapsed dot: sits on top-right corner of the icon */}
+                {showDot && collapsed && (
+                    <span
+                        className="nb-nav-dot"
+                        style={{
+                            position: "absolute",
+                            top: -6,
+                            right: -10,
+                            background: "#7c3aed",
+                            color: "#fff",
+                            fontSize: "0.55rem",
+                            fontWeight: 700,
+                            padding: "1px 4px",
+                            borderRadius: "4px",
+                            pointerEvents: "none",
+                            whiteSpace: "nowrap",
+                            boxShadow: "0 0 0 2px #fff",
+                            lineHeight: 1.4,
+                            letterSpacing: "0.02em",
+                        }}
+                    >
+                        New
+                    </span>
+                )}
+            </span>
+
             <span
                 className="nav-item-label"
                 style={{ color: "#0a0a0a", fontWeight: active ? 600 : 500 }}
             >
                 {label}
             </span>
+
+            {/* Expanded dot: sits at far right of the row */}
+            {showDot && !collapsed && (
+                <span
+                    className="nb-nav-dot"
+                    style={{
+                        background: "#7c3aed",
+                        color: "#fff",
+                        fontSize: "0.6rem",
+                        fontWeight: 700,
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        flexShrink: 0,
+                        marginLeft: "auto",
+                        whiteSpace: "nowrap",
+                        lineHeight: 1.4,
+                        letterSpacing: "0.03em",
+                    }}
+                >
+                    New
+                </span>
+            )}
         </Link>
     );
 };
 
-/**
- * Sidebar
- *
- * Props:
- *  isOpen    – boolean – mobile drawer open state
- *  onClose   – fn      – close the mobile drawer
- *  collapsed – boolean – desktop icon-only state
- */
 const Sidebar = ({ isOpen, onClose, collapsed }) => {
     const { user, logout } = useContext(AuthContext);
     const styleInjected = useRef(false);
@@ -293,10 +368,8 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
     useLayoutEffect(() => {
         const nav = navRef.current;
         if (!nav) return;
-
         const savedScroll = sessionStorage.getItem("sidebar-scroll");
         if (savedScroll) nav.scrollTop = parseInt(savedScroll, 10);
-
         const handleScroll = () => sessionStorage.setItem("sidebar-scroll", nav.scrollTop);
         nav.addEventListener("scroll", handleScroll);
         return () => nav.removeEventListener("scroll", handleScroll);
@@ -324,13 +397,17 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
         <div className={sidebarClass}>
             {/* ── Brand ── */}
             <div className="sidebar-brand">
+                {/* 
+                  KEY FIX: img tag only — no wrapper div with purple bg.
+                  The logo PNG itself has the WXL branding; we just display it cleanly.
+                */}
                 <img
                     src="/logo4.png"
                     alt="HRMS Logo"
                     className="sidebar-logo"
                 />
 
-                <span className="sidebar-title" style={{ color: "#0a0a0a" }}>
+                <span className="sidebar-title" style={{ color: "#0a0a0a", fontWeight: 600, fontSize: "1rem" }}>
                     HRMS
                 </span>
 
@@ -338,6 +415,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                     className="sidebar-close"
                     onClick={onClose}
                     aria-label="Close menu"
+                    style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer" }}
                 >
                     <svg
                         width="16"
@@ -372,17 +450,12 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <NavItem to="/employee/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/assets" label="Assets" iconKey="assets" onClick={onClose} collapsed={collapsed} />
-
-                        {/* Sales report – non-BDE/BDM sales employees */}
                         {isSalesOther && (
                             <NavItem to="/employee/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
                         )}
-
-                        {/* Sales report – BDE / BDM (different route) */}
                         {isSalesBDE && (
                             <NavItem to="/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
                         )}
-
                         <NavItem to="/employee/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                     </div>
                 )}
@@ -403,7 +476,6 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/tl/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/assets" label="Assets" iconKey="assets" onClick={onClose} collapsed={collapsed} />
                         </div>
-
                         <div className="sidebar-section">
                             <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Team</div>
                             <NavItem to="/tl/team" label="My Team" iconKey="team" onClick={onClose} collapsed={collapsed} />

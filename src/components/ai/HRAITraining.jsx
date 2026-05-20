@@ -87,8 +87,6 @@ const HRAITraining = () => {
 
                 {/* GOOGLE FONT */}
                 <style>{`
-                    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-
                     .q-card {
                         background: #fff;
                         border: 1.5px solid #e8e6e0;

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import API from "../../services/api";
 import socket from "../../socket";
 import { toast } from "react-toastify";
+import { useNotificationDots } from "./NotificationDot";
 
 /* ─── Bell SVG ───────────────────────────────────────────────────────────── */
 const BellIcon = () => (
@@ -354,10 +355,12 @@ const NotificationBell = () => {
     const [items, setItems] = useState([]);
     const [ringing, setRinging] = useState(false);
     const [filter, setFilter] = useState("all");
+    const { addDots } = useNotificationDots()
 
     const dropRef = useRef(null);
     const audioRef = useRef(null);
     const isInit = useRef(false);
+
 
     /* ── Play sound ── */
     const playSound = useCallback(() => {
@@ -381,6 +384,7 @@ const NotificationBell = () => {
         });
         ringBell();
         playSound();
+        addDots(item.type);
         toast.info(
             <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
                 <span style={{ fontSize: 16 }}>{cfg.icon}</span>
@@ -393,15 +397,18 @@ const NotificationBell = () => {
             </div>,
             { autoClose: 4000, position: "top-right" }
         );
-    }, [ringBell, playSound]);
+    }, [ringBell, playSound, addDots]);
 
     /* ── Fetch all notifications ── */
     const fetchNotifications = useCallback(async () => {
         try {
             const res = await API.get("/notifications");
-            setItems(res.data.data || []);
+            const data = res.data.data || [];
+            setItems(data);
+            // Restore dots for all unread on load/refresh
+            data.filter(n => !n.isRead).forEach(n => addDots(n.type));
         } catch { }
-    }, []);
+    }, [addDots]);
 
     /* ── Mount: fetch + socket listeners ── */
     useEffect(() => {

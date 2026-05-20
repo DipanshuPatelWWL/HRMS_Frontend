@@ -1,19 +1,20 @@
 import jsPDF from "jspdf";
 import logoImg from "../assets/logo.png";
+import Swal from "sweetalert2";
 
 // ── Company ───────────────────────────────────────────────
 const COMPANY = {
-    name: "World WebLogic",
-    address: "B 108, 1st Floor, Office No. 2nd, Sector 63, Noida - 201309, Uttar Pradesh India",
-    website: "worldweblogic.com",
-    phone1: "+91 120 4545733",
-    phone2: "+91 85058 37801",
-    email: "info@worldweblogic.com",
+  name: "World WebLogic",
+  address: "B 108, 1st Floor, Office No. 2nd, Sector 63, Noida - 201309, Uttar Pradesh India",
+  website: "worldweblogic.com",
+  phone1: "+91 120 4545733",
+  phone2: "+91 85058 37801",
+  email: "info@worldweblogic.com",
 };
 
 const MONTHS = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
 // ── Colors ────────────────────────────────────────────────
@@ -32,109 +33,109 @@ const RED = [200, 50, 50];
 const RS = "Rs.";
 
 const fmt = (n) => {
-    if (typeof n !== "number" || isNaN(n)) return "0.00";
-    return Math.abs(n).toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
+  if (typeof n !== "number" || isNaN(n)) return "0.00";
+  return Math.abs(n).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 };
 
 const fmtInt = (n) =>
-    typeof n === "number" && !isNaN(n) ? String(Math.round(n)) : "0";
+  typeof n === "number" && !isNaN(n) ? String(Math.round(n)) : "0";
 
 function formatDateStr(dateVal) {
-    if (!dateVal) return "—";
-    try {
-        const d = new Date(dateVal);
-        if (isNaN(d.getTime())) return "—";
-        return d.toLocaleDateString("en-IN", {
-            day: "2-digit", month: "short", year: "numeric",
-        });
-    } catch {
-        return "—";
-    }
+  if (!dateVal) return "—";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("en-IN", {
+      day: "2-digit", month: "short", year: "numeric",
+    });
+  } catch {
+    return "—";
+  }
 }
 
 function sf(doc, weight = "normal", size = 9) {
-    doc.setFont("helvetica", weight);
-    doc.setFontSize(size);
+  doc.setFont("helvetica", weight);
+  doc.setFontSize(size);
 }
 
 function fillRect(doc, x, y, w, h, fill) {
-    doc.setFillColor(...fill);
-    doc.rect(x, y, w, h, "F");
+  doc.setFillColor(...fill);
+  doc.rect(x, y, w, h, "F");
 }
 
 function strokeRect(doc, x, y, w, h, color = BORDER, lw = 0.25) {
-    doc.setDrawColor(...color);
-    doc.setLineWidth(lw);
-    doc.rect(x, y, w, h, "S");
+  doc.setDrawColor(...color);
+  doc.setLineWidth(lw);
+  doc.rect(x, y, w, h, "S");
 }
 
 function fillStrokeRect(doc, x, y, w, h, fill, strokeColor = BORDER, lw = 0.25) {
-    doc.setFillColor(...fill);
-    doc.setDrawColor(...strokeColor);
-    doc.setLineWidth(lw);
-    doc.rect(x, y, w, h, "FD");
+  doc.setFillColor(...fill);
+  doc.setDrawColor(...strokeColor);
+  doc.setLineWidth(lw);
+  doc.rect(x, y, w, h, "FD");
 }
 
 function hline(doc, x1, x2, y, color = BORDER, lw = 0.25) {
-    doc.setDrawColor(...color);
-    doc.setLineWidth(lw);
-    doc.line(x1, y, x2, y);
+  doc.setDrawColor(...color);
+  doc.setLineWidth(lw);
+  doc.line(x1, y, x2, y);
 }
 
 function cell(doc, x, y, w, h, text, opts = {}) {
-    const {
-        fill,
-        textColor = BLACK,
-        fontWeight = "normal",
-        fontSize = 8,
-        align = "left",
-        paddingX = 2.5,
-    } = opts;
+  const {
+    fill,
+    textColor = BLACK,
+    fontWeight = "normal",
+    fontSize = 8,
+    align = "left",
+    paddingX = 2.5,
+  } = opts;
 
-    if (fill) fillRect(doc, x, y, w, h, fill);
-    strokeRect(doc, x, y, w, h);
+  if (fill) fillRect(doc, x, y, w, h, fill);
+  strokeRect(doc, x, y, w, h);
 
-    if (text === null || text === undefined || text === "") return;
+  if (text === null || text === undefined || text === "") return;
 
-    sf(doc, fontWeight, fontSize);
-    doc.setTextColor(...textColor);
+  sf(doc, fontWeight, fontSize);
+  doc.setTextColor(...textColor);
 
-    const ty = y + h / 2 + fontSize * 0.45;
-    const tx =
-        align === "center" ? x + w / 2
-            : align === "right" ? x + w - paddingX
-                : x + paddingX;
+  const ty = y + h / 2 + fontSize * 0.45;
+  const tx =
+    align === "center" ? x + w / 2
+      : align === "right" ? x + w - paddingX
+        : x + paddingX;
 
-    doc.text(String(text), tx, ty, { align });
+  doc.text(String(text), tx, ty, { align });
 }
 
 // ─────────────────────────────────────────────────────────
 //  NUMBER TO WORDS  (Indian system)
 // ─────────────────────────────────────────────────────────
 function numberToWords(n) {
-    if (n === 0) return "zero";
-    const ones = [
-        "", "one", "two", "three", "four", "five", "six", "seven",
-        "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
-        "fifteen", "sixteen", "seventeen", "eighteen", "nineteen",
-    ];
-    const tens = [
-        "", "", "twenty", "thirty", "forty", "fifty",
-        "sixty", "seventy", "eighty", "ninety",
-    ];
+  if (n === 0) return "zero";
+  const ones = [
+    "", "one", "two", "three", "four", "five", "six", "seven",
+    "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
+    "fifteen", "sixteen", "seventeen", "eighteen", "nineteen",
+  ];
+  const tens = [
+    "", "", "twenty", "thirty", "forty", "fifty",
+    "sixty", "seventy", "eighty", "ninety",
+  ];
 
-    function convert(num) {
-        if (num < 20) return ones[num];
-        if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? " " + ones[num % 10] : "");
-        if (num < 1000) return ones[Math.floor(num / 100)] + " hundred" + (num % 100 ? " " + convert(num % 100) : "");
-        if (num < 100000) return convert(Math.floor(num / 1000)) + " thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
-        if (num < 10000000) return convert(Math.floor(num / 100000)) + " lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
-        return convert(Math.floor(num / 10000000)) + " crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
-    }
-    return convert(Math.abs(Math.round(n)));
+  function convert(num) {
+    if (num < 20) return ones[num];
+    if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? " " + ones[num % 10] : "");
+    if (num < 1000) return ones[Math.floor(num / 100)] + " hundred" + (num % 100 ? " " + convert(num % 100) : "");
+    if (num < 100000) return convert(Math.floor(num / 1000)) + " thousand" + (num % 1000 ? " " + convert(num % 1000) : "");
+    if (num < 10000000) return convert(Math.floor(num / 100000)) + " lakh" + (num % 100000 ? " " + convert(num % 100000) : "");
+    return convert(Math.floor(num / 10000000)) + " crore" + (num % 10000000 ? " " + convert(num % 10000000) : "");
+  }
+  return convert(Math.abs(Math.round(n)));
 }
 
 // ─────────────────────────────────────────────────────────
@@ -158,587 +159,394 @@ function numberToWords(n) {
 //    So if employee attends all working days → net = monthlySalary ✅
 // ─────────────────────────────────────────────────────────
 function resolveSalaryFigures(p) {
-    const emp = (p.employee && typeof p.employee === "object") ? p.employee : {};
+  const emp = (p.employee && typeof p.employee === "object") ? p.employee : {};
 
-    // Monthly salary set by HR
-    const monthlySalary =
-        p.monthlySalary ||
-        p.basicSalary ||
-        (emp.salary && typeof emp.salary === "object" ? emp.salary.monthly : null) ||
-        (typeof emp.salary === "number" ? emp.salary : 0) ||
-        emp.monthlySalary ||
-        0;
+  // Monthly salary set by HR
+  const monthlySalary =
+    p.monthlySalary ||
+    p.basicSalary ||
+    (emp.salary && typeof emp.salary === "object" ? emp.salary.monthly : null) ||
+    (typeof emp.salary === "number" ? emp.salary : 0) ||
+    emp.monthlySalary ||
+    0;
 
-    // Attendance counts from backend
-    const totalWorkingDays = p.totalWorkingDays ?? 0;
-    const totalCalendarDays = p.totalCalendarDays ?? 30;
-    const weekends = p.weekends ?? p.totalWeekends ?? 0;
-    const holidayCount = p.holidays ?? 0;
+  // Attendance counts from backend
+  const totalWorkingDays = p.totalWorkingDays ?? 0;
+  const totalCalendarDays = p.totalCalendarDays ?? 30;
+  const weekends = p.weekends ?? p.totalWeekends ?? 0;
+  const holidayCount = p.holidays ?? 0;
 
-    // presentDays from backend = FULL present days (half-days are stored separately)
-    const presentDays = p.presentDays ?? 0;
-    const halfDays = p.halfDays ?? 0;
-    const paidLeave = p.paidLeave ?? 0;
-    const unpaidLeave = p.unpaidLeave ?? 0;
-    const absentDays = p.absentDays ?? 0;
+  // presentDays from backend = FULL present days (half-days are stored separately)
+  const presentDays = p.presentDays ?? 0;
+  const halfDays = p.halfDays ?? 0;
+  const paidLeave = p.paidLeave ?? 0;
+  const unpaidLeave = p.unpaidLeave ?? 0;
+  const absentDays = p.absentDays ?? 0;
 
-    // ── Per-day rate ──────────────────────────────────────
-    // Use backend-stored value first; compute from workingDays as fallback
-    const perDaySalary =
-        p.perDaySalary ??
-        (totalCalendarDays > 0 ? monthlySalary / totalCalendarDays : 0);
+  // ── Per-day rate ──────────────────────────────────────
+  // Use backend-stored value first; compute from workingDays as fallback
+  const perDaySalary =
+    p.perDaySalary ??
+    (totalCalendarDays > 0 ? monthlySalary / totalCalendarDays : 0);
 
-    const halfDaySalary =
-        p.halfDaySalary ??
-        (perDaySalary / 2);
+  const halfDaySalary =
+    p.halfDaySalary ??
+    (perDaySalary / 2);
 
-    // ── Earnings ──────────────────────────────────────────
-    // New formula: start from full salary, only deductions
-    const absentAmt = p.absentAmt ?? round2(absentDays * perDaySalary);
-    const halfDayDeduct = p.halfDayDeduct ?? round2(halfDays * halfDaySalary);
-    const unpaidLeaveAmt = p.unpaidLeaveAmt ?? round2(unpaidLeave * perDaySalary);
-    const totalDeductions = p.deductions ?? round2(absentAmt + halfDayDeduct + unpaidLeaveAmt);
+  // ── Earnings ──────────────────────────────────────────
+  // New formula: start from full salary, only deductions
+  const absentAmt = p.absentAmt ?? round2(absentDays * perDaySalary);
+  const halfDayDeduct = p.halfDayDeduct ?? round2(halfDays * halfDaySalary);
+  const unpaidLeaveAmt = p.unpaidLeaveAmt ?? round2(unpaidLeave * perDaySalary);
+  const totalDeductions = p.deductions ?? round2(absentAmt + halfDayDeduct + unpaidLeaveAmt);
 
-    const rawNet = p.netSalary ?? 0;
-    const netSalary = rawNet > 0
-        ? rawNet
-        : Math.max(0, monthlySalary - totalDeductions);
-    function round2(n) { return Math.round(n * 100) / 100; }
+  const rawNet = p.netSalary ?? 0;
+  const netSalary = rawNet > 0
+    ? rawNet
+    : Math.max(0, monthlySalary - totalDeductions);
+  function round2(n) { return Math.round(n * 100) / 100; }
 
-    // ── Paid days for attendance display ─────────────────
-    const paidDaysDisplay = presentDays + paidLeave;
+  // ── Paid days for attendance display ─────────────────
+  const paidDaysDisplay = presentDays + paidLeave;
 
-    return {
-        // ── salary rates ──────────────────────────────────
-        monthlySalary,
-        perDaySalary,
-        halfDaySalary,
+  return {
+    // ── salary rates ──────────────────────────────────
+    monthlySalary,
+    perDaySalary,
+    halfDaySalary,
 
-        // ── attendance counts ─────────────────────────────
-        presentDays,
-        halfDays,
-        absentDays,
-        paidLeave,
-        unpaidLeave,
-        weekends,
-        holidayCount,
-        totalWorkingDays,
-        totalCalendarDays,
+    // ── attendance counts ─────────────────────────────
+    presentDays,
+    halfDays,
+    absentDays,
+    paidLeave,
+    unpaidLeave,
+    weekends,
+    holidayCount,
+    totalWorkingDays,
+    totalCalendarDays,
 
-        // ── deductions ────────────────────────────────────
-        absentAmt,
-        halfDayDeduct,
-        unpaidLeaveAmt,
-        totalDeductions,
-        netSalary,
-        paidDaysDisplay,
-    };
+    // ── deductions ────────────────────────────────────
+    absentAmt,
+    halfDayDeduct,
+    unpaidLeaveAmt,
+    totalDeductions,
+    netSalary,
+    paidDaysDisplay,
+  };
 }
 
 // ─────────────────────────────────────────────────────────
 //  MAIN EXPORT
 // ─────────────────────────────────────────────────────────
-export const generatePayslipPDF = (p) => {
-    const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+export const generatePayslipPDF = async (p) => {
+  const emp = (p.employee && typeof p.employee === "object") ? p.employee : {};
 
-    const PW = 210;
-    const M = 10;
-    const CW = PW - 2 * M;   // 190 mm
+  const MONTHS = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
 
-    // ── Resolve employee ──────────────────────────────────
-    const emp = (p.employee && typeof p.employee === "object") ? p.employee : {};
+  const monthLabel = (typeof p.month === "number" && p.month >= 1 && p.month <= 12)
+    ? `${MONTHS[p.month - 1]} ${p.year}`
+    : `${p.month} ${p.year}`;
 
-    const empName = emp.name || p.employeeName || "—";
-    const empId = emp.employeeId || p.employeeId || "—";
-    const empDesig = emp.designation || p.designation || "—";
-    const empDept = (emp.department && typeof emp.department === "object")
-        ? (emp.department.name || "—")
-        : (emp.department || p.department || "—");
+  const fmt = (n) => `₹${Number(n || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-    const empDOJ = formatDateStr(
-        emp.joiningDate || emp.dateOfJoining || p.joiningDate || p.dateOfJoining
-    );
-    const empDOB = formatDateStr(emp.dob || p.dob);
+  // Fallback labels in case label field is missing from stored payroll data
+  const STRUCTURE_LABELS = {
+    basic: "Basic Salary",
+    hra: "HRA (House Rent Allowance)",
+    specialAllowance: "Special Allowance",
+    conveyance: "Conveyance / Internet",
+    otherAllowance: "Other Allowance",
+  };
 
-    const empPAN =
-        emp.governmentIds?.pan ||
-        p.governmentIds?.pan ||
-        emp.pan || p.pan || "—";
+  const structureRows = p.salaryStructure
+    ? Object.entries(p.salaryStructure)
+      .filter(([key, c]) => c.enabled)
+      .map(([key, c]) => `
+            <tr>
+                <td style="padding:7px 10px;color:#374151;font-size:13px;">
+                    ${c.label || STRUCTURE_LABELS[key] || key}
+                </td>
+                <td style="padding:7px 10px;color:#374151;font-size:13px;text-align:right;">${c.percent}%</td>
+                <td style="padding:7px 10px;font-weight:600;color:#111827;font-size:13px;text-align:right;">${fmt(c.amount)}</td>
+            </tr>`)
+      .join("")
+    : `<tr><td colspan="3" style="padding:7px 10px;color:#374151;font-size:13px;">Basic Salary</td><td style="padding:7px 10px;text-align:right;font-size:13px;">100%</td><td style="padding:7px 10px;font-weight:600;text-align:right;font-size:13px;">${fmt(p.monthlySalary)}</td></tr>`;
 
-    const maskAadhaar = (v) => {
-        if (!v) return "—";
-        const s = String(v);
-        return s.length === 12 ? "XXXX XXXX " + s.slice(-4) : "—";
-    };
-    const empAadhaar = maskAadhaar(emp.governmentIds?.aadhaar);
+  // ── Statutory deduction rows ──
+  const statutoryRows = p.statutoryDeductions
+    ? Object.values(p.statutoryDeductions)
+      .filter(d => d.enabled && d.amount > 0)
+      .map(d => {
+        const numTag = d.pfNumber
+          ? `<span style="font-size:11px;color:#6b7280;margin-left:6px;">(UAN: ${d.pfNumber})</span>`
+          : d.esiNumber
+            ? `<span style="font-size:11px;color:#6b7280;margin-left:6px;">(ESI No: ${d.esiNumber})</span>`
+            : "";
+        return `
+                <tr>
+                    <td style="padding:7px 10px;color:#374151;font-size:13px;">
+                        ${d.label || ""}${numTag}
+                    </td>
+                    <td style="padding:7px 10px;color:#dc2626;font-size:13px;text-align:right;">
+                        −${fmt(d.amount)}
+                    </td>
+                </tr>`;
+      })
+      .join("")
+    : "";
 
-    const bankDet = emp.bankDetails ?? {};
-    const empBank = bankDet.bankName || p.bankName || "—";
-    const empAccount = bankDet.accountNumber || p.accountNo || p.accountNumber || "—";
+  // ── Attendance deduction rows ──
+  const attendanceDeductRows = [
+    p.absentAmt > 0 ? `<tr><td style="padding:7px 10px;color:#374151;font-size:13px;">Absent (${p.absentDays || 0} days × ${fmt(p.perDaySalary)})</td><td style="padding:7px 10px;color:#dc2626;font-size:13px;text-align:right;">−${fmt(p.absentAmt)}</td></tr>` : "",
+    p.halfDayDeduct > 0 ? `<tr><td style="padding:7px 10px;color:#374151;font-size:13px;">Half Days (${p.halfDays || 0} days × ${fmt(p.halfDaySalary)})</td><td style="padding:7px 10px;color:#dc2626;font-size:13px;text-align:right;">−${fmt(p.halfDayDeduct)}</td></tr>` : "",
+    p.unpaidLeaveAmt > 0 ? `<tr><td style="padding:7px 10px;color:#374151;font-size:13px;">Unpaid Leave (${p.unpaidLeave || 0} days × ${fmt(p.perDaySalary)})</td><td style="padding:7px 10px;color:#dc2626;font-size:13px;text-align:right;">−${fmt(p.unpaidLeaveAmt)}</td></tr>` : "",
+  ].join("");
 
-    const empGuardian =
-        emp.guardianName || emp.fatherName || emp.fatherHusbandName ||
-        emp.guardian || emp.parentName ||
-        p.guardianName || p.fatherName || p.fatherHusbandName ||
-        p.guardian || p.parentName || "Not Provided";
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Payslip — ${monthLabel}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f3f4f6; padding: 24px; }
+  .wrap { max-width: 750px; margin: auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
 
-    const monthName = MONTHS[(p.month || 1) - 1];
-    const year = p.year || new Date().getFullYear();
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a237e, #3949ab); padding: 28px 32px; color: #fff; }
+  .header h1 { font-size: 22px; font-weight: 800; letter-spacing: .3px; }
+  .header p  { font-size: 13px; opacity: .85; margin-top: 3px; }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .payslip-badge { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35); border-radius: 8px; padding: 8px 18px; text-align: right; }
+  .payslip-badge .period { font-size: 15px; font-weight: 800; }
+  .payslip-badge .label  { font-size: 11px; opacity: .8; margin-top: 2px; }
 
-    // ── Resolve all salary figures ────────────────────────
-    const S = resolveSalaryFigures(p);
+  /* Employee info */
+  .emp-section { background: #f8fafc; border-bottom: 1px solid #e5e7eb; padding: 20px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .emp-field { }
+  .emp-field .lbl { font-size: 10.5px; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; }
+  .emp-field .val { font-size: 13.5px; color: #111827; font-weight: 600; margin-top: 2px; }
 
-    const isPaid = p.status === "paid";
-    const paidDate = (isPaid && p.paidAt)
-        ? new Date(p.paidAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-        : "—";
-    const processedBy = p.paidBy?.name || "HR";
+  /* Sections */
+  .section { padding: 22px 32px; }
+  .section-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .7px; color: #6b7280; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1.5px solid #e5e7eb; }
 
-    let y = 8;
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; }
+  tr:nth-child(even) td { background: #f9fafb; }
 
-    /* ════════════════════════════════════════════════════
-       1. OUTER BORDER
-    ════════════════════════════════════════════════════ */
-    strokeRect(doc, M, y, CW, 295, [170, 170, 170], 0.5);
+  /* Attendance summary chips */
+  .att-row { display: flex; gap: 10px; flex-wrap: wrap; padding: 4px 0; }
+  .att-chip { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid; }
 
-    /* ════════════════════════════════════════════════════
-       2. COMPANY HEADER
-    ════════════════════════════════════════════════════ */
-    const LOGO_W = 56;
-    const HDR_H = 26;
+  /* Total deduction box */
+  .deduct-total { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; color: #991b1b; margin-top: 8px; }
 
-    fillStrokeRect(doc, M, y, LOGO_W, HDR_H, WHITE, BORDER, 0.3);
-    try {
-        doc.addImage(logoImg, "PNG", M + 1, y + 1, LOGO_W - 2, HDR_H - 2, undefined, "FAST");
-    } catch {
-        sf(doc, "bold", 10);
-        doc.setTextColor(...TEAL);
-        doc.text("WORLD", M + LOGO_W / 2, y + 10, { align: "center" });
-        doc.text("WEBLOGIC", M + LOGO_W / 2, y + 18, { align: "center" });
-    }
+  /* Net salary box */
+  .net-box { background: linear-gradient(135deg, #dcfce7, #bbf7d0); border: 2px solid #86efac; border-radius: 10px; padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; margin: 0 32px 24px; }
+  .net-box .net-label { font-size: 13px; font-weight: 700; color: #052e16; text-transform: uppercase; letter-spacing: .5px; }
+  .net-box .net-amount { font-size: 28px; font-weight: 900; color: #052e16; }
 
-    const INFO_X = M + LOGO_W;
-    const INFO_W = CW - LOGO_W;
-    fillStrokeRect(doc, INFO_X, y, INFO_W, HDR_H, WHITE, BORDER, 0.3);
+  /* Footer */
+  .footer { background: #f8fafc; border-top: 1px solid #e5e7eb; padding: 14px 32px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #9ca3af; }
 
-    sf(doc, "bold", 13);
-    doc.setTextColor(...BLACK);
-    doc.text(COMPANY.name.toUpperCase(), INFO_X + INFO_W / 2, y + 9, { align: "center" });
+  /* Divider */
+  .divider { border: none; border-top: 1px solid #e5e7eb; margin: 0 32px; }
 
-    sf(doc, "normal", 7);
-    doc.setTextColor(...DARK_GRAY);
-    doc.text(COMPANY.address, INFO_X + INFO_W / 2, y + 17, { align: "center" });
+  @media print {
+    body { background: #fff; padding: 0; }
+    .wrap { box-shadow: none; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
 
-    sf(doc, "normal", 6.5);
-    doc.text(
-        `Tel: ${COMPANY.phone1}  |  ${COMPANY.phone2}  |  Email: ${COMPANY.email}  |  ${COMPANY.website}`,
-        INFO_X + INFO_W / 2, y + 24, { align: "center" }
-    );
+  <!-- Header -->
+  <div class="header">
+    <div class="header-row">
+      <div>
+        <h1>World WebLogic Pvt Ltd</h1>
+        <p>HR Management System &nbsp;·&nbsp; Salary Slip</p>
+      </div>
+      <div class="payslip-badge">
+        <div class="period">${monthLabel}</div>
+        <div class="label">Pay Period</div>
+      </div>
+    </div>
+  </div>
 
-    y += HDR_H;
+  <!-- Employee Info -->
+  <div class="emp-section">
+    <div class="emp-field">
+      <div class="lbl">Employee Name</div>
+      <div class="val">${emp.name || "—"}</div>
+    </div>
+    <div class="emp-field">
+      <div class="lbl">Employee ID</div>
+      <div class="val">${emp.employeeId || "—"}</div>
+    </div>
+    <div class="emp-field">
+      <div class="lbl">Designation</div>
+      <div class="val">${emp.designation || "—"}</div>
+    </div>
+    <div class="emp-field">
+      <div class="lbl">Department</div>
+      <div class="val">${emp.department || "—"}</div>
+    </div>
+    <div class="emp-field">
+      <div class="lbl">Date of Joining</div>
+      <div class="val">${emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}</div>
+    </div>
+    <div class="emp-field">
+      <div class="lbl">Bank Account</div>
+      <div class="val">${emp.bankDetails?.accountNumber ? `xxxx${String(emp.bankDetails.accountNumber).slice(-4)}` : "—"}</div>
+    </div>
+    ${emp.bankDetails?.bankName ? `
+    <div class="emp-field">
+      <div class="lbl">Bank Name</div>
+      <div class="val">${emp.bankDetails.bankName}</div>
+    </div>` : ""}
+    ${emp.bankDetails?.ifscCode ? `
+    <div class="emp-field">
+      <div class="lbl">IFSC Code</div>
+      <div class="val">${emp.bankDetails.ifscCode}</div>
+    </div>` : ""}
+   ${emp.governmentIds?.pan ? `
+    <div class="emp-field">
+      <div class="lbl">PAN</div>
+      <div class="val">${emp.governmentIds.pan}</div>
+    </div>` : ""}
+    ${p.statutoryDeductions?.pf?.enabled && p.statutoryDeductions?.pf?.pfNumber ? `
+    <div class="emp-field">
+      <div class="lbl">PF / UAN Number</div>
+      <div class="val">${p.statutoryDeductions.pf.pfNumber}</div>
+    </div>` : ""}
+    ${p.statutoryDeductions?.esi?.enabled && p.statutoryDeductions?.esi?.esiNumber ? `
+    <div class="emp-field">
+      <div class="lbl">ESI Number</div>
+      <div class="val">${p.statutoryDeductions.esi.esiNumber}</div>
+    </div>` : ""}
+    <div class="emp-field">
+      <div class="lbl">Pay Period</div>
+      <div class="val">${monthLabel}</div>
+    </div>
+  </div>
 
-    /* ════════════════════════════════════════════════════
-       3. MONTH BANNER
-    ════════════════════════════════════════════════════ */
-    const BANNER_H = 8;
-    fillStrokeRect(doc, M, y, CW, BANNER_H, TEAL, TEAL_DARK, 0.3);
-    sf(doc, "bold", 10);
-    doc.setTextColor(...WHITE);
-    doc.text(
-        `Payslip for the month of  ${monthName.toUpperCase()}, ${year}`,
-        PW / 2, y + 5.4, { align: "center" }
-    );
-    y += BANNER_H;
+  <!-- Attendance Summary -->
+  <div class="section">
+    <div class="section-title">Attendance Summary</div>
+    <div class="att-row">
+      <span class="att-chip" style="background:#dcfce7;color:#14532d;border-color:#4ade80;">✓ Present: ${p.presentDays || 0}d</span>
+      <span class="att-chip" style="background:#fff7ed;color:#c2410c;border-color:#fdba74;">◑ Half Day: ${p.halfDays || 0}d</span>
+      <span class="att-chip" style="background:#fee2e2;color:#991b1b;border-color:#fca5a5;">✗ Absent: ${p.absentDays || 0}d</span>
+      <span class="att-chip" style="background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;">✈ Paid Leave: ${p.paidLeave || 0}d</span>
+      ${p.unpaidLeave > 0 ? `<span class="att-chip" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">⚠ Unpaid Leave: ${p.unpaidLeave}d</span>` : ""}
+      <span class="att-chip" style="background:#f3e8ff;color:#6b21a8;border-color:#d8b4fe;">🎉 Holidays: ${p.holidays || 0}d</span>
+      <span class="att-chip" style="background:#f1f5f9;color:#475569;border-color:#cbd5e1;">📅 Working Days: ${p.totalWorkingDays || 0}d</span>
+      <span class="att-chip" style="background:#f1f5f9;color:#475569;border-color:#cbd5e1;">📆 Calendar Days: ${p.totalCalendarDays || 0}d</span>
+    </div>
+  </div>
 
-    /* ════════════════════════════════════════════════════
-       4. EMPLOYEE INFO
-    ════════════════════════════════════════════════════ */
-    const EMP_H = 7;
-    const HALF = CW / 2;
-    const LBL_W = 47;
+  <hr class="divider"/>
 
-    const empLeft = [
-        ["CODE", empId],
-        ["NAME", empName],
-        ["GUARDIAN NAME", empGuardian],
-        ["DEPARTMENT", empDept],
-        ["DESIGNATION", empDesig],
-        ["PAN", empPAN],
-        ["AADHAAR", empAadhaar],
-    ];
+  <!-- Earnings / Salary Structure -->
+  <div class="section">
+    <div class="section-title">Earnings — Salary Structure</div>
+    <table>
+      <thead>
+        <tr style="background:#f3f4f6;">
+          <th style="padding:8px 10px;text-align:left;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;font-weight:800;">Component</th>
+          <th style="padding:8px 10px;text-align:right;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;font-weight:800;">%</th>
+          <th style="padding:8px 10px;text-align:right;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;font-weight:800;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${structureRows}
+      </tbody>
+      <tfoot>
+        <tr style="background:#eff6ff;border-top:2px solid #bfdbfe;">
+          <td style="padding:10px 10px;font-weight:800;color:#1e40af;font-size:14px;" colspan="2">Gross Salary</td>
+          <td style="padding:10px 10px;font-weight:800;color:#1e40af;font-size:14px;text-align:right;">${fmt(p.grossEarnings || p.monthlySalary)}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 
-    const empRight = [
-        ["BANK NAME", empBank],
-        ["ACCOUNT NO", empAccount],
-        ["PAYMENT MODE", "Bank"],
-        ["DATE OF JOINING", empDOJ],
-        ["DATE OF BIRTH", empDOB],
-        ["DESIGNATION", empDesig],
-        ["", ""],
-    ];
+  <hr class="divider"/>
 
-    const maxRows = Math.max(empLeft.length, empRight.length);
+  <!-- Deductions -->
+  <div class="section">
+    <div class="section-title">Deductions</div>
 
-    for (let i = 0; i < maxRows; i++) {
-        const ry = y + i * EMP_H;
-        const mid = ry + EMP_H / 2 + 1.2;
+    ${statutoryRows || attendanceDeductRows ? `
+    <table>
+      <thead>
+        <tr style="background:#f3f4f6;">
+          <th style="padding:8px 10px;text-align:left;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;font-weight:800;">Description</th>
+          <th style="padding:8px 10px;text-align:right;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;font-weight:800;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${statutoryRows}
+        ${attendanceDeductRows}
+      </tbody>
+    </table>
+    ` : `<p style="color:#9ca3af;font-size:13px;padding:4px 0;">No deductions this month</p>`}
 
-        fillStrokeRect(doc, M, ry, HALF, EMP_H, WHITE, BORDER, 0.25);
-        if (empLeft[i]) {
-            const [lbl, val] = empLeft[i];
-            sf(doc, "bold", 7.2);
-            doc.setTextColor(...BLACK);
-            doc.text(lbl + " :", M + 2.5, mid);
-            sf(doc, "normal", 7.2);
-            doc.text(String(val), M + LBL_W + (HALF - LBL_W) / 2, mid, { align: "center" });
-        }
+    <div class="deduct-total">
+      <span>Total Deductions</span>
+      <span>−${fmt(p.deductions)}</span>
+    </div>
+  </div>
 
-        fillStrokeRect(doc, M + HALF, ry, HALF, EMP_H, WHITE, BORDER, 0.25);
-        if (empRight[i]) {
-            const [lbl, val] = empRight[i];
-            const rx = M + HALF;
-            sf(doc, "bold", 7.2);
-            doc.setTextColor(...BLACK);
-            doc.text(lbl + " :", rx + 2.5, mid);
-            sf(doc, "normal", 7.2);
-            doc.text(String(val), rx + LBL_W + (HALF - LBL_W) / 2, mid, { align: "center" });
-        }
-    }
+  <hr class="divider"/>
 
-    y += maxRows * EMP_H;
-    y += 6;
+  <!-- Net Salary -->
+  <div class="net-box">
+    <div>
+      <div class="net-label">Net In-Hand Salary</div>
+      <div style="font-size:11px;color:#166534;margin-top:4px;font-weight:500;">
+        Gross ${fmt(p.grossEarnings || p.monthlySalary)} − Deductions ${fmt(p.deductions)}
+      </div>
+    </div>
+    <div class="net-amount">${fmt(p.netSalary)}</div>
+  </div>
 
-    /* ════════════════════════════════════════════════════
-       5. ATTENDANCE HEADER
-    ════════════════════════════════════════════════════ */
-    const ATT_HDR_H = 8;
-    fillStrokeRect(doc, M, y, CW, ATT_HDR_H, TEAL, TEAL_DARK, 0.3);
-    sf(doc, "bold", 9);
-    doc.setTextColor(...WHITE);
-    doc.text("ATTENDANCE", PW / 2, y + 4.8, { align: "center" });
-    y += ATT_HDR_H;
+  <!-- Footer -->
+  <div class="footer">
+    <span>Generated on ${new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</span>
+    <span>This is a system-generated payslip. No signature required.</span>
+    <span>World WebLogic Pvt Ltd</span>
+  </div>
 
-    /* ════════════════════════════════════════════════════
-       6. ATTENDANCE COLUMNS
-       NOTE: "Paid Days" = presentDays + paidLeave
-             Half-days are shown in salary section, not here
-             to avoid confusion in the attendance box
-    ════════════════════════════════════════════════════ */
-    const attCols = [
-        { label: "Working Days", value: fmtInt(S.totalWorkingDays) },
-        { label: "PL", value: fmtInt(S.paidLeave) },
-        { label: "Half Days", value: fmtInt(S.halfDays) },
-        { label: "Absent", value: fmtInt(S.absentDays) },
-        { label: "Weekly Off", value: fmtInt(S.weekends) },
-        { label: "Paid Days", value: fmtInt(S.paidDaysDisplay) },
-    ];
+</div>
+</body>
+</html>`;
 
-    const attCW = CW / attCols.length;
-    const ATTL_H = 7;
-    const ATTV_H = 8;
-
-    attCols.forEach(({ label }, i) => {
-        const bx = M + i * attCW;
-        fillStrokeRect(doc, bx, y, attCW, ATTL_H,
-            i % 2 === 0 ? LIGHT_GRAY : WHITE, BORDER, 0.25);
-        sf(doc, "bold", 6.5);
-        doc.setTextColor(...BLACK);
-        doc.text(label, bx + attCW / 2, y + ATTL_H / 2 + 1, { align: "center" });
+  // Open in new window and print
+  const win = window.open("", "_blank");
+  if (!win) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Popup Blocked',
+      text: 'Please allow popups for this site to continue.',
+      confirmButtonText: 'OK',
+      confirmButtonColor: '#4f46e5',
+      showClass: { popup: 'animate__animated animate__fadeInDown' },
+      hideClass: { popup: 'animate__animated animate__fadeOutUp' },
     });
-    y += ATTL_H;
-
-    attCols.forEach(({ value }, i) => {
-        const bx = M + i * attCW;
-        fillStrokeRect(doc, bx, y, attCW, ATTV_H,
-            i % 2 === 0 ? WHITE : LIGHT_GRAY, BORDER, 0.25);
-        sf(doc, "bold", 10);
-        doc.setTextColor(...BLACK);
-        doc.text(value, bx + attCW / 2, y + ATTV_H / 2 + 1.5, { align: "center" });
-    });
-    y += ATTV_H;
-
-    /* ════════════════════════════════════════════════════
-       7. SUMMARY ROW
-       PAYABLE DAYS = present + (halfDays × 0.5) + paidLeave
-       We show it as a decimal-aware number
-    ════════════════════════════════════════════════════ */
-    const payableDays = S.presentDays + (S.halfDays * 0.5) + S.paidLeave;
-
-    const sumItems = [
-        { label: "PAYABLE DAYS", value: payableDays % 1 === 0 ? fmtInt(payableDays) : payableDays.toFixed(1) },
-        { label: "ABSENT DAYS", value: fmtInt(S.absentDays) },
-        { label: "WEEKLY OFF", value: fmtInt(S.weekends) },
-        { label: "WORKING DAYS", value: fmtInt(S.totalWorkingDays) },
-    ];
-
-    const sumCW = CW / sumItems.length;
-    const SUM_H = 14;
-
-    sumItems.forEach(({ label, value }, i) => {
-        const sx = M + i * sumCW;
-        fillStrokeRect(doc, sx, y, sumCW, SUM_H,
-            i % 2 === 0 ? LIGHT_GRAY : WHITE, BORDER, 0.25);
-        sf(doc, "bold", 6.5);
-        doc.setTextColor(...BLACK);
-        doc.text(label, sx + sumCW / 2, y + SUM_H * 0.28, { align: "center" });
-        sf(doc, "bold", 11);
-        doc.text(value, sx + sumCW / 2, y + SUM_H * 0.70, { align: "center" });
-    });
-    y += SUM_H;
-    y += 6;
-
-    /* ════════════════════════════════════════════════════
-       7b. SALARY CALCULATION BREAKDOWN BOX
-           Shows every step so the employee can verify
-    ════════════════════════════════════════════════════ */
-    const calcLines = [];
-
-    calcLines.push({
-        text: `Monthly Salary = ${RS} ${fmt(S.monthlySalary)}  |  Calendar Days = ${fmtInt(S.totalCalendarDays)}  |  Per Day = ${RS} ${fmt(S.perDaySalary)}`,
-        color: DARK_GRAY, bold: false,
-    });
-
-    // Line 2: absent deduction (only if any)
-    if (S.absentDays > 0) {
-        calcLines.push({
-            text: `Absent = ${fmtInt(S.absentDays)} days × ${RS} ${fmt(S.perDaySalary)} = − ${RS} ${fmt(S.absentAmt)}`,
-            color: RED, bold: true,
-        });
-    }
-
-    // Line 3: half day deduction (only if any)
-    if (S.halfDays > 0) {
-        calcLines.push({
-            text: `Half Day = ${fmtInt(S.halfDays)} × ${RS} ${fmt(S.halfDaySalary)} (half of ${RS} ${fmt(S.perDaySalary)}) = − ${RS} ${fmt(S.halfDayDeduct)}`,
-            color: RED, bold: true,
-        });
-    }
-
-    // Line 4: paid leave note (only if any — no deduction)
-    if (S.paidLeave > 0) {
-        calcLines.push({
-            text: `Casual Leave = ${fmtInt(S.paidLeave)} days → ✅ No deduction (CL balance used)`,
-            color: [0, 100, 80], bold: false,
-        });
-    }
-
-    // Line 5: unpaid leave deduction (only if any)
-    if (S.unpaidLeave > 0) {
-        calcLines.push({
-            text: `Unpaid Leave = ${fmtInt(S.unpaidLeave)} days × ${RS} ${fmt(S.perDaySalary)} = − ${RS} ${fmt(S.unpaidLeaveAmt)}`,
-            color: RED, bold: true,
-        });
-    }
-
-    // Line 6: net salary (always shown)
-    calcLines.push({
-        text: `Net Salary = ${RS} ${fmt(S.monthlySalary)} − ${RS} ${fmt(S.totalDeductions)} = ${RS} ${fmt(S.netSalary)}`,
-        color: [0, 100, 80], bold: true,
-    });
-
-    const lineHeight = 6;
-    const paddingTop = 7;
-    const paddingBottom = 4;
-    const CALC_H = paddingTop + (calcLines.length * lineHeight) + paddingBottom;
-
-    fillStrokeRect(doc, M, y, CW, CALC_H, TEAL_LIGHT, TEAL, 0.4);
-
-    sf(doc, "bold", 8);
-    doc.setTextColor(...TEAL_DARK);
-    doc.text("SALARY CALCULATION BREAKDOWN", M + 3, y + 5.5);
-
-    let textY = y + 12;
-    calcLines.forEach(({ text, color, bold }) => {
-        sf(doc, bold ? "bold" : "normal", 7.2);
-        doc.setTextColor(...color);
-        doc.text(text, M + 3, textY);
-        textY += lineHeight;
-    });
-
-    y += CALC_H + 2;
-
-    /* ════════════════════════════════════════════════════
-       8. SALARY TABLE HEADER
-    ════════════════════════════════════════════════════ */
-    const C = {
-        head: CW * 0.35,
-        amt1: CW * 0.25,
-        ded: CW * 0.25,
-        amt2: CW * 0.15,
-    };
-
-    const Xhead = M;
-    const Xamt1 = Xhead + C.head;
-    const Xded = Xamt1 + C.amt1;
-    const Xamt2 = Xded + C.ded;
-
-    const SAL_HDR_H = 9;
-
-    [
-        { x: Xhead, w: C.head, label: "SALARY HEAD" },
-        { x: Xamt1, w: C.amt1, label: "AMOUNT" },
-        { x: Xded, w: C.ded, label: "DEDUCTIONS" },
-        { x: Xamt2, w: C.amt2, label: "AMOUNT" },
-    ].forEach(({ x, w, label }) => {
-        cell(doc, x, y, w, SAL_HDR_H, label, {
-            fill: TEAL, textColor: WHITE, fontWeight: "bold",
-            fontSize: 7.5, align: "center",
-        });
-    });
-    y += SAL_HDR_H;
-
-    /* ════════════════════════════════════════════════════
-       9. SALARY ROWS
-       Layout:
-         Row 1: Basic earnings      | Absent deduction
-         Row 2: Half-day earnings   | Unpaid leave deduction
-         Row 3: Paid leave earnings | (empty)
-         Row 4: (empty)             | (empty)
-    ════════════════════════════════════════════════════ */
-    const salRows = [
-        {
-            head: `Monthly Salary`,
-            amt: fmt(S.monthlySalary),
-            ded: S.absentDays > 0
-                ? `Absent (${fmtInt(S.absentDays)}d × ${RS} ${fmt(S.perDaySalary)})`
-                : "",
-            damt: S.absentDays > 0 ? fmt(S.absentAmt) : "",
-        },
-        {
-            head: S.paidLeave > 0 ? `Casual Leave (${fmtInt(S.paidLeave)}d) — Paid` : "",
-            amt: S.paidLeave > 0 ? "No Deduction" : "",
-            ded: S.halfDays > 0
-                ? `Half Day (${fmtInt(S.halfDays)}d × ${RS} ${fmt(S.halfDaySalary)})`
-                : "",
-            damt: S.halfDays > 0 ? fmt(S.halfDayDeduct) : "",
-        },
-        {
-            head: "",
-            amt: "",
-            ded: S.unpaidLeave > 0
-                ? `Unpaid Leave (${fmtInt(S.unpaidLeave)}d × ${RS} ${fmt(S.perDaySalary)})`
-                : "",
-            damt: S.unpaidLeave > 0 ? fmt(S.unpaidLeaveAmt) : "",
-        },
-        { head: "", amt: "", ded: "", damt: "" },
-    ];
-
-    const SAL_ROW_H = 9;
-    salRows.forEach((row, i) => {
-        const ry = y + i * SAL_ROW_H;
-        const bg = i % 2 === 0 ? WHITE : LIGHT_GRAY;
-        [
-            { x: Xhead, w: C.head, text: row.head, align: "left" },
-            { x: Xamt1, w: C.amt1, text: row.amt, align: "right" },
-            { x: Xded, w: C.ded, text: row.ded, align: "left" },
-            { x: Xamt2, w: C.amt2, text: row.damt, align: "right" },
-        ].forEach(({ x, w, text, align }) => {
-            cell(doc, x, ry, w, SAL_ROW_H, text, {
-                fill: bg, textColor: BLACK, fontSize: 7.5, align,
-            });
-        });
-    });
-    y += salRows.length * SAL_ROW_H;
-    y += 4;
-
-    /* ════════════════════════════════════════════════════
-       10. GROSS EARNINGS | GROSS DEDUCTIONS
-    ════════════════════════════════════════════════════ */
-    const GROSS_H = 11;
-    const GROSS_LEFT = Xamt1 + C.amt1 - M;
-    const GROSS_RIGHT = CW - GROSS_LEFT;
-
-    fillStrokeRect(doc, M, y, GROSS_LEFT, GROSS_H, LIGHT_GRAY, BORDER, 0.4);
-    sf(doc, "bold", 8.5);
-    doc.setTextColor(...BLACK);
-    doc.text("MONTHLY SALARY", M + 2.5, y + GROSS_H / 2 + 1.5);
-    doc.text(fmt(S.monthlySalary), M + GROSS_LEFT - 2.5, y + GROSS_H / 2 + 1.5, { align: "right" });
-
-    fillStrokeRect(doc, M + GROSS_LEFT, y, GROSS_RIGHT, GROSS_H, LIGHT_GRAY, BORDER, 0.4);
-    sf(doc, "bold", 8.5);
-    doc.setTextColor(...BLACK);
-    doc.text("TOTAL DEDUCTIONS", M + GROSS_LEFT + 2.5, y + 3.5);
-    doc.text(fmt(S.totalDeductions), M + CW - 2.5, y + 3.5, { align: "right" });
-
-    // Show deduction reason
-    const dedParts = [];
-    if (S.absentDays > 0)
-        dedParts.push(`Absent: ${fmtInt(S.absentDays)} day${S.absentDays > 1 ? "s" : ""}`);
-    if (S.halfDays > 0)
-        dedParts.push(`Half Day: ${fmtInt(S.halfDays)} day${S.halfDays > 1 ? "s" : ""}`);
-    if (S.unpaidLeave > 0)
-        dedParts.push(`Unpaid Leave: ${fmtInt(S.unpaidLeave)} day${S.unpaidLeave > 1 ? "s" : ""}`);
-    const dedReason = dedParts.join(" + ");
-
-    if (dedReason) {
-        sf(doc, "normal", 6.2);
-        doc.setTextColor(...DARK_GRAY);
-        doc.text(dedReason, M + GROSS_LEFT + 2.5, y + 7.2);
-    }
-
-    y += GROSS_H;
-
-    /* ════════════════════════════════════════════════════
-       11. NET PAY BANNER
-    ════════════════════════════════════════════════════ */
-    const NET_H = 10;
-    fillStrokeRect(doc, M, y, CW, NET_H, TEAL, TEAL_DARK, 0.4);
-
-    sf(doc, "bold", 9.5);
-    doc.setTextColor(...WHITE);
-    doc.text("NET PAY", M + 4, y + 6.5);
-
-    const words = numberToWords(Math.round(S.netSalary));
-    sf(doc, "normal", 7.5);
-    doc.text(`RUPEES ${words.toUpperCase()} ONLY`, PW / 2, y + 6.5, { align: "center" });
-
-    sf(doc, "bold", 12);
-    doc.text(`${RS} ${fmt(S.netSalary)}`, M + CW - 3, y + 7, { align: "right" });
-
-    y += NET_H;
-
-    /* ════════════════════════════════════════════════════
-       12. PAYMENT INFO ROW
-    ════════════════════════════════════════════════════ */
-    const PAY_H = 9;
-    const payItems = [
-        { label: "PAYMENT DATE", value: paidDate },
-        { label: "PROCESSED BY", value: processedBy },
-        { label: "STATUS", value: isPaid ? "PAID" : "DRAFT" },
-    ];
-    const payCW = CW / payItems.length;
-
-    payItems.forEach(({ label, value }, i) => {
-        const px = M + i * payCW;
-        fillStrokeRect(doc, px, y, payCW, PAY_H, i % 2 === 0 ? LIGHT_GRAY : WHITE, BORDER, 0.25);
-        sf(doc, "bold", 6.5);
-        doc.setTextColor(...BLACK);
-        doc.text(label, px + payCW / 2, y + 3, { align: "center" });
-        sf(doc, "bold", 8.5);
-        doc.text(String(value), px + payCW / 2, y + 7.2, { align: "center" });
-    });
-
-    y += PAY_H;
-
-    /* ════════════════════════════════════════════════════
-       13. FOOTER
-    ════════════════════════════════════════════════════ */
-    y += 5;
-    hline(doc, M, M + CW, y, BORDER, 0.3);
-    y += 6;
-
-    sf(doc, "italic", 7.5);
-    doc.setTextColor(...MID_GRAY);
-    doc.text(
-        "This is a Computer generated Pay Slip hence, Signature does not required.",
-        M + 2.5, y
-    );
-
-    sf(doc, "bold", 8);
-    doc.setTextColor(...DARK_GRAY);
-    doc.text(`For  ${COMPANY.name.toUpperCase()}`, M + CW - 2.5, y, { align: "right" });
-
-    /* ── Save ─────────────────────────────────────────── */
-    const safeName = (empName || "Employee").replace(/\s+/g, "_");
-    doc.save(`Payslip_${safeName}_${monthName}_${year}.pdf`);
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => {
+    setTimeout(() => {
+      win.focus();
+      win.print();
+    }, 300);
+  };
 };

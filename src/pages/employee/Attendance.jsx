@@ -48,8 +48,6 @@ const MONTHS = ["January", "February", "March", "April", "May", "June",
 const MONTHLY_LATE_QUOTA = 3;
 
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap');
-
 .att-root *, .att-root *::before, .att-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
 .att-root {
     font-family: 'DM Sans', sans-serif;
@@ -269,9 +267,8 @@ const isWeekend = (date) => {
     return day === 0 || day === 6;
 };
 
-const IS_DEV = import.meta.env.DEV;
-const OFFICE_LAT = 28.61597;
-const OFFICE_LNG = 77.37919;
+const OFFICE_LAT = 28.615965009689685;
+const OFFICE_LNG = 77.37918363418639;
 
 const Attendance = () => {
     const now = new Date();
@@ -384,7 +381,12 @@ const Attendance = () => {
 
     const doPunchIn = async (latitude, longitude, accuracy) => {
         if (latitude === undefined || longitude === undefined || latitude === null || longitude === null) {
-            alert("Could not determine your location. Please try again.");
+            Swal.fire({
+                icon: "error",
+                title: "Location Error",
+                text: "Could not determine your location. Please try again.",
+                confirmButtonColor: "#EF4444",
+            });
             return;
         }
         try {
@@ -413,50 +415,92 @@ const Attendance = () => {
         }
     };
 
+    // AFTER
     const handlePunchIn = () => {
         if (!navigator.onLine) { saveOfflinePunch("punch-in"); return; }
 
-        // In dev: skip GPS entirely, spoof office coordinates
-        if (IS_DEV) {
-            doPunchIn(OFFICE_LAT, OFFICE_LNG, 10);
-            return;
-        }
-
         if (!navigator.geolocation) {
-            alert("Your browser does not support GPS location. Please use Chrome or Firefox.");
+            Swal.fire({
+                icon: "error",
+                title: "GPS Not Supported",
+                text: "Your browser does not support location. Please use Chrome or Firefox.",
+                confirmButtonColor: "#EF4444",
+            });
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(
-            async ({ coords: { latitude, longitude, accuracy } }) => {
-                if (!latitude || !longitude) {
-                    alert("Could not get your location. Please check GPS is enabled and try again.");
-                    return;
-                }
-                if (accuracy > 150) {
+        const requestLocation = () => {
+            navigator.geolocation.getCurrentPosition(
+                ({ coords: { latitude, longitude, accuracy } }) => {
+                    if (accuracy > 150) {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "Weak GPS Signal",
+                            text: "GPS signal too weak. Move to an open area and try again.",
+                            confirmButtonColor: "#F97316",
+                        });
+                        return;
+                    }
+                    doPunchIn(latitude, longitude, accuracy);
+                },
+                (err) => {
+                    console.error("Geolocation error:", err);
+                    let title = "Location Error";
+                    let text = "Could not get your location.";
+
+                    if (err.code === 1) {
+                        title = "Location Blocked";
+                        text = "Location was denied. Click the 🔒 lock icon in your address bar → Site settings → Location → Allow.";
+                    } else if (err.code === 2) {
+                        title = "Location Unavailable";
+                        text = "Could not determine your location. Ensure GPS is enabled on your device.";
+                    } else if (err.code === 3) {
+                        title = "Location Timeout";
+                        text = "Location request timed out. Move to a clearer area and try again.";
+                    }
+
+                    Swal.fire({
+                        icon: "error",
+                        title,
+                        text,
+                        confirmButtonColor: "#EF4444",
+                    });
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        };
+
+        // Check permission state first so we can show a helpful message before
+        // the browser silently fails on a denied permission
+        if (navigator.permissions) {
+            navigator.permissions.query({ name: "geolocation" }).then(result => {
+                if (result.state === "denied") {
                     Swal.fire({
                         icon: "warning",
-                        title: "Weak GPS Signal",
-                        text: "GPS signal too weak. Please move to an open area and try again.",
-                        confirmButtonColor: "#F97316",
+                        title: "Location Permission Blocked",
+                        html: `
+                        <p>Location access is blocked in your browser.</p>
+                        <p style="margin-top:10px; font-size:0.85rem; color:#6B7280;">
+                            Click the 🔒 lock icon in your address bar<br/>
+                            → <b>Site settings</b> → <b>Location</b> → <b>Allow</b><br/>
+                            then refresh the page and try again.
+                        </p>
+                    `,
+                        confirmButtonColor: "#6366F1",
+                        confirmButtonText: "Got it",
                     });
                     return;
                 }
-                doPunchIn(latitude, longitude, accuracy);
-            },
-            (err) => {
-                console.error("Geolocation error:", err);
-                Swal.fire({
-                    icon: "error",
-                    title: "Location Required",
-                    text: "Location permission is required to punch in. Please enable it in your browser settings.",
-                    confirmButtonColor: "#EF4444",
-                });
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
-        );
-    }
-
+                // "granted" or "prompt" — proceed, browser will ask if needed
+                requestLocation();
+            }).catch(() => {
+                // permissions API not available — just try directly
+                requestLocation();
+            });
+        } else {
+            requestLocation();
+        }
+    };
     const handlePunchOut = async () => {
         if (!navigator.onLine) { saveOfflinePunch("punch-out"); return; }
         try {
@@ -733,9 +777,7 @@ const Attendance = () => {
                                 <Icon d={icons.login} size={15} color="#052e16" />
                                 {loading
                                     ? <><span className="spinner" /> Punching In...</>
-                                    : IS_DEV
-                                        ? "Punch In "
-                                        : navigator.onLine ? "Punch In" : "Punch In (Offline)"}
+                                    : navigator.onLine ? "Punch In" : "Punch In (Offline)"}
                             </button>
                             <button
                                 onClick={navigator.onLine ? handlePunchOut : () => saveOfflinePunch("punch-out")}
