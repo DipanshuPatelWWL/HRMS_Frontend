@@ -1897,19 +1897,21 @@ const Employees = () => {
         }
         setSubmitting(true);
         try {
+            const daysInMonth = getDaysInMonth(); // ✅ fix: was missing, caused perDay = NaN
             const payload = {
-                name: form.name, email: form.email, role: form.role,
+                name: form.name, email: form.email, password: form.password, role: form.role, // ✅ fix: password added
                 department: form.department || null, designation: form.designation || "",
                 dob: form.dob || undefined, joiningDate: form.joiningDate || undefined,
                 maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
+                phone: form.phone || undefined,
                 salary: (form.role === "employee" || form.role === "tl")
                     ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth }
                     : undefined,
             };
-            const res = await API.post("/users/create", payload);
-            setEmployees(prev => [...prev, res.data.user]);
+            await API.post("/users/create", payload);
             setAddModal(false);
             setForm(EMPTY_FORM);
+            await fetchEmployees(); // ✅ fix: re-fetch instead of stale local patch
             Swal.fire({
                 icon: "success",
                 title: "Employee Added",
@@ -1948,12 +1950,11 @@ const Employees = () => {
                 department: form.department || null, designation: form.designation || "",
                 dob: form.dob || undefined, joiningDate: form.joiningDate || undefined,
                 maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
-                salary: form.role === "employee" ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth } : undefined,
+                salary: (form.role === "employee" || form.role === "tl") ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth } : undefined,
             };
-            const res = await API.put(`/users/update/${editTarget._id}`, payload);
-            const updated = res.data.user || { ...editTarget, ...payload };
-            setEmployees(prev => prev.map(e => e._id === editTarget._id ? updated : e));
+            await API.put(`/users/update/${editTarget._id}`, payload);
             setEditTarget(null);
+            await fetchEmployees(); // ✅ fix: re-fetch instead of stale local patch
             Swal.fire({
                 icon: "success",
                 title: "Updated",
@@ -1979,24 +1980,21 @@ const Employees = () => {
         try {
             if (type === "delete") {
                 await API.delete(`/users/delete/${employee._id}`);
-                setEmployees(prev => prev.filter(e => e._id !== employee._id));
                 if (editTarget?._id === employee._id) setEditTarget(null);
                 Swal.fire({ icon: "success", title: "Deleted", text: "Employee deleted successfully", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
             } else if (type === "terminate") {
                 await API.put(`/users/update-status/${employee._id}`, { status: "terminated" });
-                setEmployees(prev => prev.map(e => e._id === employee._id ? { ...e, status: "terminated" } : e));
                 if (editTarget?._id === employee._id) setEditTarget(null);
                 Swal.fire({ icon: "success", title: "Terminated", text: "Employee terminated successfully", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
             } else if (type === "deactivate") {
                 await API.put(`/users/update-status/${employee._id}`, { status: "inactive" });
-                setEmployees(prev => prev.map(e => e._id === employee._id ? { ...e, status: "inactive" } : e));
                 Swal.fire({ icon: "success", title: "Deactivated", text: "Employee deactivated", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
             } else if (type === "activate") {
                 await API.put(`/users/update-status/${employee._id}`, { status: "active" });
-                setEmployees(prev => prev.map(e => e._id === employee._id ? { ...e, status: "active" } : e));
                 Swal.fire({ icon: "success", title: "Activated", text: "Employee activated", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
             }
             setConfirm(null);
+            await fetchEmployees();
         } catch (err) {
             Swal.fire({
                 icon: "error",
