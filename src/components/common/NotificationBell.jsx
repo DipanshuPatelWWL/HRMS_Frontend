@@ -426,6 +426,7 @@ const NotificationBell = () => {
             "taskCompleted",
             "ticketReplied",
             "ticketResolved",
+            "attendancePunch",
             "payrollGenerated",
             "newNotification",          // generic catch-all
         ];

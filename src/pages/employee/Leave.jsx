@@ -90,10 +90,22 @@ const Leave = () => {
         }
         if (days === 0) return null;
 
-        const balance = leaveBalance.total || 0;
-        const paidDays = Math.min(days, balance);
+        // ── Read balance for the selected leave type ──
+        const bal = leaveBalance || {};
+        let available = 0;
+        if (form.type === "casual") {
+            available = Math.max(0, (bal.casual?.total ?? bal.total ?? 0) - (bal.casual?.used ?? bal.used ?? 0));
+        } else if (form.type === "sick") {
+            available = Math.max(0, (bal.sick?.total ?? 0) - (bal.sick?.used ?? 0));
+        } else if (form.type === "earned") {
+            available = Math.max(0, (bal.earned?.total ?? 0) - (bal.earned?.used ?? 0));
+        } else if (form.type === "unpaid") {
+            available = 0; // always fully unpaid
+        }
+
+        const paidDays = Math.min(days, available);
         const unpaidDays = days - paidDays;
-        return { days, paidDays, unpaidDays, balance };
+        return { days, paidDays, unpaidDays, balance: available };
     };
 
     const leaveEstimate = estimateLeavePaidStatus();
@@ -384,21 +396,41 @@ const Leave = () => {
                     </p>
 
                     {/* Balance card */}
-                    {leaveBalance !== null && (
-                        <div className={`lv-balance${leaveBalance.total === 0 ? " zero" : ""}`}>
-                            <div>
-                                <div className="lv-balance-label">
-                                    <Wallet size={12} strokeWidth={2.2} />
-                                    Casual Leave Balance
+                    {(() => {
+                        const bal = leaveBalance || {};
+                        let typeTotal = 0, typeUsed = 0, typeLabel = "";
+                        if (form.type === "casual") {
+                            typeTotal = bal.casual?.total ?? bal.total ?? 0;
+                            typeUsed = bal.casual?.used ?? bal.used ?? 0;
+                            typeLabel = "Casual Leave Balance";
+                        } else if (form.type === "sick") {
+                            typeTotal = bal.sick?.total ?? 0;
+                            typeUsed = bal.sick?.used ?? 0;
+                            typeLabel = "Sick Leave Balance";
+                        } else if (form.type === "earned") {
+                            typeTotal = bal.earned?.total ?? 0;
+                            typeUsed = bal.earned?.used ?? 0;
+                            typeLabel = "Earned Leave Balance";
+                        } else {
+                            return null; // unpaid — no balance to show
+                        }
+                        const remaining = Math.max(0, typeTotal - typeUsed);
+                        return (
+                            <div className={`lv-balance${remaining === 0 ? " zero" : ""}`}>
+                                <div>
+                                    <div className="lv-balance-label">
+                                        <Wallet size={12} strokeWidth={2.2} />
+                                        {typeLabel}
+                                    </div>
+                                    <div className="lv-balance-sub">Used: {typeUsed} this year</div>
                                 </div>
-                                <div className="lv-balance-sub">Used: {leaveBalance.used || 0} this year</div>
+                                <div style={{ textAlign: "right" }}>
+                                    <div className="lv-balance-num">{remaining}</div>
+                                    <div className="lv-balance-label">days available</div>
+                                </div>
                             </div>
-                            <div style={{ textAlign: "right" }}>
-                                <div className="lv-balance-num">{leaveBalance.total ?? 0}</div>
-                                <div className="lv-balance-label">days available</div>
-                            </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: ".85rem" }}>
                         {/* Leave type */}

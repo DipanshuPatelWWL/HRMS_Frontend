@@ -317,9 +317,15 @@ const Attendance = () => {
     };
 
     // Normalize to midnight for clean date comparisons
-    const joiningDate = user?.joiningDate
-        ? new Date(new Date(user.joiningDate).setHours(0, 0, 0, 0))
+    const rawJoining = user?.joiningDate ? new Date(user.joiningDate) : null;
+    const rawCreated = user?.createdAt ? new Date(user.createdAt) : null;
+    const effectiveStart = rawJoining && rawCreated
+        ? new Date(Math.max(rawJoining.getTime(), rawCreated.getTime()))
+        : rawJoining || rawCreated || null;
+    const joiningDate = effectiveStart
+        ? new Date(new Date(effectiveStart).setHours(0, 0, 0, 0))
         : null;
+
 
     const saveOfflinePunch = (type) => {
         const q = JSON.parse(localStorage.getItem("punchQueue") || "[]");
@@ -668,7 +674,7 @@ const Attendance = () => {
     const getQuotaLabel = () => {
         if (quotaExhausted) return `Quota exhausted — after 10:05 AM = half day`;
         if (quotaUsed === 2) return `1 quota left — use carefully`;
-        return `${quotaRemaining} late arrival${quotaRemaining !== 1 ? "s" : ""} remaining (till 10:30 AM)`;
+        return `${quotaRemaining} late arrival${quotaRemaining !== 1 ? "s" : ""} remaining (till 10:15 AM)`;
     };
 
     const getQuotaPillClass = () => {

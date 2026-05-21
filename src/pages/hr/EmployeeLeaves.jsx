@@ -29,12 +29,29 @@ const avatarColor = (name = "") => {
 const initials = (name = "") =>
     name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
+// ── Helper: compute totals from new per-type balance structure ──
+const computeBalanceTotals = (leaveBalance) => {
+    const bal = leaveBalance || {};
+    const casualTotal = bal.casual?.total ?? bal.total ?? 0;
+    const casualUsed = bal.casual?.used ?? bal.used ?? 0;
+    const sickTotal = bal.sick?.total ?? 0;
+    const sickUsed = bal.sick?.used ?? 0;
+    const earnedTotal = bal.earned?.total ?? 0;
+    const earnedUsed = bal.earned?.used ?? 0;
+    const total = casualTotal + sickTotal + earnedTotal;
+    const used = casualUsed + sickUsed + earnedUsed;
+    const remaining = Math.max(0, total - used);
+    return { total, used, remaining };
+};
+
 const EmployeeLeaves = () => {
     const [employees, setEmployees] = useState([]);
     const [search, setSearch] = useState("");
     const [selected, setSelected] = useState(null);
     const [totalInput, setTotalInput] = useState("");
     const [saving, setSaving] = useState(false);
+    const [typeInputs, setTypeInputs] = useState({ casual: 0, sick: 0, earned: 0 });
+    const [savingType, setSavingType] = useState("");
     const [toast, setToast] = useState("");
     const [loading, setLoading] = useState(true);
 
@@ -56,16 +73,34 @@ const EmployeeLeaves = () => {
 
     const openEdit = (emp) => {
         setSelected(emp);
-        setTotalInput(emp.leaveBalance?.total ?? 0);
+        const bal = emp.leaveBalance || {};
+        setTypeInputs({
+            casual: bal.casual?.total ?? 0,
+            sick: bal.sick?.total ?? 0,
+            earned: bal.earned?.total ?? 0,
+        });
     };
 
-    const handleSave = async () => {
+    const handleSaveType = async (type) => {
         if (!selected) return;
-        setSaving(true);
+        setSavingType(type);
         try {
-            await API.put(`/leave/balance/${selected._id}`, { total: totalInput });
-            showToast(`✅ Balance updated for ${selected.name}`);
-            setSelected(null);
+            await API.put(`/leave/balance/${selected._id}`, {
+                type,
+                total: typeInputs[type],
+            });
+            showToast(`✅ ${type.charAt(0).toUpperCase() + type.slice(1)} leave updated for ${selected.name}`);
+            // Update local selected so remaining preview stays accurate
+            setSelected(prev => ({
+                ...prev,
+                leaveBalance: {
+                    ...prev.leaveBalance,
+                    [type]: {
+                        ...prev.leaveBalance?.[type],
+                        total: typeInputs[type],
+                    },
+                },
+            }));
             fetchEmployees();
         } catch (err) {
             Swal.fire({
@@ -75,7 +110,7 @@ const EmployeeLeaves = () => {
                 confirmButtonColor: "#EF4444",
             });
         } finally {
-            setSaving(false);
+            setSavingType("");
         }
     };
 
@@ -105,14 +140,13 @@ const EmployeeLeaves = () => {
                     cursor: pointer;
                     transition: border-color .15s, background .15s;
                 }
-                .hlb-emp-row:hover   { border-color: #818cf8; background: #fafafa; }
-                .hlb-emp-row.active  { border-color: #4f46e5; background: #eef2ff; }
+                .hlb-emp-row:hover  { border-color: #818cf8; background: #fafafa; }
+                .hlb-emp-row.active { border-color: #4f46e5; background: #eef2ff; }
                 .hlb-avatar {
                     width: 38px; height: 38px; border-radius: 50%;
                     display: flex; align-items: center; justify-content: center;
                     font-weight: 700; font-size: .9rem; flex-shrink: 0; color: #fff;
                 }
-                    /* ── Spinner ── */
                 .spinner {
                     width: 14px; height: 14px;
                     border: 2px solid rgba(255,255,255,0.3);
@@ -122,6 +156,7 @@ const EmployeeLeaves = () => {
                     animation: spin 0.6s linear infinite;
                     margin-right: 6px;
                 }
+                @keyframes spin { to { transform: rotate(360deg); } }
                 .hlb-stat-row {
                     display: grid;
                     grid-template-columns: repeat(3, 1fr);
@@ -222,10 +257,8 @@ const EmployeeLeaves = () => {
                     ) : (
                         <div style={{ display: "flex", flexDirection: "column", gap: ".6rem" }}>
                             {filtered.map(emp => {
-                                const bal = emp.leaveBalance || {};
-                                const total = bal.total ?? 0;
-                                const used = bal.used ?? 0;
-                                const remaining = Math.max(0, total - used);
+                                const { total, used, remaining } =
+                                    computeBalanceTotals(emp.leaveBalance);
 
                                 return (
                                     <div
@@ -309,75 +342,128 @@ const EmployeeLeaves = () => {
                                 </div>
                             </div>
 
-                            {/* Current stats */}
-                            <div className="hlb-stat-row">
-                                {[
-                                    { label: "Total Allocated", val: selected.leaveBalance?.total ?? 0, bg: "#eef2ff", color: "#4f46e5", border: "#c7d2fe" },
-                                    { label: "Used", val: selected.leaveBalance?.used ?? 0, bg: "#fef2f2", color: "#dc2626", border: "#fecaca" },
-                                    { label: "Remaining", val: Math.max(0, (selected.leaveBalance?.total ?? 0) - (selected.leaveBalance?.used ?? 0)), bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0" },
-                                ].map(s => (
-                                    <div key={s.label} className="hlb-stat-box"
-                                        style={{ background: s.bg, borderColor: s.border, color: s.color }}>
-                                        <div className="stat-val">{s.val}</div>
-                                        <div className="stat-lbl">{s.label}</div>
+                            {/* Current stats — computed live from selected */}
+                            {(() => {
+                                const { total, used, remaining } = computeBalanceTotals(selected?.leaveBalance);
+                                return (
+                                    <div className="hlb-stat-row">
+                                        {[
+                                            { label: "Total Allocated", val: total, bg: "#eef2ff", color: "#4f46e5", border: "#c7d2fe" },
+                                            { label: "Used", val: used, bg: "#fef2f2", color: "#dc2626", border: "#fecaca" },
+                                            { label: "Remaining", val: remaining, bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0" },
+                                        ].map(s => (
+                                            <div key={s.label} className="hlb-stat-box"
+                                                style={{ background: s.bg, borderColor: s.border, color: s.color }}>
+                                                <div className="stat-val">{s.val}</div>
+                                                <div className="stat-lbl">{s.label}</div>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
+                                );
+                            })()}
 
-                            {/* Input */}
-                            <div className="hlb-input-wrap">
-                                <p className="fw-600" style={{ fontSize: ".85rem", color: "var(--text-2)" }}>
-                                    Update Total Leave Allocation
-                                </p>
-                                <p style={{ fontSize: ".75rem", color: "var(--text-3)", marginTop: ".2rem" }}>
-                                    Set the total number of paid leave days for this employee
-                                </p>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="365"
-                                    className="hlb-big-input"
-                                    value={totalInput}
-                                    onChange={e => setTotalInput(e.target.value)}
-                                />
-                                {/* Live preview */}
-                                {totalInput !== "" && (
-                                    <p style={{
-                                        marginTop: ".5rem", textAlign: "center",
-                                        fontSize: ".78rem", color: "#4f46e5", fontWeight: 600,
-                                    }}>
-                                        Remaining after save: {Math.max(0, Number(totalInput) - (selected.leaveBalance?.used ?? 0))} days
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Warning note */}
-                            <div style={{
-                                background: "#fffbeb", border: "1px solid #fde68a",
-                                borderRadius: "var(--radius-sm)", padding: ".6rem .85rem",
-                                fontSize: ".78rem", color: "#92400e",
+                            {/* Per-type inputs */}
+                            <p className="fw-600" style={{
+                                fontSize: ".78rem", textTransform: "uppercase",
+                                letterSpacing: ".5px", color: "#374151"
                             }}>
-                                ⚠️ Only <b>total allocation</b> is updated. Used days are automatically tracked by the system.
-                            </div>
+                                Update Leave Allocation
+                            </p>
 
-                            {/* Actions */}
-                            <div style={{ display: "flex", gap: ".75rem" }}>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={handleSave}
-                                    disabled={saving}
-                                    style={{ flex: 1, justifyContent: "center" }}
-                                >
-                                    {saving ? (<><span className="spinner" /> Saving...</>) : ("💾 Save Balance")}
-                                </button>
-                                <button
-                                    className="btn"
-                                    onClick={() => setSelected(null)}
-                                    style={{ flex: 1, justifyContent: "center" }}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
+                            {[
+                                {
+                                    type: "casual", label: "Casual Leave", emoji: "🏖️",
+                                    color: "#3b82f6", bg: "#eff6ff", border: "#93c5fd", barColor: "#3b82f6"
+                                },
+                                {
+                                    type: "sick", label: "Sick Leave", emoji: "🤒",
+                                    color: "#f59e0b", bg: "#fffbeb", border: "#fcd34d", barColor: "#f59e0b"
+                                },
+                                {
+                                    type: "earned", label: "Earned Leave", emoji: "⭐",
+                                    color: "#22c55e", bg: "#f0fdf4", border: "#4ade80", barColor: "#22c55e"
+                                },
+                            ].map(({ type, label, emoji, color, bg, border }) => {
+                                const bal = selected.leaveBalance?.[type] || { total: 0, used: 0 };
+                                const inputVal = typeInputs[type] ?? bal.total;
+                                const remaining = Math.max(0, inputVal - (bal.used ?? 0));
+                                const isSaving = savingType === type;
+
+                                return (
+                                    <div key={type} style={{
+                                        background: bg, border: `1.5px solid ${border}`,
+                                        borderRadius: 12, padding: "12px 14px",
+                                    }}>
+                                        {/* Header row */}
+                                        <div style={{
+                                            display: "flex", justifyContent: "space-between",
+                                            alignItems: "center", marginBottom: 8
+                                        }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                                <span>{emoji}</span>
+                                                <span style={{ fontSize: ".85rem", fontWeight: 700, color: "#1e293b" }}>
+                                                    {label}
+                                                </span>
+                                            </div>
+                                            <span style={{ fontSize: ".72rem", color: "#6b7280", fontWeight: 600 }}>
+                                                Used: {bal.used ?? 0} / {bal.total ?? 0}
+                                            </span>
+                                        </div>
+
+                                        {/* Input + Save */}
+                                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                max={365}
+                                                value={inputVal}
+                                                onChange={e => setTypeInputs(prev => ({
+                                                    ...prev,
+                                                    [type]: Number(e.target.value),
+                                                }))}
+                                                style={{
+                                                    flex: 1, padding: "8px 12px", borderRadius: 8,
+                                                    border: `1.5px solid ${border}`, background: "#fff",
+                                                    fontSize: "1rem", fontWeight: 700, color,
+                                                    outline: "none", boxSizing: "border-box",
+                                                }}
+                                            />
+                                            <button
+                                                onClick={() => handleSaveType(type)}
+                                                disabled={!!savingType}
+                                                style={{
+                                                    padding: "8px 14px", borderRadius: 8, border: "none",
+                                                    background: color, color: "#fff", fontWeight: 700,
+                                                    fontSize: ".8rem", cursor: savingType ? "not-allowed" : "pointer",
+                                                    opacity: savingType && !isSaving ? 0.6 : 1,
+                                                    whiteSpace: "nowrap", display: "flex",
+                                                    alignItems: "center", gap: 5,
+                                                }}
+                                            >
+                                                {isSaving
+                                                    ? <><span className="spinner" />Saving…</>
+                                                    : "Save"
+                                                }
+                                            </button>
+                                        </div>
+
+                                        {/* Remaining preview */}
+                                        <p style={{ fontSize: ".72rem", color: "#6b7280", marginTop: 5, fontWeight: 500 }}>
+                                            Remaining after save:{" "}
+                                            <strong style={{ color }}>{remaining}</strong> days
+                                        </p>
+                                    </div>
+                                );
+                            })}
+
+                            {/* Cancel */}
+                            <button
+                                className="btn"
+                                onClick={() => setSelected(null)}
+                                style={{ width: "100%", justifyContent: "center" }}
+                            >
+                                Close
+                            </button>
                         </div>
                     )}
                 </div>

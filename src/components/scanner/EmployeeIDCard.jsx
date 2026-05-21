@@ -105,7 +105,8 @@ function CardFront({ user, logoImg }) {
 
     const joiningDate = user?.joiningDate
         ? new Date(user.joiningDate).toLocaleDateString("en-IN", {
-            day: "2-digit", month: "2-digit", year: "numeric"
+            day: "2-digit", month: "2-digit", year: "numeric",
+            timeZone: "Asia/Kolkata"
         }).replace(/\//g, ".")
         : "—";
 
@@ -334,16 +335,16 @@ function CardBack({ user, logoImg }) {
 
                 {/* Company full block */}
                 <div style={{ textAlign: "center" }}>
-                    <div style={{ fontFamily: ff, fontSize: 15, fontWeight: 900, color: THEME.orange, marginBottom: 4 }}>
+                    <div style={{ fontFamily: ff, fontSize: 14, fontWeight: 900, color: THEME.orange, marginBottom: 4 }}>
                         {COMPANY.fullName}
                     </div>
-                    <div style={{ fontFamily: ff, fontSize: 8.5, fontWeight: 700, color: THEME.textDark, lineHeight: 1.6 }}>
+                    <div style={{ fontFamily: ff, fontSize: 8, fontWeight: 700, color: THEME.textDark, lineHeight: 1.6 }}>
                         {COMPANY.address}
                     </div>
-                    <div style={{ fontFamily: ff, fontSize: 8.5, fontWeight: 700, color: THEME.textDark, marginTop: 3 }}>
+                    <div style={{ fontFamily: ff, fontSize: 8, fontWeight: 700, color: THEME.textDark, marginTop: 3 }}>
                         Phone no. : {COMPANY.phone1}
                     </div>
-                    <div style={{ fontFamily: ff, fontSize: 8.5, fontWeight: 700, color: THEME.textDark }}>
+                    <div style={{ fontFamily: ff, fontSize: 8, fontWeight: 700, color: THEME.textDark }}>
                         {COMPANY.email}
                     </div>
                 </div>

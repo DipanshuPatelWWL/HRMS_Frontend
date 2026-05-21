@@ -18,6 +18,7 @@ const injectStyles = () => {
 
     .ma2-wrap * { font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box; }
 
+    /* ── Card ── */
     .ma2-card {
         background: #ffffff;
         border: 2px solid #e2e8f0;
@@ -45,6 +46,7 @@ const injectStyles = () => {
         align-items: center;
     }
 
+    /* ── Stat ── */
     .ma2-stat {
         border-radius: 14px;
         padding: 18px 20px;
@@ -54,6 +56,7 @@ const injectStyles = () => {
     }
     .ma2-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
 
+    /* ── Info row ── */
     .ma2-info {
         background: #ffffff;
         border: 2px solid #e2e8f0;
@@ -67,6 +70,7 @@ const injectStyles = () => {
     }
     .ma2-info:hover { border-color: #1D9E75; }
 
+    /* ── History button ── */
     .ma2-hist-btn {
         display: inline-flex; align-items: center; gap: 6px;
         padding: 7px 14px; border-radius: 8px;
@@ -80,6 +84,7 @@ const injectStyles = () => {
         background: #f0faf6; border-color: #1D9E75; color: #1D9E75;
     }
 
+    /* ── Modal ── */
     .ma2-modal-bg {
         position: fixed; inset: 0;
         background: rgba(0,0,0,.55);
@@ -97,6 +102,7 @@ const injectStyles = () => {
         animation: ma2-pop .3s cubic-bezier(.22,1,.36,1) both;
     }
     .ma2-spin { animation: ma2-spin .75s linear infinite; }
+
     .ma2-detail-field {
         background: #f8fafc;
         border: 1.5px solid #e2e8f0;
@@ -118,6 +124,171 @@ const injectStyles = () => {
         white-space: nowrap; flex-shrink: 0;
     }
     .ma2-pwd-btn:hover { border-color: #1D9E75; color: #1D9E75; background: #f0faf6; }
+
+    /* ── Responsive: Stats grid ── */
+    .ma2-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    /* ── Responsive: Asset grid ── */
+    .ma2-asset-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+        gap: 14px;
+    }
+
+    /* ── Responsive: Detail fields grid ── */
+    .ma2-fields-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    /* ── Page wrapper padding ── */
+    .ma2-page {
+        padding: 28px 28px 60px;
+        max-width: 960px;
+        margin: 0 auto;
+    }
+
+    /* ── Tablet: ≤ 768px ── */
+    @media (max-width: 768px) {
+        .ma2-page {
+            padding: 20px 16px 60px;
+        }
+        .ma2-stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        .ma2-stat {
+            padding: 14px 12px;
+        }
+        .ma2-stat-num {
+            font-size: 24px !important;
+        }
+        .ma2-stat-icon {
+            display: none !important;
+        }
+        .ma2-asset-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .ma2-card {
+            padding: 14px;
+        }
+        .ma2-fields-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        .ma2-modal {
+            max-width: 100%;
+            border-radius: 16px;
+        }
+    }
+
+    /* ── Mobile: ≤ 480px ── */
+    @media (max-width: 480px) {
+        .ma2-page {
+            padding: 16px 12px 72px;
+        }
+
+        /* Stats: single row of 3 compact tiles */
+        .ma2-stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .ma2-stat {
+            padding: 10px 8px;
+            border-radius: 10px;
+        }
+        .ma2-stat-label {
+            font-size: 9px !important;
+            letter-spacing: .04em !important;
+        }
+        .ma2-stat-num {
+            font-size: 22px !important;
+        }
+        .ma2-stat-icon {
+            display: none !important;
+        }
+
+        /* Info rows */
+        .ma2-info {
+            padding: 12px 14px;
+            gap: 10px;
+            border-radius: 12px;
+        }
+        .ma2-info-icon-wrap {
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 10px !important;
+        }
+        .ma2-info-value {
+            font-size: 14px !important;
+        }
+
+        /* Asset grid: single column */
+        .ma2-asset-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .ma2-card {
+            padding: 14px 14px;
+            border-radius: 12px;
+        }
+        .ma2-card-icon-wrap {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 10px !important;
+        }
+        .ma2-card-name {
+            font-size: 13.5px !important;
+        }
+
+        /* Modal: bottom sheet on mobile */
+        .ma2-modal-bg {
+            align-items: flex-end;
+            padding: 0;
+        }
+        .ma2-modal {
+            max-width: 100%;
+            max-height: 92vh;
+            border-radius: 20px 20px 0 0;
+        }
+        .ma2-fields-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .ma2-detail-field {
+            padding: 10px 11px;
+        }
+
+        /* Page heading */
+        .ma2-page-title {
+            font-size: 20px !important;
+        }
+        .ma2-section-label {
+            font-size: 10px !important;
+        }
+    }
+
+    /* ── Very small: ≤ 360px ── */
+    @media (max-width: 360px) {
+        .ma2-fields-grid {
+            grid-template-columns: 1fr;
+        }
+        .ma2-stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+        .ma2-stat-num {
+            font-size: 18px !important;
+        }
+    }
     `;
     document.head.appendChild(s);
 };
@@ -267,7 +438,12 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
     useEffect(() => {
         const h = (e) => e.key === "Escape" && onClose();
         window.addEventListener("keydown", h);
-        return () => window.removeEventListener("keydown", h);
+        // Prevent background scroll on mobile
+        document.body.style.overflow = "hidden";
+        return () => {
+            window.removeEventListener("keydown", h);
+            document.body.style.overflow = "";
+        };
     }, [onClose]);
 
     const fmtDate = (d) => d
@@ -286,7 +462,6 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
     return (
         <div className="ma2-modal-bg" onClick={(e) => e.target === e.currentTarget && onClose()}>
             <div className="ma2-modal">
-
                 {/* ── Modal Header ── */}
                 <div style={{
                     padding: "20px 22px 18px",
@@ -327,7 +502,6 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
                 </div>
 
                 <div style={{ padding: "20px 22px 24px" }}>
-
                     {/* Photo */}
                     {asset.photoUrl && (
                         <div style={{ marginBottom: 20 }}>
@@ -353,7 +527,7 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
                     </div>
 
                     {/* Fields grid */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+                    <div className="ma2-fields-grid">
                         {fields.map(({ icon: FieldIcon, label, value, mono }) => (
                             <div key={label} className="ma2-detail-field">
                                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
@@ -393,7 +567,11 @@ function HistoryModal({ modal, loading, onClose }) {
     useEffect(() => {
         const h = (e) => e.key === "Escape" && onClose();
         window.addEventListener("keydown", h);
-        return () => window.removeEventListener("keydown", h);
+        document.body.style.overflow = "hidden";
+        return () => {
+            window.removeEventListener("keydown", h);
+            document.body.style.overflow = "";
+        };
     }, [onClose]);
 
     return (
@@ -461,20 +639,26 @@ function AssetCard({ asset, delay, onHistory, onClick }) {
         >
             {/* Top row */}
             <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
-                <div style={{
-                    width: 46, height: 46, borderRadius: 12, flexShrink: 0,
-                    background: meta.bg, border: `2px solid ${meta.border}`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: meta.accent,
-                }}>
+                <div
+                    className="ma2-card-icon-wrap"
+                    style={{
+                        width: 46, height: 46, borderRadius: 12, flexShrink: 0,
+                        background: meta.bg, border: `2px solid ${meta.border}`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        color: meta.accent,
+                    }}
+                >
                     <AssetIcon size={22} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                        fontWeight: 800, fontSize: 14.5, color: "#0f172a",
-                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                        marginBottom: 3,
-                    }}>
+                    <div
+                        className="ma2-card-name"
+                        style={{
+                            fontWeight: 800, fontSize: 14.5, color: "#0f172a",
+                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                            marginBottom: 3,
+                        }}
+                    >
                         {asset.name}
                     </div>
                     <div style={{ fontSize: 12, color: "#475569", fontWeight: 600 }}>
@@ -578,7 +762,7 @@ export default function MyAssets() {
         return (
             <DashboardLayout>
                 <div style={{
-                    margin: 28, padding: "18px 22px",
+                    margin: 16, padding: "18px 22px",
                     background: "#FFF1F2", border: "2px solid #FECDD3",
                     borderRadius: 12, color: "#9f1239",
                     fontSize: 14, fontWeight: 600, display: "flex", gap: 10, alignItems: "center",
@@ -619,11 +803,14 @@ export default function MyAssets() {
 
     return (
         <DashboardLayout>
-            <div className="ma2-wrap" style={{ padding: "28px 28px 60px", maxWidth: 960, margin: "0 auto" }}>
+            <div className="ma2-wrap ma2-page">
 
                 {/* ── Page Header ── */}
-                <div style={{ marginBottom: 28, animation: "ma2-rise .4s cubic-bezier(.22,1,.36,1) both" }}>
-                    <h1 style={{ fontSize: 24, fontWeight: 800, color: "#0f172a", margin: 0, letterSpacing: "-.02em" }}>
+                <div style={{ marginBottom: 24, animation: "ma2-rise .4s cubic-bezier(.22,1,.36,1) both" }}>
+                    <h1
+                        className="ma2-page-title"
+                        style={{ fontSize: 24, fontWeight: 800, color: "#0f172a", margin: 0, letterSpacing: "-.02em" }}
+                    >
                         My Assets
                     </h1>
                     <p style={{ fontSize: 13.5, color: "#475569", margin: "5px 0 0", fontWeight: 500 }}>
@@ -632,7 +819,7 @@ export default function MyAssets() {
                 </div>
 
                 {/* ── Stat Cards ── */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 18 }}>
+                <div className="ma2-stats-grid">
                     {stats.map(({ num, label, bg, border, color, numColor, Icon }, i) => (
                         <div
                             key={label}
@@ -640,15 +827,21 @@ export default function MyAssets() {
                             style={{ background: bg, border: `2px solid ${border}`, animationDelay: `${i * 70}ms` }}
                         >
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                                <div>
-                                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color, marginBottom: 8 }}>
+                                <div style={{ minWidth: 0 }}>
+                                    <div
+                                        className="ma2-stat-label"
+                                        style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color, marginBottom: 8 }}
+                                    >
                                         {label}
                                     </div>
-                                    <div style={{ fontSize: 30, fontWeight: 800, color: numColor, lineHeight: 1 }}>
+                                    <div
+                                        className="ma2-stat-num"
+                                        style={{ fontSize: 30, fontWeight: 800, color: numColor, lineHeight: 1 }}
+                                    >
                                         {num}
                                     </div>
                                 </div>
-                                <div style={{ color, opacity: .5 }}>
+                                <div className="ma2-stat-icon" style={{ color, opacity: .5, flexShrink: 0 }}>
                                     <Icon size={30} />
                                 </div>
                             </div>
@@ -658,19 +851,25 @@ export default function MyAssets() {
 
                 {/* ── Desk ── */}
                 <div className="ma2-info" style={{ marginBottom: 10, animationDelay: "180ms" }}>
-                    <div style={{
-                        width: 44, height: 44, borderRadius: 12,
-                        background: "#EFF6FF", border: "2px solid #BFDBFE",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#1d4ed8", flexShrink: 0,
-                    }}>
+                    <div
+                        className="ma2-info-icon-wrap"
+                        style={{
+                            width: 44, height: 44, borderRadius: 12,
+                            background: "#EFF6FF", border: "2px solid #BFDBFE",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: "#1d4ed8", flexShrink: 0,
+                        }}
+                    >
                         <Icons.Desk size={20} />
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color: "#64748b", marginBottom: 3 }}>
                             Your Desk
                         </div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "#0f172a" }}>
+                        <div
+                            className="ma2-info-value"
+                            style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                        >
                             {deskNumber || <span style={{ color: "#94a3b8", fontStyle: "italic", fontWeight: 500, fontSize: 14 }}>Not assigned</span>}
                         </div>
                     </div>
@@ -678,24 +877,30 @@ export default function MyAssets() {
 
                 {/* ── System Password ── */}
                 <div className="ma2-info" style={{ marginBottom: 28, animationDelay: "240ms" }}>
-                    <div style={{
-                        width: 44, height: 44, borderRadius: 12,
-                        background: "#F0FDF4", border: "2px solid #BBF7D0",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#166534", flexShrink: 0,
-                    }}>
+                    <div
+                        className="ma2-info-icon-wrap"
+                        style={{
+                            width: 44, height: 44, borderRadius: 12,
+                            background: "#F0FDF4", border: "2px solid #BBF7D0",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: "#166534", flexShrink: 0,
+                        }}
+                    >
                         <Icons.Lock size={20} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color: "#64748b", marginBottom: 3 }}>
                             System Password
                         </div>
-                        <div style={{
-                            fontSize: 16, fontWeight: 800, color: "#0f172a",
-                            fontFamily: showPwd ? "'JetBrains Mono', monospace" : undefined,
-                            letterSpacing: showPwd ? 2 : undefined,
-                            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                        }}>
+                        <div
+                            className="ma2-info-value"
+                            style={{
+                                fontSize: 16, fontWeight: 800, color: "#0f172a",
+                                fontFamily: showPwd ? "'JetBrains Mono', monospace" : undefined,
+                                letterSpacing: showPwd ? 2 : undefined,
+                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                            }}
+                        >
                             {systemPassword
                                 ? (showPwd ? systemPassword : "•".repeat(Math.min(systemPassword.length, 10)))
                                 : <span style={{ color: "#94a3b8", fontStyle: "italic", fontWeight: 500, fontSize: 14 }}>Not set</span>
@@ -711,12 +916,15 @@ export default function MyAssets() {
                 </div>
 
                 {/* ── Section Label ── */}
-                <div style={{
-                    fontSize: 11, fontWeight: 800, textTransform: "uppercase",
-                    letterSpacing: ".08em", color: "#334155", marginBottom: 14,
-                    display: "flex", alignItems: "center", gap: 8,
-                    animation: "ma2-rise .4s 300ms cubic-bezier(.22,1,.36,1) both",
-                }}>
+                <div
+                    className="ma2-section-label"
+                    style={{
+                        fontSize: 11, fontWeight: 800, textTransform: "uppercase",
+                        letterSpacing: ".08em", color: "#334155", marginBottom: 14,
+                        display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
+                        animation: "ma2-rise .4s 300ms cubic-bezier(.22,1,.36,1) both",
+                    }}
+                >
                     <span style={{
                         display: "inline-flex", alignItems: "center", justifyContent: "center",
                         width: 22, height: 22, borderRadius: 6,
@@ -744,7 +952,7 @@ export default function MyAssets() {
                         <p style={{ margin: "4px 0 0", fontSize: 13, color: "#94a3b8" }}>Your company hasn't assigned any equipment to you</p>
                     </div>
                 ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(272px, 1fr))", gap: 14 }}>
+                    <div className="ma2-asset-grid">
                         {assets.map((asset, i) => (
                             <AssetCard
                                 key={asset._id}

@@ -24,32 +24,9 @@ const fmt = (n) =>
  * FIX 2: Compute display net salary for the TABLE.
  * If backend sends netSalary=0 but there are earnings, recalculate.
  */
-function resolveNetSalary(p) {
-    // Always trust backend value if present and non-zero
-    const raw = p.netSalary ?? 0;
-    if (raw > 0) return raw;
-
-    // Recompute from stored breakdown fields (backend now stores all of these)
-    const grossEarnings = p.grossEarnings ?? 0;
-    const totalDeductions = p.deductions ?? 0;
-
-    if (grossEarnings > 0) {
-        return Math.max(0, Number((grossEarnings - totalDeductions).toFixed(2)));
-    }
-
-    // Last resort: rebuild from primitives
-    const perDay = p.perDaySalary ?? 0;
-    const presentDays = p.presentDays ?? 0;
-    const halfDays = p.halfDays ?? 0;
-    const paidLeave = p.paidLeave ?? 0;
-
-    const basicEarnings = p.basicEarnings ?? (presentDays * perDay);
-    const halfDayEarnings = p.halfDayEarnings ?? (halfDays * (perDay / 2));
-    const paidLeaveAmt = p.paidLeaveAmt ?? (paidLeave * perDay);
-    const gross = basicEarnings + halfDayEarnings + paidLeaveAmt;
-
-    return Math.max(0, Number((gross - totalDeductions).toFixed(2)));
-}
+const getNetSalary = (p) => p.netSalary ?? 0;
+const getGrossEarning = (p) => p.grossEarnings ?? 0;
+const getDeductions = (p) => p.deductions ?? 0;
 
 const StatusBadge = ({ status }) => {
     const s = status === "paid"
@@ -107,7 +84,7 @@ const Payroll = () => {
     }, []);
 
     // FIX 2: Total earnings uses resolved net salary too
-    const totalEarnings = data.reduce((s, p) => s + resolveNetSalary(p), 0);
+    const totalEarnings = data.reduce((s, p) => s + getNetSalary(p), 0);
 
     const handleDownload = async (p) => {
         setDlLoading(p._id);
@@ -124,7 +101,7 @@ const Payroll = () => {
                 employee: enrichedEmp,
                 month: typeof p.month === "number" ? p.month : parseMonthNumber(p.month),
                 year: p.year || new Date().getFullYear(),
-                netSalary: resolveNetSalary(p),
+                netSalary: getNetSalary(p),
             };
             await generatePayslipPDF(enriched); // make it awaitable
         } catch (err) {
@@ -195,7 +172,7 @@ const Payroll = () => {
                                             p.basicSalary ? fmt(p.basicSalary) : "—";
 
                                     // FIX 2: Always show correct net salary
-                                    const displayNetSalary = resolveNetSalary(p);
+                                    const displayNetSalary = p.netSalary ?? 0;
 
                                     return (
                                         <tr key={p._id}>

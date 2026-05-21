@@ -248,6 +248,9 @@ const PasswordInput = ({ name, placeholder, value, onChange }) => {
                 value={value}
                 onChange={onChange}
                 required
+                autoComplete="new-password"
+                readOnly
+                onFocus={e => e.target.removeAttribute("readOnly")}
                 style={{ paddingRight: 42 }}
             />
             <button
@@ -299,6 +302,13 @@ const FormFields = ({ form, onChange }) => {
 
     return (
         <>
+            {/* Honeypot: tricks browser into filling these instead of real fields */}
+            <div style={{ position: "absolute", left: "-9999px", top: "-9999px", opacity: 0, pointerEvents: "none" }} aria-hidden="true">
+                <input type="text" name="fakeusernameremembered" tabIndex={-1} />
+                <input type="email" name="fakeemailremembered" tabIndex={-1} />
+                <input type="password" name="fakepasswordremembered" tabIndex={-1} />
+            </div>
+
             <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
                     Full name <span style={{ color: "var(--danger)" }}>*</span>
@@ -310,7 +320,9 @@ const FormFields = ({ form, onChange }) => {
                     value={form.name}
                     onChange={onChange}
                     required
-                    autoComplete="new-password"
+                    autoComplete="off"
+                    readOnly
+                    onFocus={e => e.target.removeAttribute("readOnly")}
                 />
             </div>
 
@@ -326,7 +338,9 @@ const FormFields = ({ form, onChange }) => {
                     value={form.email}
                     onChange={onChange}
                     required
-                    autoComplete="new-password"
+                    autoComplete="off"
+                    readOnly
+                    onFocus={e => e.target.removeAttribute("readOnly")}
                 />
             </div>
 
@@ -451,7 +465,7 @@ const FormFields = ({ form, onChange }) => {
                         {designations.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                 </div>
-                {(form.role === "employee" || form.role === "tl") && (
+                {(["employee", "tl"].includes(form.role?.toLowerCase?.())) && (
                     <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
                             Monthly Salary <span style={{ color: "var(--danger)" }}>*</span>
@@ -1845,21 +1859,29 @@ const Employees = () => {
         });
     };
 
+
     const openAdd = () => {
         if (!isHR && !isManager) return;
-        setForm({ ...EMPTY_FORM, _isAdd: true, _creatorRole: user?.role });
+        setSearch("");
+        setForm({ ...EMPTY_FORM, _isAdd: true, _creatorRole: user?.role, _key: Date.now() });
         setAddModal(true);
     };
 
     const openEdit = (emp) => {
         if (!isHR && !isManager) return;
+        const role = emp.role?.toLowerCase?.() || emp.role || "employee";
+        const monthlySalary =
+            emp.salary?.monthly ||
+            emp.monthlySalary ||
+            emp.salary?.amount ||
+            "";
         setForm({
             name: emp.name,
             email: emp.email,
             password: "",
             employeeId: emp.employeeId,
-            role: emp.role,
-            monthlySalary: emp.salary?.monthly || "",
+            role: role,
+            monthlySalary: monthlySalary,
             department: emp.department?._id || emp.department || "",
             designation: emp.designation || "",
             maritalStatus: emp.maritalStatus || "",
@@ -1898,13 +1920,13 @@ const Employees = () => {
         setSubmitting(true);
         try {
             const daysInMonth = getDaysInMonth(); // ✅ fix: was missing, caused perDay = NaN
+            const role = form.role?.toLowerCase?.() || form.role;
             const payload = {
-                name: form.name, email: form.email, password: form.password, role: form.role, // ✅ fix: password added
+                name: form.name, email: form.email, role: role,
                 department: form.department || null, designation: form.designation || "",
-                dob: form.dob || undefined, joiningDate: form.joiningDate || undefined,
+                dob: form.dob || undefined, joiningDate: form.joiningDate ? form.joiningDate + "T12:00:00.000Z" : undefined,
                 maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
-                phone: form.phone || undefined,
-                salary: (form.role === "employee" || form.role === "tl")
+                salary: (["employee", "tl"].includes(role))
                     ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth }
                     : undefined,
             };
@@ -1938,8 +1960,9 @@ const Employees = () => {
             Swal.fire({ icon: "warning", title: "Missing Fields", text: "Please fill in all required fields", confirmButtonColor: "#6366F1" });
             return;
         }
-        if (form.role === "employee" && !form.monthlySalary) {
-            Swal.fire({ icon: "warning", title: "Salary Required", text: "Salary is required for employees", confirmButtonColor: "#6366F1" });
+        const roleCheck = form.role?.toLowerCase?.() || form.role;
+        if (["employee", "tl"].includes(roleCheck) && !form.monthlySalary) {
+            Swal.fire({ icon: "warning", title: "Salary Required", text: "Salary is required for employees and team leaders", confirmButtonColor: "#6366F1" });
             return;
         }
         setSubmitting(true);
@@ -1948,7 +1971,7 @@ const Employees = () => {
             const payload = {
                 name: form.name, email: form.email, role: form.role,
                 department: form.department || null, designation: form.designation || "",
-                dob: form.dob || undefined, joiningDate: form.joiningDate || undefined,
+                dob: form.dob || undefined, joiningDate: form.joiningDate ? form.joiningDate + "T12:00:00.000Z" : undefined,
                 maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
                 salary: (form.role === "employee" || form.role === "tl") ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth } : undefined,
             };
@@ -2400,7 +2423,10 @@ const Employees = () => {
                 {(isHR || isManager) && (
                     <div style={{ marginBottom: "1.25rem" }}>
                         <EmployeeScanner
-                            onFound={(emp) => openEdit(emp)}
+                            onFound={(emp) => {
+                                setSearch("");
+                                openEdit(emp);
+                            }}
                         />
                     </div>
                 )}
@@ -2495,7 +2521,10 @@ const Employees = () => {
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
                                 autoComplete="off"
-                                name="employee-search"
+                                name="emp-list-search"
+                                id="emp-list-search"
+                                readOnly
+                                onFocus={e => e.target.removeAttribute("readOnly")}
                                 style={{ color: "#0f172a", paddingLeft: "34px", width: "100%" }}
                             />
                             {search && (
@@ -2687,7 +2716,7 @@ const Employees = () => {
             {/* ─── Add Modal ─── */}
             {addModal && (isHR || isManager) && (
                 <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setAddModal(false)}>
-                    <div className="modal enhanced-modal" autoComplete="off">
+                    <div className="modal enhanced-modal" key={form._key}>
                         <div className="modal-header">
                             <div>
                                 <span className="modal-title" style={{ color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>

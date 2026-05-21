@@ -420,7 +420,7 @@ function EmployeeDetailCard({ emp, govId, bank, onClose }) {
                         <Row label="Email" value={emp.email} />
                         <Row label="Department" value={emp.department} />
                         <Row label="Joining Date" value={emp.joiningDate
-                            ? new Date(emp.joiningDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                            ? new Date(emp.joiningDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })
                             : null} />
                         <Row label="Status" value={emp.status?.toUpperCase()} />
                         <Row label="Phone" value={emp.phone} mono />

@@ -198,7 +198,7 @@ const TeamAttendance = () => {
                 {/* Header */}
                 <div className="ta-header">
                     <div>
-                        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111318", letterSpacing: "-.3px" }}>👥 Team Attendance</h1>
+                        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111318", letterSpacing: "-.3px" }}>Team Attendance</h1>
                         <p style={{ fontSize: ".8rem", color: "#94A3B8", marginTop: 4 }}>
                             {now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                         </p>
