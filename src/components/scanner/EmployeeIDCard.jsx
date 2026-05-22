@@ -7,7 +7,7 @@ const COMPANY = {
     name: "World WebLogic",
     tagline: "give digital wings to your brand",
     fullName: "World WebLogic Pvt. Ltd.",
-    address: "B-108 1st Floor Office No. - 2, B Block, Sector 63, Noida, Uttar Pradesh Pin Code : 201309",
+    address: "B-108, 1st Floor, Office No. 2nd, Sector 63, Noida - 201301",
     website: "www.worldweblogic.com",
     phone1: "+91 1204545733",
     phone2: "+91 85058 37801",
@@ -115,7 +115,7 @@ function CardFront({ user, logoImg }) {
     return (
         <div style={{
             width: 280,
-            height: 440,
+            height: 455,
             background: THEME.white,
             borderRadius: 12,
             boxShadow: "0 12px 40px rgba(0,0,0,.2), 0 3px 10px rgba(0,0,0,.1)",
@@ -271,7 +271,7 @@ function CardBack({ user, logoImg }) {
     return (
         <div style={{
             width: 280,
-            height: 440,
+            height: 455,
             background: THEME.white,
             borderRadius: 12,
             boxShadow: "0 12px 40px rgba(0,0,0,.2), 0 3px 10px rgba(0,0,0,.1)",
@@ -292,7 +292,7 @@ function CardBack({ user, logoImg }) {
                 background: THEME.white,
             }}>
                 {/* Blood group, phone, emergency */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     {[
                         { label: "BLOOD GROUP", value: user?.bloodGroup || "N/A" },
                         { label: "PHONE NO.", value: user?.phone || "—" },
@@ -335,16 +335,16 @@ function CardBack({ user, logoImg }) {
 
                 {/* Company full block */}
                 <div style={{ textAlign: "center" }}>
-                    <div style={{ fontFamily: ff, fontSize: 14, fontWeight: 900, color: THEME.orange, marginBottom: 4 }}>
+                    <div style={{ fontFamily: ff, fontSize: 15, fontWeight: 900, color: THEME.orange, marginBottom: 4 }}>
                         {COMPANY.fullName}
                     </div>
-                    <div style={{ fontFamily: ff, fontSize: 8, fontWeight: 700, color: THEME.textDark, lineHeight: 1.6 }}>
+                    <div style={{ fontFamily: ff, fontSize: 10, fontWeight: 700, color: THEME.textDark, lineHeight: 1.6 }}>
                         {COMPANY.address}
                     </div>
-                    <div style={{ fontFamily: ff, fontSize: 8, fontWeight: 700, color: THEME.textDark, marginTop: 3 }}>
+                    <div style={{ fontFamily: ff, fontSize: 10, fontWeight: 700, color: THEME.textDark, marginTop: 3 }}>
                         Phone no. : {COMPANY.phone1}
                     </div>
-                    <div style={{ fontFamily: ff, fontSize: 8, fontWeight: 700, color: THEME.textDark }}>
+                    <div style={{ fontFamily: ff, fontSize: 10, fontWeight: 700, color: THEME.textDark }}>
                         {COMPANY.email}
                     </div>
                 </div>
@@ -358,7 +358,7 @@ function CardBack({ user, logoImg }) {
             }}>
                 <p style={{
                     fontFamily: ff,
-                    fontSize: 7,
+                    fontSize: 8,
                     color: THEME.white,
                     textAlign: "center",
                     margin: 0,

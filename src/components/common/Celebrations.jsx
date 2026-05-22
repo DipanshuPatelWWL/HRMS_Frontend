@@ -23,15 +23,90 @@ import "react-toastify/dist/ReactToastify.css";
 // BADGE
 // ─────────────────────────────────────────────
 
-const DaysBadge = ({ days }) => {
-    if (days === 0) return (
-        <span style={{ background: "#fef3c7", color: "#92400e", fontSize: "11px", fontWeight: 700, padding: "3px 10px", borderRadius: "20px" }}>Today</span>
-    );
-    if (days <= 7) return (
-        <span style={{ background: "#fee2e2", color: "#991b1b", fontSize: "11px", fontWeight: 700, padding: "3px 10px", borderRadius: "20px" }}>{days}d</span>
-    );
+const DaysBadge = ({ days, date }) => {
+
+    // Show actual date
+    if (date) {
+        return (
+            <span
+                style={{
+                    background: "#ede9fe",
+                    color: "#5b21b6",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    padding: "3px 10px",
+                    borderRadius: "20px",
+                }}
+            >
+                {date}
+            </span>
+        );
+    }
+
+    if (days === 0) {
+        return (
+            <span
+                style={{
+                    background: "#fef3c7",
+                    color: "#92400e",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    padding: "3px 10px",
+                    borderRadius: "20px",
+                }}
+            >
+                Today
+            </span>
+        );
+    }
+
+    if (days === 1) {
+        return (
+            <span
+                style={{
+                    background: "#dbeafe",
+                    color: "#1e40af",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    padding: "3px 10px",
+                    borderRadius: "20px",
+                }}
+            >
+                Tomorrow
+            </span>
+        );
+    }
+
+    if (days <= 7) {
+        return (
+            <span
+                style={{
+                    background: "#fee2e2",
+                    color: "#991b1b",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    padding: "3px 10px",
+                    borderRadius: "20px",
+                }}
+            >
+                In {days} Days
+            </span>
+        );
+    }
+
     return (
-        <span style={{ background: "#ede9fe", color: "#5b21b6", fontSize: "11px", fontWeight: 700, padding: "3px 10px", borderRadius: "20px" }}>{days}d</span>
+        <span
+            style={{
+                background: "#ede9fe",
+                color: "#5b21b6",
+                fontSize: "11px",
+                fontWeight: 700,
+                padding: "3px 10px",
+                borderRadius: "20px",
+            }}
+        >
+            In {days} Days
+        </span>
     );
 };
 
@@ -78,6 +153,13 @@ const UpcomingRow = ({ event, onEdit, onSchedule }) => (
                 }
             </p>
         </div>
+        <DaysBadge
+            date={new Date(event.eventDate).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+            })}
+        />
         <DaysBadge days={event.daysLeft} />
         <button
             onClick={() => onSchedule(event)}

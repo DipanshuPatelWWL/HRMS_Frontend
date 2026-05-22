@@ -43,7 +43,12 @@ const STATUS_MAP = {
 const fmtDate = (d) =>
     new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 const fmtTime = (d) =>
-    d ? new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
+    d ? new Date(d).toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "Asia/Kolkata",
+    }) : "—";
 
 const EMPTY_FORM = {
     type: "punch_out",
@@ -90,8 +95,8 @@ const AttendanceCorrectionRequest = () => {
         setSubmitting(true); setSuccess(""); setError("");
         try {
             const payload = { type: form.type, date: form.date, reason: form.reason };
-            if (needsPunchIn) payload.requestedPunchIn = `${form.date}T${form.requestedPunchIn}`;
-            if (needsPunchOut) payload.requestedPunchOut = `${form.date}T${form.requestedPunchOut}`;
+            if (needsPunchIn) payload.requestedPunchIn = `${form.date}T${form.requestedPunchIn}:00+05:30`;
+            if (needsPunchOut) payload.requestedPunchOut = `${form.date}T${form.requestedPunchOut}:00+05:30`;
             await API.post("/attendance-corrections", payload);
             setSuccess("Correction request submitted. HR will review it shortly.");
             setForm(EMPTY_FORM);

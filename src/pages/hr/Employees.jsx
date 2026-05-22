@@ -591,16 +591,6 @@ const GovernmentIdTab = ({ employeeId }) => {
 
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <div style={{
-                background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "8px",
-                padding: "10px 14px", fontSize: ".8rem", color: "#0c4a6e",
-                display: "flex", gap: "8px", alignItems: "flex-start"
-            }}>
-                <span>ℹ️</span>
-                <span style={{ color: "#0c4a6e", fontWeight: 500 }}>
-                    Errors appear as you type. Format and checksum validation also runs on the server when you save.
-                </span>
-            </div>
             <div className="form-group">
                 <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>PAN Number</label>
                 <input name="pan" className="input" placeholder="ABCDE1234F" value={data.pan} onChange={handleChange} style={getInputStyle("pan")} />
@@ -2658,7 +2648,7 @@ const Employees = () => {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="emp-col-hide" style={{ fontFamily: "var(--mono)", fontSize: ".8rem", color: "#0f172a", fontWeight: 600 }}>
+                                            <td className="emp-col-hide" style={{ fontSize: ".8rem", color: "#302e2e", fontWeight: 600 }}>
                                                 {e.employeeId || "—"}
                                             </td>
                                             <td className="emp-col-hide" style={{ color: "#0f172a", fontWeight: 500 }}>{e.email}</td>

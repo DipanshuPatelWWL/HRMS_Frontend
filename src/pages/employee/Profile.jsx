@@ -830,7 +830,7 @@ export default function Profile() {
                         <InfoRow label="Full Name" value={user?.name} Icon={LuUser} />
                         <InfoRow label="Employee ID" value={user?.employeeId} Icon={LuBadge} />
                         <InfoRow label="Email" value={user?.email} Icon={LuMail} />
-                        <InfoRow label="Role" value={user?.role} Icon={LuShield} />
+                        <InfoRow label="Role" value={user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)} Icon={LuShield} />
                         <InfoRow label="Designation" value={user?.designation} Icon={LuBriefcase} />
                         <InfoRow label="Department" value={user?.department} Icon={LuBuilding2} />
                         <InfoRow
@@ -840,7 +840,7 @@ export default function Profile() {
                                 : null}
                             Icon={LuCalendar}
                         />
-                        <InfoRow label="Status" value={user?.status} Icon={LuCircleDot} />
+                        <InfoRow label="Status" value={user?.status.charAt(0).toUpperCase() + user?.status?.slice(1)} Icon={LuCircleDot} />
                         <InfoRow label="Phone" value={stripCountryCode(user?.phone) || selfForm.phone} Icon={LuPhone} />
                         <InfoRow
                             label="Date of Birth"

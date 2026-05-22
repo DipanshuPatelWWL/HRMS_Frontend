@@ -11,7 +11,13 @@ const TYPE_LABELS = {
 };
 
 const fmtDate = (d) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-const fmtTime = (d) => d ? new Date(d).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
+const fmtTime = (d) =>
+    d ? new Date(d).toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+        timeZone: "Asia/Kolkata",
+    }) : "—";
 
 const AttendanceCorrectionApproval = () => {
     const [corrections, setCorrections] = useState([]);

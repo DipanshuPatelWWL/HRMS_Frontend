@@ -16,6 +16,7 @@ const pageTitles = {
     "/employee/helpdesk": "Helpdesk",
     "/employee/announcements": "Announcements",
     "/employee/assets": "Assets",
+    "/employee/policies": "Policies",
     "/employee/sales-reports": "Sales Report",
     "/employee/daily-report": "Daily Report",
     "/sales-reports": "Sales Report",      // BDE / BDM route
@@ -29,6 +30,7 @@ const pageTitles = {
     "/tl/payroll": "My Payroll",
     "/tl/profile": "Profile",
     "/tl/tasks": "My Tasks",
+    "/tl/policies": "Policies",
     "/tl/helpdesk": "Helpdesk",
     "/tl/announcements": "Announcements",
     "/tl/assets": "Assets",
@@ -49,6 +51,7 @@ const pageTitles = {
     "/hr/upcoming-events": "Upcoming Events",
     "/hr/ai-training": "AI Training",
     "/hr/assets": "Assets Management",
+    "/hr/policies": "Policy Management",
     "/hr/profile": "Profile",
 
     // ── HR – Management ───────────────────────────────────────
@@ -69,6 +72,7 @@ const pageTitles = {
     "/manager/upcoming-events": "Upcoming Events",
     "/manager-sales-reports": "Sales Reports",
     "/manager-daily-report": "Daily Report",
+    "/manager-policies": "Policy Management",
     "/manager-assets": "Assets Management",
     "/manager/profile": "Profile",
 

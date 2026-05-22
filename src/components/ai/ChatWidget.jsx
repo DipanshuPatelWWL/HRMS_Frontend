@@ -1,5 +1,4 @@
 import { useState, useContext, useRef, useEffect } from "react";
-import axios from "axios";
 import { AuthContext } from "../../context/AuthContext";
 import API from "../../services/api";
 

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
-import axios from "axios";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import "react-calendar/dist/Calendar.css";
 import API from "../../services/api";
 
 const HRHoliday = () => {
     const [date, setDate] = useState(new Date());
+    const [activeDate, setActiveDate] = useState(new Date());
     const [holidayName, setHolidayName] = useState("");
     const [holidays, setHolidays] = useState([]);
     const [editingId, setEditingId] = useState(null);
@@ -17,8 +17,8 @@ const HRHoliday = () => {
 
     const fetchHolidays = async () => {
         try {
-            const month = date.getMonth() + 1;
-            const year = date.getFullYear();
+            const month = activeDate.getMonth() + 1;
+            const year = activeDate.getFullYear();
             const res = await API.get(`/holidays?month=${month}&year=${year}`);
             setHolidays(res.data.holidays);
         } catch (err) {
@@ -28,7 +28,7 @@ const HRHoliday = () => {
 
     useEffect(() => {
         fetchHolidays();
-    }, [date]);
+    }, [activeDate]);
 
     const showMessage = (text, type = "success") => {
         setMessage({ text, type });
@@ -122,10 +122,7 @@ const HRHoliday = () => {
                         {/* Calendar Card */}
                         <div className="hr-calendar-card">
                             <div className="hr-calendar-header">
-                                <span className="hr-cal-month">
-                                    {monthNames[date.getMonth()]} {date.getFullYear()}
-                                </span>
-                                <div className="hr-cal-legend">
+                                <div className="hr-cal-legend" style={{ marginLeft: "auto" }}>
                                     <span className="hr-legend-dot"></span>
                                     <span className="hr-legend-text">Holiday</span>
                                 </div>
@@ -133,6 +130,9 @@ const HRHoliday = () => {
                             <Calendar
                                 value={date}
                                 onChange={setDate}
+                                onActiveStartDateChange={({ activeStartDate }) => {
+                                    if (activeStartDate) setActiveDate(activeStartDate);
+                                }}
                                 tileClassName={({ date: d }) =>
                                     isHoliday(d) ? "hr-holiday-tile" : null
                                 }
@@ -221,7 +221,7 @@ const HRHoliday = () => {
                         <div className="hr-list-card">
                             <div className="hr-list-header">
                                 <h2 className="hr-list-title">
-                                    {monthNames[date.getMonth()]} Holidays
+                                    {monthNames[activeDate.getMonth()]} Holidays
                                 </h2>
                                 <span className="hr-count-badge">{holidays.length}</span>
                             </div>
@@ -744,9 +744,43 @@ const HRHoliday = () => {
                     background: transparent !important;
                     font-family: 'Plus Jakarta Sans', sans-serif !important;
                 }
-                .react-calendar__navigation {
-                    display: none !important;
-                }
+               .react-calendar__navigation {
+    display: flex !important;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 4px;
+}
+.react-calendar__navigation button {
+    min-width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #0a0f1e;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+.react-calendar__navigation button:hover:not(:disabled) {
+    background: #eef2ff;
+    color: #3b5bdb;
+}
+.react-calendar__navigation button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+.react-calendar__navigation__label {
+    flex: 1 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #0a0f1e !important;
+    pointer-events: none !important;
+}
                 .react-calendar__month-view__weekdays {
                     margin-bottom: 4px;
                 }

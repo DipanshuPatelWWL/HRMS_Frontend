@@ -48,6 +48,8 @@ import ManagerDailyReport from "../pages/manager/ManagerDailyReport";
 import HRAITraining from "../components/ai/HRAITraining";
 import BDESalesReport from "../pages/bde-bdm/BDESalesReport";
 import AssetManagement from "../pages/hr/AssetManagement";
+import PolicyManagement from "../pages/hr/PolicyManagement";   // ← ADD
+import Policies from "../pages/employee/Policies";
 
 // ─────────────────────────────────────────────
 //  Protected route
@@ -106,6 +108,7 @@ const AppRoutes = () => (
         <Route path="/employee/attendance-correction" element={<Protected allowedRoles={["employee"]}><AttendanceCorrectionRequest /></Protected>} />
         <Route path="/employee/daily-report" element={<Protected allowedRoles={["employee"]}><DailyReports /></Protected>} />
         <Route path="/employee/assets" element={<Protected allowedRoles={["employee"]}><MyAssets /></Protected>} />
+        <Route path="/employee/policies" element={<Protected allowedRoles={["employee"]}><Policies /></Protected>} />
 
         {/* Sales Report Route */}
         <Route path="/employee/sales-reports"
@@ -130,6 +133,7 @@ const AppRoutes = () => (
         <Route path="/tl/holidays" element={<Protected allowedRoles={["tl"]}><HolidayCalendar /></Protected>} />
         <Route path="/tl/attendance-correction" element={<Protected allowedRoles={["tl"]}><AttendanceCorrectionRequest /></Protected>} />
         <Route path="/tl/assets" element={<Protected allowedRoles={["tl"]}><MyAssets /></Protected>} />
+        <Route path="/tl/policies" element={<Protected allowedRoles={["tl"]}><Policies /></Protected>} />
 
         {/* Team management – reuse HR components (they already handle role-based filtering on backend) */}
         <Route path="/tl/team" element={<Protected allowedRoles={["tl"]}><Employees /></Protected>} />
@@ -172,7 +176,7 @@ const AppRoutes = () => (
         <Route path="/hr/upcoming-events" element={<Protected allowedRoles={["hr"]}><Celebrations /></Protected>} />
         <Route path="/hr/ai-training" element={<Protected allowedRoles={["hr"]}><HRAITraining /></Protected>} />
         <Route path="/hr/assets" element={<Protected allowedRoles={["hr"]}><AssetManagement /></Protected>} />
-
+        <Route path="/hr/policies" element={<Protected allowedRoles={["hr"]}><PolicyManagement /></Protected>} />
 
 
 
@@ -193,6 +197,7 @@ const AppRoutes = () => (
         <Route path="/manager-sales-reports" element={<Protected allowedRoles={["manager"]}><ManagerSalesReports /></Protected>} />
         <Route path="/manager-daily-report" element={<Protected allowedRoles={["manager"]}><ManagerDailyReport /></Protected>} />
         <Route path="/manager-assets" element={<Protected allowedRoles={["manager"]}><AssetManagement /></Protected>} />
+        <Route path="/manager-policies" element={<Protected allowedRoles={["manager"]}><PolicyManagement /></Protected>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/login" replace />} />

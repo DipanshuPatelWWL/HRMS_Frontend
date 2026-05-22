@@ -217,6 +217,7 @@ const css = `
 .att-table tbody tr:hover { background:#F9FAFB; }
 .att-table tbody tr:last-child td { border-bottom:none; }
 .tbadge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:6px; font-size:.72rem; font-weight:700; }
+.tbadge.pass { background: #EDE9FE; color: #5B21B6; }
 .tbadge.present  { background:#D1FAE5; color:#065F46; }
 .tbadge.late     { background:#FEE2E2; color:#7F1D1D; }
 .tbadge.half-day { background:#FEF3C7; color:#78350F; }
@@ -290,6 +291,65 @@ const Attendance = () => {
     const todayMonth = now.getMonth() + 1;
     const todayYear = now.getFullYear();
     const { user } = useContext(AuthContext);
+    const [shiftEndMinutes, setShiftEndMinutes] = useState(null);
+
+
+    // Refs to track which notifications have already fired this session
+    const notifiedWarningRef = useRef(false);
+    const notifiedEndRef = useRef(false);
+
+    useEffect(() => {
+        if (!shiftEndMinutes) return;
+        if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+        // Reset fired flags whenever shiftEndMinutes changes (e.g. after re-fetch)
+        notifiedWarningRef.current = false;
+        notifiedEndRef.current = false;
+
+        const WARN_BEFORE = 10; // minutes before shift end
+
+        const tick = () => {
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+            const minutesLeft = shiftEndMinutes - currentMinutes;
+
+            // 10-minute warning
+            if (
+                minutesLeft <= WARN_BEFORE &&
+                minutesLeft > 0 &&
+                !notifiedWarningRef.current
+            ) {
+                notifiedWarningRef.current = true;
+                const endH = Math.floor(shiftEndMinutes / 60);
+                const endM = String(shiftEndMinutes % 60).padStart(2, "0");
+                const ampm = endH >= 12 ? "PM" : "AM";
+                const h12 = endH % 12 || 12;
+                new Notification("⏰ Shift Ending Soon", {
+                    body: `Your shift ends at ${h12}:${endM} ${ampm} — ${minutesLeft} minute${minutesLeft !== 1 ? "s" : ""} remaining. Please wrap up!`,
+                    icon: "/favicon.ico",
+                    tag: "shift-warning",    // prevents duplicate toasts
+                    requireInteraction: false,
+                });
+            }
+
+            // Shift ended
+            if (minutesLeft <= 0 && !notifiedEndRef.current) {
+                notifiedEndRef.current = true;
+                new Notification("🏁 Shift Over", {
+                    body: "Your shift has ended. Don't forget to punch out!",
+                    icon: "/favicon.ico",
+                    tag: "shift-end",
+                    requireInteraction: true, // stays until dismissed
+                });
+            }
+        };
+
+        tick(); // run immediately in case page loaded mid-warning window
+        const id = setInterval(tick, 60 * 1000); // check every minute
+
+        return () => clearInterval(id);
+    }, [shiftEndMinutes]);
 
 
     const fetchToday = async () => {
@@ -302,6 +362,9 @@ const Attendance = () => {
                 setTodayRec(open || completed || rec[rec.length - 1]);
             } else {
                 setTodayRec(rec);
+            }
+            if (r.data.shiftEnd !== undefined) {
+                setShiftEndMinutes(r.data.shiftEnd);
             }
         } catch {
         }
@@ -328,17 +391,27 @@ const Attendance = () => {
 
 
     const saveOfflinePunch = (type) => {
-        const q = JSON.parse(localStorage.getItem("punchQueue") || "[]");
-        q.push({ type, timestamp: new Date().toISOString() });
-        localStorage.setItem("punchQueue", JSON.stringify(q));
-        Swal.fire({
-            icon: "info",
-            title: "Saved Offline",
-            text: "No internet — punch saved offline. Will sync when reconnected.",
-            confirmButtonColor: "#6366F1",
-            timer: 3000,
-            timerProgressBar: true,
-        });
+        // FIX #12: wrap localStorage in try/catch — Safari private mode throws QuotaExceededError
+        try {
+            const q = JSON.parse(localStorage.getItem("punchQueue") || "[]");
+            q.push({ type, timestamp: new Date().toISOString() });
+            localStorage.setItem("punchQueue", JSON.stringify(q));
+            Swal.fire({
+                icon: "info",
+                title: "Saved Offline",
+                text: "No internet — punch saved offline. Will sync when reconnected.",
+                confirmButtonColor: "#6366F1",
+                timer: 3000,
+                timerProgressBar: true,
+            });
+        } catch (storageErr) {
+            Swal.fire({
+                icon: "error",
+                title: "Offline Storage Unavailable",
+                text: "Could not save punch offline — your browser has blocked local storage. Please connect to the internet and try again.",
+                confirmButtonColor: "#EF4444",
+            });
+        }
     };
 
     const syncOfflinePunches = async () => {
@@ -360,11 +433,16 @@ const Attendance = () => {
     useEffect(() => {
         fetchToday();
         syncOfflinePunches();
+
+        // Request browser notification permission on first load
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+
         window.addEventListener("online", syncOfflinePunches);
 
         const onFocus = () => {
             fetchToday();
-            // Reads from ref — always the current month/year
             fetchMonthly(viewMonthRef.current, viewYearRef.current);
         };
         window.addEventListener("focus", onFocus);
@@ -627,11 +705,9 @@ const Attendance = () => {
     const getHoliday = (day) =>
         holidays.find(h => {
             const dt = new Date(h.date);
-            const istOffset = 5.5 * 60 * 60 * 1000;
-            const istDate = new Date(dt.getTime() + istOffset);
-            return istDate.getUTCDate() === day &&
-                istDate.getUTCMonth() + 1 === viewMonth &&
-                istDate.getUTCFullYear() === viewYear;
+            const istStr = dt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
+            const [d, m, y] = istStr.split("/").map(Number);
+            return d === day && m === viewMonth && y === viewYear;
         });
 
     const isToday = (day) => day === todayDay && viewMonth === todayMonth && viewYear === todayYear;
@@ -674,7 +750,7 @@ const Attendance = () => {
     const getQuotaLabel = () => {
         if (quotaExhausted) return `Quota exhausted — after 10:05 AM = half day`;
         if (quotaUsed === 2) return `1 quota left — use carefully`;
-        return `${quotaRemaining} late arrival${quotaRemaining !== 1 ? "s" : ""} remaining (till 10:15 AM)`;
+        return `${quotaRemaining} late arrival${quotaRemaining !== 1 ? "s" : ""} remaining`;
     };
 
     const getQuotaPillClass = () => {
@@ -739,12 +815,12 @@ const Attendance = () => {
                                     <span>
                                         In:&nbsp;
                                         <b style={{ color: "#4ADE80" }}>
-                                            {new Date(todayRec.punchIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                            {new Date(todayRec.punchIn).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" })}
                                         </b>
                                         {todayRec?.punchOut && (
                                             <>&nbsp;·&nbsp;Out:&nbsp;
                                                 <b style={{ color: "#F87171" }}>
-                                                    {new Date(todayRec.punchOut).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                                    {new Date(todayRec.punchOut).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" })}
                                                 </b>
                                             </>
                                         )}
@@ -773,6 +849,21 @@ const Attendance = () => {
                                 </div>
                             )}
                         </div>
+
+                        {"Notification" in window && Notification.permission === "denied" && (
+                            <div style={{
+                                fontSize: ".72rem",
+                                color: "#FBBf24",
+                                background: "rgba(251,191,36,.1)",
+                                border: "1px solid rgba(251,191,36,.25)",
+                                borderRadius: 8,
+                                padding: "6px 12px",
+                                zIndex: 1,
+                                maxWidth: 260,
+                            }}>
+                                🔔 Notifications blocked — enable in browser settings to get shift reminders.
+                            </div>
+                        )}
 
                         <div className="punch-btns">
                             <button
@@ -1076,21 +1167,24 @@ const Attendance = () => {
                                     )}
                                     {pastMonthly.map(item => {
                                         const d = new Date(item.date);
+                                        // FIX #13: surface eightHourPassUsed visually in the history table
                                         const badgeCls =
                                             item.status === "holiday" ? "holiday" :
                                                 item.status === "weekend" ? "weekend" :
                                                     item.isHalfDay ? "half-day" :
                                                         item.isLate ? "late" :
-                                                            item.status === "present" ? "present" :
-                                                                "absent";
+                                                            item.eightHourPassUsed ? "pass" :   // ✅ distinct purple badge
+                                                                item.status === "present" ? "present" :
+                                                                    "absent";
 
                                         const badgeLabel =
                                             item.status === "holiday" ? "Holiday" :
                                                 item.status === "weekend" ? "Weekend" :
                                                     item.isHalfDay ? "Half Day" :
                                                         item.isLate ? `Late (+${item.lateMinutes}m)` :
-                                                            item.status === "present" ? "Present" :
-                                                                "Absent";
+                                                            item.eightHourPassUsed ? "Present (8h Pass)" :
+                                                                item.status === "present" ? "Present" :
+                                                                    "Absent";
                                         return (
                                             <tr key={item._id} onClick={() => setSelected(item)}>
                                                 <td style={{ fontWeight: 600, color: "#111318" }}>
