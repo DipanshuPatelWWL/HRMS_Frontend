@@ -1,9 +1,8 @@
-import { FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa";
+import { FaCheckCircle, FaClock } from "react-icons/fa";
 import { MdPolicy } from "react-icons/md";
 
 const STATUS_CONFIG = {
     acknowledged: { color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", Icon: FaCheckCircle, label: "Acknowledged" },
-    declined: { color: "#dc2626", bg: "#fef2f2", border: "#fecaca", Icon: FaTimesCircle, label: "Declined" },
     pending: { color: "#d97706", bg: "#fffbeb", border: "#fde68a", Icon: FaClock, label: "Pending" },
 };
 

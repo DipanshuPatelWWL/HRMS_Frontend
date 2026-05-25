@@ -25,11 +25,25 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         setUser(data.user);
+
+        // ── Send token to Electron agent via local server ──
+        fetch("http://127.0.0.1:57373/set-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: data.token }),
+        }).catch(() => {
+            // Electron not running — silently ignored
+        });
     };
 
     const logout = () => {
         localStorage.removeItem("token");
         setUser(null);
+
+        // ── Clear token from Electron agent ──
+        fetch("http://127.0.0.1:57373/clear-token", {
+            method: "POST",
+        }).catch(() => { });
     };
 
     if (checking) {

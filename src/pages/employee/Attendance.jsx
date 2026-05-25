@@ -464,21 +464,18 @@ const Attendance = () => {
     }, [viewMonth, viewYear]);
 
     const doPunchIn = async (latitude, longitude, accuracy) => {
-        if (latitude === undefined || longitude === undefined || latitude === null || longitude === null) {
-            Swal.fire({
-                icon: "error",
-                title: "Location Error",
-                text: "Could not determine your location. Please try again.",
-                confirmButtonColor: "#EF4444",
-            });
-            return;
-        }
+        // null lat/lng is allowed — backend will verify by IP
+        // Only send location if we actually have it
+        const hasLocation = latitude !== null && latitude !== undefined &&
+            longitude !== null && longitude !== undefined;
         try {
             setLoading(true);
             await API.post("/attendance/punch-in", {
-                lat: latitude,
-                lng: longitude,
-                accuracy: accuracy ?? 0,
+                ...(hasLocation ? {
+                    lat: latitude,
+                    lng: longitude,
+                    accuracy: accuracy ?? 0,
+                } : {}),
                 deviceId: navigator.userAgent,
             });
             await Promise.all([
@@ -499,17 +496,16 @@ const Attendance = () => {
         }
     };
 
-    // AFTER
     const handlePunchIn = () => {
         if (!navigator.onLine) { saveOfflinePunch("punch-in"); return; }
 
+        // ─────────────────────────────────────────────
+        // Try GPS first — if unavailable/denied,
+        // backend will verify by IP (office network)
+        // ─────────────────────────────────────────────
         if (!navigator.geolocation) {
-            Swal.fire({
-                icon: "error",
-                title: "GPS Not Supported",
-                text: "Your browser does not support location. Please use Chrome or Firefox.",
-                confirmButtonColor: "#EF4444",
-            });
+            // No GPS support (desktop PC) → try IP verification directly
+            doPunchIn(null, null, null);
             return;
         }
 
@@ -517,74 +513,62 @@ const Attendance = () => {
             navigator.geolocation.getCurrentPosition(
                 ({ coords: { latitude, longitude, accuracy } }) => {
                     if (accuracy > 150) {
+                        // Weak GPS — try IP verification as fallback
                         Swal.fire({
                             icon: "warning",
                             title: "Weak GPS Signal",
-                            text: "GPS signal too weak. Move to an open area and try again.",
+                            html: `
+                            <p>GPS signal is weak (accuracy: ${Math.round(accuracy)}m).</p>
+                            <p style="margin-top:8px; font-size:0.85rem; color:#6B7280;">
+                                Trying office network verification...
+                            </p>
+                        `,
                             confirmButtonColor: "#F97316",
+                            timer: 2000,
+                            timerProgressBar: true,
+                            showConfirmButton: false,
+                        }).then(() => {
+                            // Fall back to IP-only punch
+                            doPunchIn(null, null, null);
                         });
                         return;
                     }
                     doPunchIn(latitude, longitude, accuracy);
                 },
                 (err) => {
-                    console.error("Geolocation error:", err);
-                    let title = "Location Error";
-                    let text = "Could not get your location.";
+                    console.warn("Geolocation error:", err);
 
                     if (err.code === 1) {
-                        title = "Location Blocked";
-                        text = "Location was denied. Click the 🔒 lock icon in your address bar → Site settings → Location → Allow.";
-                    } else if (err.code === 2) {
-                        title = "Location Unavailable";
-                        text = "Could not determine your location. Ensure GPS is enabled on your device.";
-                    } else if (err.code === 3) {
-                        title = "Location Timeout";
-                        text = "Location request timed out. Move to a clearer area and try again.";
+                        // Permission denied — try IP verification silently
+                        // Backend will allow if on office network
+                        doPunchIn(null, null, null);
+                    } else {
+                        // Other errors — also try IP fallback
+                        doPunchIn(null, null, null);
                     }
-
-                    Swal.fire({
-                        icon: "error",
-                        title,
-                        text,
-                        confirmButtonColor: "#EF4444",
-                    });
                 },
-                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
         };
 
-        // Check permission state first so we can show a helpful message before
-        // the browser silently fails on a denied permission
         if (navigator.permissions) {
             navigator.permissions.query({ name: "geolocation" }).then(result => {
                 if (result.state === "denied") {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Location Permission Blocked",
-                        html: `
-                        <p>Location access is blocked in your browser.</p>
-                        <p style="margin-top:10px; font-size:0.85rem; color:#6B7280;">
-                            Click the 🔒 lock icon in your address bar<br/>
-                            → <b>Site settings</b> → <b>Location</b> → <b>Allow</b><br/>
-                            then refresh the page and try again.
-                        </p>
-                    `,
-                        confirmButtonColor: "#6366F1",
-                        confirmButtonText: "Got it",
-                    });
+                    // GPS denied → try IP verification
+                    doPunchIn(null, null, null);
                     return;
                 }
-                // "granted" or "prompt" — proceed, browser will ask if needed
                 requestLocation();
             }).catch(() => {
-                // permissions API not available — just try directly
                 requestLocation();
             });
         } else {
             requestLocation();
         }
     };
+
+
+
     const handlePunchOut = async () => {
         if (!navigator.onLine) { saveOfflinePunch("punch-out"); return; }
         try {

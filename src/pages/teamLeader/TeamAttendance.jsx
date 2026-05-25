@@ -11,10 +11,8 @@ const MONTHS = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
 
 const STATUS_CONFIG = {
-    present: { label: "Present", bg: "#D1FAE5", color: "#065F46", border: "#6EE7B7", dot: "#059669" },
     punched_in: { label: "Punched In", bg: "#DBEAFE", color: "#1E3A8A", border: "#60A5FA", dot: "#2563EB" },
-    half_day: { label: "Half Day", bg: "#FEF3C7", color: "#78350F", border: "#FCD34D", dot: "#D97706" },
-    late: { label: "Late", bg: "#FEE2E2", color: "#7F1D1D", border: "#FCA5A5", dot: "#DC2626" },
+    punched_out: { label: "Punched Out", bg: "#D1FAE5", color: "#065F46", border: "#6EE7B7", dot: "#059669" },
     absent: { label: "Absent", bg: "#F1F5F9", color: "#475569", border: "#CBD5E1", dot: "#94A3B8" },
     on_leave: { label: "On Leave", bg: "#F3E8FF", color: "#6B21A8", border: "#D8B4FE", dot: "#7C3AED" },
     holiday: { label: "Holiday", bg: "#DBEAFE", color: "#1E3A8A", border: "#60A5FA", dot: "#2563EB" },
@@ -151,7 +149,7 @@ const TeamAttendance = () => {
     );
 
     // Today counts from TL's team
-    const punchedIn = (data?.todaySummary || []).filter(e => ["punched_in", "present", "half_day"].includes(e.attendanceStatus)).length;
+    const punchedIn = (data?.todaySummary || []).filter(e => e.attendanceStatus === "punched_in").length;
     const punchedOut = (data?.todaySummary || []).filter(e => e.punchOut).length;
     const absent = (data?.todaySummary || []).filter(e => e.attendanceStatus === "absent").length;
     const onLeave = (data?.todaySummary || []).filter(e => e.attendanceStatus === "on_leave").length;

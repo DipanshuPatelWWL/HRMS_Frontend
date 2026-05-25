@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const StatCard = ({ title, value, accent, action, actionLabel }) => {
     const nav = useNavigate();
@@ -115,7 +115,7 @@ const HRDashboard = () => {
                             </div>
                             <p className="hrd-card-title">Pending Leave Requests</p>
                         </div>
-                        <a href="/hr/leave-approval" className="hrd-view-all">View all →</a>
+                        <Link to="/hr/leave-approval" className="hrd-view-all">View all →</Link>
                     </div>
 
                     {recent.length === 0 ? (
@@ -144,8 +144,8 @@ const HRDashboard = () => {
                                         <tr key={l._id}>
                                             <td className="hrd-td-name">{l.user?.name || "—"}</td>
                                             <td className="hrd-td-type">{l.type}</td>
-                                            <td>{new Date(l.fromDate).toLocaleDateString()}</td>
-                                            <td>{new Date(l.toDate).toLocaleDateString()}</td>
+                                            <td>{new Date(l.fromDate).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric" })}</td>
+                                            <td>{new Date(l.toDate).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric" })}</td>
                                             <td className="hrd-td-reason">{l.reason}</td>
                                         </tr>
                                     ))}
@@ -167,9 +167,9 @@ const HRDashboard = () => {
                     </div>
                     <div className="hrd-quick-actions">
                         {quickLinks.map(({ label, href, primary }) => (
-                            <a key={label} href={href} className={primary ? "hrd-btn-primary" : "hrd-btn-ghost"}>
+                            <Link key={label} to={href} className={primary ? "hrd-btn-primary" : "hrd-btn-ghost"}>
                                 {label}
-                            </a>
+                            </Link>
                         ))}
                     </div>
                 </div>

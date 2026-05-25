@@ -221,6 +221,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                     marginTop: 2,
                                 }}>
                                     {new Date(leave.fromDate).toLocaleDateString("en-IN", {
+                                        timeZone: "Asia/Kolkata",
                                         day: "2-digit",
                                         month: "short",
                                         year: "numeric",
@@ -244,6 +245,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                     marginTop: 2,
                                 }}>
                                     {new Date(leave.toDate).toLocaleDateString("en-IN", {
+                                        timeZone: "Asia/Kolkata",
                                         day: "2-digit",
                                         month: "short",
                                         year: "numeric",
@@ -614,7 +616,8 @@ const LeaveApproval = () => {
     const [leaves, setLeaves] = useState([]);
     const [filter, setFilter] = useState("pending");
     const [loading, setLoading] = useState(true);
-    const [selectedLeave, setSelectedLeave] = useState(null); // ← NEW
+    const [selectedLeave, setSelectedLeave] = useState(null);
+    const [actionLoading, setActionLoading] = useState({});
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const definedRoles = user?.role || "";
@@ -663,6 +666,8 @@ const LeaveApproval = () => {
 
         if (!result.isConfirmed) return;
 
+        setActionLoading(prev => ({ ...prev, [id]: isApproving ? "approving" : "rejecting" })); // ← ADDED
+
         try {
             const role = user?.role;
             let url = "";
@@ -679,7 +684,7 @@ const LeaveApproval = () => {
 
             await API.put(url, { action: status });
 
-            setSelectedLeave(null); // close modal after action
+            setSelectedLeave(null);
 
             Swal.fire({
                 icon: "success",
@@ -701,11 +706,16 @@ const LeaveApproval = () => {
                 text: err.response?.data?.message || "Something went wrong.",
                 confirmButtonColor: "#6366F1",
             });
+        } finally {
+            setActionLoading(prev => {
+                const n = { ...prev };
+                delete n[id];
+                return n;
+            });
         }
     };
 
-    const tabs = ["pending", "approved", "rejected"];
-
+    const tabs = ["pending", "approved", "rejected"]
     return (
         <DashboardLayout>
             <div className="page-header">
@@ -794,8 +804,8 @@ const LeaveApproval = () => {
                                                 {l.type}
                                             </span>
                                         </td>
-                                        <td>{new Date(l.fromDate).toLocaleDateString()}</td>
-                                        <td>{new Date(l.toDate).toLocaleDateString()}</td>
+                                        <td>{new Date(l.fromDate).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric" })}</td>
+                                        <td>{new Date(l.toDate).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric" })}</td>
                                         <td style={{
                                             maxWidth: "140px",
                                             overflow: "hidden",
@@ -858,19 +868,24 @@ const LeaveApproval = () => {
                                                         <button
                                                             onClick={() => action(l._id, "approved")}
                                                             className="btn btn-success btn-sm"
+                                                            disabled={!!actionLoading[l._id]}
+                                                            style={{ minWidth: 90, opacity: actionLoading[l._id] ? 0.7 : 1 }}
                                                         >
-                                                            Approve
+                                                            {actionLoading[l._id] === "approving" ? "Approving…" : "Approve"}
                                                         </button>
                                                         <button
                                                             onClick={() => action(l._id, "rejected")}
                                                             className="btn btn-sm"
+                                                            disabled={!!actionLoading[l._id]}
                                                             style={{
                                                                 background: "var(--danger-bg)",
                                                                 color: "var(--danger)",
                                                                 border: "1px solid #fecaca",
+                                                                minWidth: 80,
+                                                                opacity: actionLoading[l._id] ? 0.7 : 1,
                                                             }}
                                                         >
-                                                            Reject
+                                                            {actionLoading[l._id] === "rejecting" ? "Rejecting…" : "Reject"}
                                                         </button>
                                                     </div>
                                                 )}
@@ -885,19 +900,24 @@ const LeaveApproval = () => {
                                                         <button
                                                             onClick={() => action(l._id, "approved")}
                                                             className="btn btn-success btn-sm"
+                                                            disabled={!!actionLoading[l._id]}
+                                                            style={{ minWidth: 90, opacity: actionLoading[l._id] ? 0.7 : 1 }}
                                                         >
-                                                            Approve
+                                                            {actionLoading[l._id] === "approving" ? "Approving…" : "Approve"}
                                                         </button>
                                                         <button
                                                             onClick={() => action(l._id, "rejected")}
                                                             className="btn btn-sm"
+                                                            disabled={!!actionLoading[l._id]}
                                                             style={{
                                                                 background: "var(--danger-bg)",
                                                                 color: "var(--danger)",
                                                                 border: "1px solid #fecaca",
+                                                                minWidth: 80,
+                                                                opacity: actionLoading[l._id] ? 0.7 : 1,
                                                             }}
                                                         >
-                                                            Reject
+                                                            {actionLoading[l._id] === "rejecting" ? "Rejecting…" : "Reject"}
                                                         </button>
                                                     </div>
                                                 )}
@@ -912,19 +932,24 @@ const LeaveApproval = () => {
                                                         <button
                                                             onClick={() => action(l._id, "approved")}
                                                             className="btn btn-success btn-sm"
+                                                            disabled={!!actionLoading[l._id]}
+                                                            style={{ minWidth: 90, opacity: actionLoading[l._id] ? 0.7 : 1 }}
                                                         >
-                                                            Approve
+                                                            {actionLoading[l._id] === "approving" ? "Approving…" : "Approve"}
                                                         </button>
                                                         <button
                                                             onClick={() => action(l._id, "rejected")}
                                                             className="btn btn-sm"
+                                                            disabled={!!actionLoading[l._id]}
                                                             style={{
                                                                 background: "var(--danger-bg)",
                                                                 color: "var(--danger)",
                                                                 border: "1px solid #fecaca",
+                                                                minWidth: 80,
+                                                                opacity: actionLoading[l._id] ? 0.7 : 1,
                                                             }}
                                                         >
-                                                            Reject
+                                                            {actionLoading[l._id] === "rejecting" ? "Rejecting…" : "Reject"}
                                                         </button>
                                                     </div>
                                                 )}

@@ -30,10 +30,8 @@ const MONTHS = [
 ];
 
 const STATUS_CONFIG = {
-    // present: { label: "Present", bg: "#D1FAE5", color: "#065F46", dot: "#059669" },
     punched_in: { label: "Punched In", bg: "#DBEAFE", color: "#1E3A8A", dot: "#2563EB" },
-    half_day: { label: "Half Day", bg: "#FEF3C7", color: "#78350F", dot: "#D97706" },
-    late: { label: "Late", bg: "#FEE2E2", color: "#7F1D1D", dot: "#DC2626" },
+    punched_out: { label: "Punched Out", bg: "#D1FAE5", color: "#084131", dot: "#962205" },
     absent: { label: "Absent", bg: "#F1F5F9", color: "#1E293B", dot: "#475569" },
     on_leave: { label: "On Leave", bg: "#F3E8FF", color: "#6B21A8", dot: "#7C3AED" },
     holiday: { label: "Holiday", bg: "#DBEAFE", color: "#1E3A8A", dot: "#2563EB" },
@@ -41,12 +39,8 @@ const STATUS_CONFIG = {
 
 const matchesStatus = (emp, filterStatus) => {
     if (filterStatus === "all") return true;
-    // Direct match on attendanceStatus field
     if (emp.attendanceStatus === filterStatus) return true;
-    // Fallback — match boolean flags
-    if (filterStatus === "half_day" && emp.isHalfDay) return true;
     if (filterStatus === "on_leave" && emp.onLeave) return true;
-    if (filterStatus === "late" && emp.isLate && !emp.isHalfDay && !emp.onLeave) return true;
     return false;
 };
 
@@ -625,9 +619,8 @@ const HRAttendanceOverview = () => {
                             onChange={(e) => setFilterStatus(e.target.value)}
                         >
                             <option value="all">All Status</option>
-                            {/* <option value="present">Present</option> */}
                             <option value="punched_in">Punched In</option>
-                            <option value="half_day">Half Day</option>
+                            <option value="punched_out">Punched Out</option>
                             <option value="absent">Absent</option>
                             <option value="on_leave">On Leave</option>
                         </select>
@@ -926,9 +919,9 @@ const HRAttendanceOverview = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredLeaves.length === 0 && (
+                                {filteredMonthly.length === 0 && (
                                     <tr>
-                                        <td colSpan={7} className="empty-cell">
+                                        <td colSpan={10} className="empty-cell">
                                             No data available
                                         </td>
                                     </tr>

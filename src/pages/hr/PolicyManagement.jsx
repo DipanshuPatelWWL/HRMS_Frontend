@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { MdAdd, MdPeople, MdPublish, MdArchive, MdEdit, MdUnarchive, MdDeleteForever } from "react-icons/md";
-import { FaCheckCircle, FaTimesCircle, FaClock } from "react-icons/fa";
+import { FaCheckCircle, FaClock } from "react-icons/fa";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import API from "../../services/api";
 import Swal from "sweetalert2";
@@ -12,12 +12,10 @@ const StatsBar = ({ stats }) => {
         <div style={{ marginTop: 8 }}>
             <div style={{ display: "flex", borderRadius: 4, overflow: "hidden", height: 8 }}>
                 <div style={{ width: `${(stats.acknowledged / total) * 100}%`, background: "#16a34a" }} />
-                <div style={{ width: `${(stats.declined / total) * 100}%`, background: "#dc2626" }} />
                 <div style={{ width: `${(stats.pending / total) * 100}%`, background: "#d97706" }} />
             </div>
             <div style={{ display: "flex", gap: 12, marginTop: 6, fontSize: "0.75rem" }}>
-                <span style={{ color: "#16a34a" }}><FaCheckCircle size={10} /> {stats.acknowledged} ack</span>
-                <span style={{ color: "#dc2626" }}><FaTimesCircle size={10} /> {stats.declined} declined</span>
+                <span style={{ color: "#16a34a" }}><FaCheckCircle size={10} /> {stats.acknowledged} acknowledged</span>
                 <span style={{ color: "#d97706" }}><FaClock size={10} /> {stats.pending} pending</span>
             </div>
         </div>
@@ -80,25 +78,24 @@ const PolicyForm = ({ initial, onSave, onClose }) => {
                     ))}
                     <div>
                         <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Category</label>
-                        <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Category</label>
                         <select
                             value={form.category}
                             onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
                             style={{ padding: "9px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: "0.875rem" }}
                         >
                             {["attendance", "leave", "wfh", "code-of-conduct", "it", "other"].map(c => (
-                                <option key={c} value={c}>{c}</option>
+                                <option key={c} value={c}>{c.toUpperCase()}</option>
                             ))}
                         </select>
                     </div>
                     <div>
-                        <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Policy Content * (HTML supported)</label>
+                        <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Policy Content</label>
                         <textarea
                             value={form.content}
                             onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
                             rows={10}
                             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: "0.875rem", resize: "vertical", boxSizing: "border-box" }}
-                            placeholder="Write the full policy here. HTML tags are supported."
+                            placeholder="Write the full policy here."
                         />
                     </div>
                 </div>
@@ -135,7 +132,7 @@ const ResponsesDrawer = ({ policyId, policyTitle, onClose }) => {
         fetch();
     }, [policyId]);
 
-    const STATUS_COLOR = { acknowledged: "#16a34a", declined: "#dc2626", pending: "#d97706" };
+    const STATUS_COLOR = { acknowledged: "#16a34a", pending: "#d97706" };
     const filtered = statusFilter === "all" ? responses : responses.filter(r => r.status === statusFilter);
 
     return (
@@ -151,7 +148,7 @@ const ResponsesDrawer = ({ policyId, policyTitle, onClose }) => {
                 <div style={{ padding: "16px 20px", borderBottom: "1px solid #eee" }}>
                     <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>Responses — {policyTitle}</div>
                     <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-                        {["all", "acknowledged", "declined", "pending"].map(s => (
+                        {["all", "acknowledged", "pending"].map(s => (
                             <button
                                 key={s}
                                 onClick={() => setStatusFilter(s)}
@@ -196,11 +193,6 @@ const ResponsesDrawer = ({ policyId, policyTitle, onClose }) => {
                                     </span>
                                 )}
                             </div>
-                            {r.declineReason && (
-                                <div style={{ marginTop: 6, fontSize: "0.78rem", color: "#dc2626", background: "#fef2f2", padding: "6px 10px", borderRadius: 6 }}>
-                                    Reason: {r.declineReason}
-                                </div>
-                            )}
                         </div>
                     ))}
                 </div>

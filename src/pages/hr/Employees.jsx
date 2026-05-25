@@ -1752,6 +1752,8 @@ const Employees = () => {
     const [selectedTL, setSelectedTL] = useState("");
     const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
     const [assignLoading, setAssignLoading] = useState(false);
+    const [tlEmployees, setTlEmployees] = useState([]);       // employees already under selected TL
+    const [tlEmployeesLoading, setTlEmployeesLoading] = useState(false);
 
 
     const { user } = useContext(AuthContext);
@@ -1829,7 +1831,46 @@ const Employees = () => {
         await fetchTLs();
         setSelectedTL("");
         setSelectedEmployeeIds([]);
+        setTlEmployees([]);
         setAssignModal(true);
+    };
+
+    const fetchTLEmployees = async (tlId) => {
+        if (!tlId) { setTlEmployees([]); return; }
+        setTlEmployeesLoading(true);
+        try {
+            const res = await API.get(`/users/tl/${tlId}/employees`);
+            setTlEmployees(res.data.employees || []);
+        } catch (err) {
+            console.error("Failed to fetch TL employees:", err);
+            setTlEmployees([]);
+        } finally {
+            setTlEmployeesLoading(false);
+        }
+    };
+
+    const handleUnassignEmployee = async (employeeId, employeeName) => {
+        try {
+            await API.patch("/users/unassign-employee", { employeeId });
+            Swal.fire({
+                icon: "success",
+                title: "Unassigned",
+                text: `${employeeName} has been unassigned`,
+                confirmButtonColor: "#6366F1",
+                timer: 2000,
+                timerProgressBar: true,
+            });
+            // Refresh TL's employee list and full list
+            await fetchTLEmployees(selectedTL);
+            await fetchEmployees();
+        } catch (err) {
+            Swal.fire({
+                icon: "error",
+                title: "Failed",
+                text: err.response?.data?.message || "Unassign failed",
+                confirmButtonColor: "#EF4444",
+            });
+        }
     };
 
     const tlTeamMembers = employees;
@@ -1913,8 +1954,10 @@ const Employees = () => {
             const role = form.role?.toLowerCase?.() || form.role;
             const payload = {
                 name: form.name, email: form.email, role: role,
+                password: form.password,
                 department: form.department || null, designation: form.designation || "",
-                dob: form.dob || undefined, joiningDate: form.joiningDate ? form.joiningDate + "T12:00:00.000Z" : undefined,
+                dob: form.dob || undefined,
+                joiningDate: form.joiningDate || undefined,
                 maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
                 salary: (["employee", "tl"].includes(role))
                     ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth }
@@ -1960,8 +2003,10 @@ const Employees = () => {
             const daysInMonth = getDaysInMonth();
             const payload = {
                 name: form.name, email: form.email, role: form.role,
+                password: form.password,
                 department: form.department || null, designation: form.designation || "",
-                dob: form.dob || undefined, joiningDate: form.joiningDate ? form.joiningDate + "T12:00:00.000Z" : undefined,
+                dob: form.dob || undefined,
+                joiningDate: form.joiningDate || undefined,
                 maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
                 salary: (form.role === "employee" || form.role === "tl") ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth } : undefined,
             };
@@ -3079,7 +3124,11 @@ const Employees = () => {
                                 <label className="form-label" style={{ color: "#0f172a", fontWeight: 700 }}>
                                     Select Team Leader <span style={{ color: "var(--danger)" }}>*</span>
                                 </label>
-                                <select className="input select" value={selectedTL} onChange={e => setSelectedTL(e.target.value)} style={{ color: "#0f172a" }}>
+                                <select className="input select" value={selectedTL} onChange={e => {
+                                    setSelectedTL(e.target.value);
+                                    setSelectedEmployeeIds([]);
+                                    fetchTLEmployees(e.target.value);
+                                }} style={{ color: "#0f172a" }}>
                                     <option value="">-- Choose a TL --</option>
                                     {tlList.map(tl => (
                                         <option key={tl._id} value={tl._id}>
@@ -3095,78 +3144,157 @@ const Employees = () => {
                             </div>
 
                             <div className="form-group" style={{ margin: 0 }}>
+                                {/* ── Current Team Members (unassign) ── */}
+                                {selectedTL && (
+                                    <div style={{ marginBottom: "1rem" }}>
+                                        <label className="form-label" style={{ color: "#0f172a", fontWeight: 700, marginBottom: ".5rem", display: "block" }}>
+                                            Current Team Members
+                                            {tlEmployeesLoading && (
+                                                <span style={{ fontSize: ".7rem", color: "#6366f1", marginLeft: 8, fontWeight: 500 }}>Loading…</span>
+                                            )}
+                                        </label>
+                                        {!tlEmployeesLoading && tlEmployees.length === 0 && (
+                                            <p style={{ fontSize: ".8rem", color: "#9ca3af", fontStyle: "italic", padding: ".5rem 0" }}>
+                                                No employees currently assigned to this TL
+                                            </p>
+                                        )}
+                                        {tlEmployees.length > 0 && (
+                                            <div style={{
+                                                display: "flex", flexDirection: "column", gap: ".3rem",
+                                                maxHeight: 180, overflowY: "auto",
+                                                border: "1px solid #e5e7eb", borderRadius: "8px", padding: ".4rem",
+                                            }}>
+                                                {tlEmployees.map(emp => (
+                                                    <div key={emp._id} style={{
+                                                        display: "flex", alignItems: "center", gap: ".6rem",
+                                                        padding: ".45rem .7rem", borderRadius: "6px",
+                                                        background: "#f0fdf4", border: "1px solid #bbf7d0",
+                                                    }}>
+                                                        <div style={{
+                                                            width: 28, height: 28, borderRadius: "50%",
+                                                            background: "linear-gradient(135deg, #667eea, #764ba2)",
+                                                            color: "white", display: "flex", alignItems: "center",
+                                                            justifyContent: "center", fontWeight: 700, fontSize: ".68rem", flexShrink: 0,
+                                                        }}>
+                                                            {initials(emp.name)}
+                                                        </div>
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <p style={{ fontWeight: 700, fontSize: ".8rem", color: "#0f172a", lineHeight: 1.3 }}>{emp.name}</p>
+                                                            <p style={{ fontSize: ".7rem", color: "#1e293b", fontWeight: 500 }}>
+                                                                {emp.employeeId} · {emp.designation || emp.department || "—"}
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleUnassignEmployee(emp._id, emp.name)}
+                                                            style={{
+                                                                fontSize: ".72rem", fontWeight: 700,
+                                                                color: "#dc2626", background: "#fff1f2",
+                                                                border: "1px solid #fecaca", borderRadius: "6px",
+                                                                padding: "3px 10px", cursor: "pointer", flexShrink: 0,
+                                                            }}
+                                                        >
+                                                            Unassign
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* ── Assign New Employees ── */}
                                 <label className="form-label" style={{ color: "#0f172a", fontWeight: 700 }}>
-                                    Select Employees <span style={{ color: "var(--danger)" }}>*</span>
+                                    {selectedTL ? "Assign More Employees" : "Select Employees"} <span style={{ color: "var(--danger)" }}>*</span>
                                     <span style={{ fontSize: ".72rem", color: "#1e293b", fontWeight: 600, marginLeft: 6 }}>
                                         ({selectedEmployeeIds.length} selected)
                                     </span>
                                 </label>
-                                <div style={{
-                                    maxHeight: 260, overflowY: "auto",
-                                    border: "1px solid #e5e7eb", borderRadius: "8px",
-                                    padding: ".5rem", display: "flex", flexDirection: "column", gap: ".35rem"
-                                }}>
-                                    {employees.filter(e => e.role === "employee").map(emp => (
-                                        <label key={emp._id} style={{
-                                            display: "flex", alignItems: "center", gap: ".65rem",
-                                            padding: ".5rem .65rem", borderRadius: "6px", cursor: "pointer",
-                                            background: selectedEmployeeIds.includes(emp._id) ? "#eff6ff" : "transparent",
-                                            border: `1px solid ${selectedEmployeeIds.includes(emp._id) ? "#bfdbfe" : "transparent"}`,
-                                            transition: "all .1s ease",
+
+                                {!selectedTL && (
+                                    <p style={{ fontSize: ".8rem", color: "#9ca3af", fontStyle: "italic", marginBottom: ".5rem" }}>
+                                        Select a Team Leader first to see available employees
+                                    </p>
+                                )}
+
+                                {selectedTL && (
+                                    <>
+                                        <div style={{
+                                            maxHeight: 220, overflowY: "auto",
+                                            border: "1px solid #e5e7eb", borderRadius: "8px",
+                                            padding: ".5rem", display: "flex", flexDirection: "column", gap: ".35rem"
                                         }}>
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedEmployeeIds.includes(emp._id)}
-                                                onChange={() => toggleEmployeeSelect(emp._id)}
-                                                style={{ accentColor: "var(--primary)", width: 15, height: 15 }}
-                                            />
-                                            <div style={{
-                                                width: 30, height: 30, borderRadius: "50%",
-                                                background: "linear-gradient(135deg, #667eea, #764ba2)",
-                                                color: "white", display: "flex", alignItems: "center",
-                                                justifyContent: "center", fontWeight: 700, fontSize: ".72rem", flexShrink: 0,
-                                            }}>
-                                                {initials(emp.name)}
-                                            </div>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <p style={{ fontWeight: 700, fontSize: ".82rem", color: "#0f172a", lineHeight: 1.3 }}>{emp.name}</p>
-                                                <p style={{ fontSize: ".72rem", color: "#1e293b", fontWeight: 500 }}>
-                                                    {emp.employeeId} · {emp.designation || emp.department || emp.email}
+                                            {/* Only show employees NOT already assigned to this TL */}
+                                            {employees
+                                                .filter(e => e.role === "employee")
+                                                .filter(e => !tlEmployees.some(te => te._id === e._id))
+                                                .map(emp => (
+                                                    <label key={emp._id} style={{
+                                                        display: "flex", alignItems: "center", gap: ".65rem",
+                                                        padding: ".5rem .65rem", borderRadius: "6px", cursor: "pointer",
+                                                        background: selectedEmployeeIds.includes(emp._id) ? "#eff6ff" : "transparent",
+                                                        border: `1px solid ${selectedEmployeeIds.includes(emp._id) ? "#bfdbfe" : "transparent"}`,
+                                                        transition: "all .1s ease",
+                                                    }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedEmployeeIds.includes(emp._id)}
+                                                            onChange={() => toggleEmployeeSelect(emp._id)}
+                                                            style={{ accentColor: "var(--primary)", width: 15, height: 15 }}
+                                                        />
+                                                        <div style={{
+                                                            width: 30, height: 30, borderRadius: "50%",
+                                                            background: "linear-gradient(135deg, #667eea, #764ba2)",
+                                                            color: "white", display: "flex", alignItems: "center",
+                                                            justifyContent: "center", fontWeight: 700, fontSize: ".72rem", flexShrink: 0,
+                                                        }}>
+                                                            {initials(emp.name)}
+                                                        </div>
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <p style={{ fontWeight: 700, fontSize: ".82rem", color: "#0f172a", lineHeight: 1.3 }}>{emp.name}</p>
+                                                            <p style={{ fontSize: ".72rem", color: "#1e293b", fontWeight: 500 }}>
+                                                                {emp.employeeId} · {emp.designation || emp.department || emp.email}
+                                                            </p>
+                                                        </div>
+                                                        {emp.reportingTo && (
+                                                            <span style={{
+                                                                fontSize: ".68rem", background: "#fef3c7",
+                                                                color: "#451a03", padding: "2px 6px",
+                                                                borderRadius: "4px", flexShrink: 0, fontWeight: 700
+                                                            }}>
+                                                                Assigned to other TL
+                                                            </span>
+                                                        )}
+                                                    </label>
+                                                ))}
+                                            {employees.filter(e => e.role === "employee").filter(e => !tlEmployees.some(te => te._id === e._id)).length === 0 && (
+                                                <p style={{ textAlign: "center", color: "#1e293b", fontSize: ".82rem", padding: "1rem", fontWeight: 500 }}>
+                                                    All employees are already assigned to this TL
                                                 </p>
-                                            </div>
-                                            {emp.reportingTo && (
-                                                <span style={{
-                                                    fontSize: ".68rem", background: "#fef3c7",
-                                                    color: "#451a03", padding: "2px 6px",
-                                                    borderRadius: "4px", flexShrink: 0, fontWeight: 700
-                                                }}>
-                                                    Already assigned
-                                                </span>
                                             )}
-                                        </label>
-                                    ))}
-                                    {employees.filter(e => e.role === "employee").length === 0 && (
-                                        <p style={{ textAlign: "center", color: "#1e293b", fontSize: ".82rem", padding: "1rem", fontWeight: 500 }}>
-                                            No employees found
-                                        </p>
-                                    )}
-                                </div>
-                                <div style={{ display: "flex", gap: ".5rem", marginTop: ".5rem" }}>
-                                    <button
-                                        className="btn btn-ghost btn-sm"
-                                        style={{ color: "#0f172a", fontWeight: 600 }}
-                                        onClick={() => setSelectedEmployeeIds(employees.filter(e => e.role === "employee").map(e => e._id))}
-                                    >
-                                        Select All
-                                    </button>
-                                    <button
-                                        className="btn btn-ghost btn-sm"
-                                        style={{ color: "#0f172a", fontWeight: 600 }}
-                                        onClick={() => setSelectedEmployeeIds([])}
-                                    >
-                                        Deselect All
-                                    </button>
-                                </div>
+                                        </div>
+                                        <div style={{ display: "flex", gap: ".5rem", marginTop: ".5rem" }}>
+                                            <button
+                                                className="btn btn-ghost btn-sm"
+                                                style={{ color: "#0f172a", fontWeight: 600 }}
+                                                onClick={() => setSelectedEmployeeIds(
+                                                    employees
+                                                        .filter(e => e.role === "employee")
+                                                        .filter(e => !tlEmployees.some(te => te._id === e._id))
+                                                        .map(e => e._id)
+                                                )}
+                                            >
+                                                Select All
+                                            </button>
+                                            <button
+                                                className="btn btn-ghost btn-sm"
+                                                style={{ color: "#0f172a", fontWeight: 600 }}
+                                                onClick={() => setSelectedEmployeeIds([])}
+                                            >
+                                                Deselect All
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 

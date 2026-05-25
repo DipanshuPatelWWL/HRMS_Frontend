@@ -769,6 +769,7 @@ const PriorityBadge = ({ priority }) => {
 const SalesReports = () => {
     const { user } = useContext(AuthContext)
     const currentUserName = user?.fullName || ''
+    const watermarkText = `${user?.fullName || 'Unknown'} • ${user?.employeeId || user?._id || ''}`
     const [reports, setReports] = useState([])
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -931,6 +932,29 @@ const SalesReports = () => {
             <style>{GLOBAL_CSS}</style>
 
             <div style={{ minHeight: '100vh', background: C.pageBg, padding: 20, display: 'flex', flexDirection: 'column', gap: 16, boxSizing: 'border-box' }}>
+
+                {/* ── Watermark ── */}
+                <div aria-hidden="true" style={{
+                    position: 'fixed', top: 0, left: 0,
+                    width: '100vw', height: '100vh',
+                    pointerEvents: 'none', zIndex: 9999,
+                    overflow: 'hidden',
+                    display: 'flex', flexWrap: 'wrap',
+                    alignContent: 'flex-start',
+                    gap: '60px 40px', padding: 40,
+                    transform: 'rotate(-30deg)',
+                    transformOrigin: 'center center',
+                    opacity: 0.07, userSelect: 'none',
+                    boxSizing: 'border-box',
+                }}>
+                    {Array(40).fill(watermarkText).map((t, i) => (
+                        <span key={i} style={{
+                            fontSize: 14, fontWeight: 700,
+                            color: '#000', whiteSpace: 'nowrap',
+                            letterSpacing: '0.05em',
+                        }}>{t}</span>
+                    ))}
+                </div>
 
                 {/* ── Stat Cards ── */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>

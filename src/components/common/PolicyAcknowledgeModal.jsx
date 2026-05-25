@@ -37,10 +37,6 @@ const PolicyAcknowledgeModal = ({ policy, onClose, onSuccess }) => {
         }
     };
 
-    const handleDeclineClick = () => {
-        if (onDecline) onDecline(policy);
-    };
-
     return (
         <div style={{
             position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)",
@@ -101,17 +97,6 @@ const PolicyAcknowledgeModal = ({ policy, onClose, onSuccess }) => {
                             }}
                         >
                             {loading ? "Saving..." : "Acknowledge"}
-                        </button>
-                        <button
-                            onClick={handleDeclineClick}
-                            disabled={fetching}
-                            style={{
-                                padding: "10px 20px", borderRadius: 8, border: "1px solid #fecaca",
-                                background: "#fef2f2", color: "#dc2626", cursor: "pointer",
-                                fontWeight: 600, fontSize: "0.875rem",
-                            }}
-                        >
-                            Decline
                         </button>
                         <button
                             onClick={onClose}

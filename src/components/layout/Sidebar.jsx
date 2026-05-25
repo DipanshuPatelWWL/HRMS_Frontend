@@ -394,6 +394,10 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
         user?.department === "Sales" &&
         !isSalesBDE;
 
+    const isSalesTL =
+        user?.role === "tl" &&
+        user?.department === "Sales";
+
     return (
         <div className={sidebarClass}>
             {/* ── Brand ── */}
@@ -477,6 +481,8 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/tl/helpdesk" label="Helpdesk" iconKey="helpdesk" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/assets" label="Assets" iconKey="assets" onClick={onClose} collapsed={collapsed} />
+                            {isSalesTL && (
+                                <NavItem to="/tl/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />)}
                             <NavItem to="/tl/policies" label="Policies" iconKey="policies" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
@@ -504,6 +510,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/ai-training" label="AI Training" iconKey="aiTraining" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/activity-monitor" label="Activity Monitor" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/policies" label="Policy Management" iconKey="policies" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                         </div>
@@ -535,6 +542,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager-sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager-activity-monitor" label="Activity Monitor" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-policies" label="Policy Management" iconKey="policies" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                         </div>

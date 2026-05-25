@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import PolicyCard from "../../components/common/PolicyCard";
 import PolicyAcknowledgeModal from "../../components/common/PolicyAcknowledgeModal";
-import PolicyDeclineModal from "../../components/common/PolicyDeclineModal";
 import { FaCheckDouble } from "react-icons/fa";
 import { MdOutlineCheckBox, MdOutlineIndeterminateCheckBox } from "react-icons/md";
 import DashboardLayout from "../../components/layout/DashboardLayout";
@@ -12,7 +11,6 @@ const FILTER_OPTIONS = [
     { value: "all", label: "All" },
     { value: "pending", label: "Pending" },
     { value: "acknowledged", label: "Acknowledged" },
-    { value: "declined", label: "Declined" },
 ];
 
 const Policies = () => {
@@ -21,7 +19,6 @@ const Policies = () => {
     const [filter, setFilter] = useState("all");
     const [selected, setSelected] = useState([]);
     const [openPolicy, setOpenPolicy] = useState(null);
-    const [declinePolicy, setDeclinePolicy] = useState(null);
 
     const fetchPolicies = useCallback(async () => {
         setLoading(true);
@@ -49,10 +46,9 @@ const Policies = () => {
 
     const handleModalSuccess = (action) => {
         setOpenPolicy(null);
-        setDeclinePolicy(null);
         setSelected([]);
         fetchPolicies();
-        showToast(action === "acknowledged" ? "Policy acknowledged!" : "Response recorded.");
+        showToast("Policy acknowledged!");
     };
 
     const toggleSelect = (id) => {
@@ -189,14 +185,6 @@ const Policies = () => {
                     <PolicyAcknowledgeModal
                         policy={openPolicy}
                         onClose={() => setOpenPolicy(null)}
-                        onSuccess={handleModalSuccess}
-                        onDecline={(p) => { setOpenPolicy(null); setDeclinePolicy(p); }}
-                    />
-                )}
-                {declinePolicy && (
-                    <PolicyDeclineModal
-                        policy={declinePolicy}
-                        onClose={() => setDeclinePolicy(null)}
                         onSuccess={handleModalSuccess}
                     />
                 )}

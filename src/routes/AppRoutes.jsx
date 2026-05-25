@@ -48,7 +48,8 @@ import ManagerDailyReport from "../pages/manager/ManagerDailyReport";
 import HRAITraining from "../components/ai/HRAITraining";
 import BDESalesReport from "../pages/bde-bdm/BDESalesReport";
 import AssetManagement from "../pages/hr/AssetManagement";
-import PolicyManagement from "../pages/hr/PolicyManagement";   // ← ADD
+import PolicyManagement from "../pages/hr/PolicyManagement";
+import ActivityMonitor from "../pages/hr/ActivityMonitor";
 import Policies from "../pages/employee/Policies";
 
 // ─────────────────────────────────────────────
@@ -141,6 +142,12 @@ const AppRoutes = () => (
         <Route path="/tl/leave-approval" element={<Protected allowedRoles={["tl"]}><LeaveApproval /></Protected>} />
         <Route path="/tl/attendance" element={<Protected allowedRoles={["tl"]}><Attendance /></Protected>} />
 
+        {/* Sales Report Route */}
+        <Route path="/tl/sales-reports"
+            element={<Protected allowedRoles={["tl"]}
+                allowedDepartment={["Sales"]}>
+                <SalesReports />
+            </Protected>} />
 
         {/* BDE - BDM  */}
 
@@ -177,7 +184,7 @@ const AppRoutes = () => (
         <Route path="/hr/ai-training" element={<Protected allowedRoles={["hr"]}><HRAITraining /></Protected>} />
         <Route path="/hr/assets" element={<Protected allowedRoles={["hr"]}><AssetManagement /></Protected>} />
         <Route path="/hr/policies" element={<Protected allowedRoles={["hr"]}><PolicyManagement /></Protected>} />
-
+        <Route path="/hr/activity-monitor" element={<Protected allowedRoles={["hr"]}><ActivityMonitor /></Protected>} />
 
 
         {/* Manager Routes */}
@@ -198,6 +205,7 @@ const AppRoutes = () => (
         <Route path="/manager-daily-report" element={<Protected allowedRoles={["manager"]}><ManagerDailyReport /></Protected>} />
         <Route path="/manager-assets" element={<Protected allowedRoles={["manager"]}><AssetManagement /></Protected>} />
         <Route path="/manager-policies" element={<Protected allowedRoles={["manager"]}><PolicyManagement /></Protected>} />
+        <Route path="/manager-activity-monitor" element={<Protected allowedRoles={["manager"]}><ActivityMonitor /></Protected>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/login" replace />} />

@@ -33,6 +33,7 @@ const pageTitles = {
     "/tl/policies": "Policies",
     "/tl/helpdesk": "Helpdesk",
     "/tl/announcements": "Announcements",
+    "/tl/sales-reports": "Sales Report",
     "/tl/assets": "Assets",
 
     // ── TL – Team ─────────────────────────────────────────────
@@ -51,6 +52,7 @@ const pageTitles = {
     "/hr/upcoming-events": "Upcoming Events",
     "/hr/ai-training": "AI Training",
     "/hr/assets": "Assets Management",
+    "/hr/activity-monitor": "Activity Monitor",
     "/hr/policies": "Policy Management",
     "/hr/profile": "Profile",
 
@@ -73,6 +75,7 @@ const pageTitles = {
     "/manager-sales-reports": "Sales Reports",
     "/manager-daily-report": "Daily Report",
     "/manager-policies": "Policy Management",
+    "/manager-activity-monitor": "Activity Monitor",
     "/manager-assets": "Assets Management",
     "/manager/profile": "Profile",
 
