@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useContext } from 'react'
 import { AuthContext } from '../../context/AuthContext'
+import Select from 'react-select'
+import { getData } from 'country-list'
 import {
     Search, RefreshCw, Plus, Edit2, Send, CheckCircle2, Clock,
     XCircle, ChevronLeft, ChevronRight, X, User, Calendar,
@@ -56,10 +58,11 @@ const STATUS = {
     rejected: { label: 'Rejected', color: C.red, bg: C.redLight, icon: XCircle },
 }
 
-const COUNTRIES = [
-    'India', 'United States', 'United Kingdom', 'Canada', 'Australia',
-    'Germany', 'France', 'UAE', 'Singapore', 'Japan', 'Other',
-]
+const COUNTRY_OPTIONS = getData().map(({ name, code }) => ({
+    value: name,
+    label: name,
+    code,
+}))
 
 const SERVICES_LIST = [
     'Web Development', 'Mobile App', 'SEO', 'Digital Marketing',
@@ -383,11 +386,51 @@ const ReportModal = ({ open, onClose, onSave, editData, saving, currentUserName 
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                         <FormField label="Country" required error={errors.country}>
-                            <select style={fs('country', errors.country)} value={form.country} onChange={set('country')}
-                                onFocus={() => setFocused('country')} onBlur={() => setFocused(null)}>
-                                <option value="">Select country</option>
-                                {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
-                            </select>
+                            <Select
+                                options={COUNTRY_OPTIONS}
+                                value={COUNTRY_OPTIONS.find(o => o.value === form.country) || null}
+                                onChange={(opt) => setForm(f => ({ ...f, country: opt ? opt.value : '' }))}
+                                placeholder="Search country..."
+                                isClearable
+                                isSearchable
+                                menuPortalTarget={document.body}
+                                styles={{
+                                    control: (base, state) => ({
+                                        ...base,
+                                        borderRadius: 8,
+                                        border: `1.5px solid ${errors.country ? C.red : state.isFocused ? C.indigo : C.ink200}`,
+                                        boxShadow: state.isFocused
+                                            ? `0 0 0 3px ${errors.country ? '#fee2e2' : C.indigoLight}`
+                                            : 'none',
+                                        fontSize: 13,
+                                        minHeight: 38,
+                                        cursor: 'text',
+                                        '&:hover': { borderColor: state.isFocused ? C.indigo : C.ink300 },
+                                    }),
+                                    option: (base, state) => ({
+                                        ...base,
+                                        fontSize: 13,
+                                        backgroundColor: state.isSelected
+                                            ? C.indigo
+                                            : state.isFocused
+                                                ? C.indigoLight
+                                                : 'white',
+                                        color: state.isSelected ? 'white' : C.ink800,
+                                        cursor: 'pointer',
+                                    }),
+                                    menu: (base) => ({
+                                        ...base,
+                                        borderRadius: 8,
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                                        border: `1px solid ${C.ink100}`,
+                                    }),
+                                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                    placeholder: (base) => ({ ...base, color: C.ink400, fontSize: 13 }),
+                                    singleValue: (base) => ({ ...base, fontSize: 13, color: C.ink800 }),
+                                    input: (base) => ({ ...base, fontSize: 13, color: C.ink800 }),
+                                    clearIndicator: (base) => ({ ...base, cursor: 'pointer' }),
+                                }}
+                            />
                         </FormField>
                         <FormField label="Priority">
                             <select style={fs('priority', false)} value={form.priority} onChange={set('priority')}
