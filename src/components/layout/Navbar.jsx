@@ -17,7 +17,7 @@ const pageTitles = {
     "/employee/announcements": "Announcements",
     "/employee/assets": "Assets",
     "/employee/policies": "Policies",
-    "/employee/sales-reports": "Sales Report",
+    "/employee/sales-reports": "Lead Data",
     "/employee/daily-report": "Daily Report",
     "/sales-reports": "Sales Report",      // BDE / BDM route
 
@@ -33,7 +33,7 @@ const pageTitles = {
     "/tl/policies": "Policies",
     "/tl/helpdesk": "Helpdesk",
     "/tl/announcements": "Announcements",
-    "/tl/sales-reports": "Sales Report",
+    "/tl/sales-reports": "Lead Data",
     "/tl/assets": "Assets",
 
     // ── TL – Team ─────────────────────────────────────────────

@@ -457,7 +457,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <NavItem to="/employee/assets" label="Assets" iconKey="assets" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/policies" label="Policies" iconKey="policies" onClick={onClose} collapsed={collapsed} />
                         {isSalesOther && (
-                            <NavItem to="/employee/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/employee/sales-reports" label="Lead Data" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
                         )}
                         {isSalesBDE && (
                             <NavItem to="/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
@@ -482,7 +482,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/tl/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/assets" label="Assets" iconKey="assets" onClick={onClose} collapsed={collapsed} />
                             {isSalesTL && (
-                                <NavItem to="/tl/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />)}
+                                <NavItem to="/tl/sales-reports" label="Lead Data" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />)}
                             <NavItem to="/tl/policies" label="Policies" iconKey="policies" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">

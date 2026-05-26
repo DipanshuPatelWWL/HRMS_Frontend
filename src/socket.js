@@ -1,11 +1,11 @@
 import { io } from "socket.io-client";
 import { BASE_URL } from "./services/api";
 
-const user = JSON.parse(localStorage.getItem("user"));
+const token = localStorage.getItem("token");
 
 const socket = io(BASE_URL, {
     auth: {
-        token: user?.token,
+        token,
     },
     withCredentials: true,
     transports: ["websocket", "polling"],

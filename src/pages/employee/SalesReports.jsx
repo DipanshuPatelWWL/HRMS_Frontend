@@ -308,7 +308,7 @@ const ReportModal = ({ open, onClose, onSave, editData, saving, currentUserName 
                         </div>
                         <div>
                             <h2 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: C.ink900, letterSpacing: '-0.01em' }}>
-                                {editData ? 'Edit Sales Report' : 'New Sales Report'}
+                                {editData ? 'Edit Lead Data' : 'New Lead Data'}
                             </h2>
                             <p style={{ margin: 0, fontSize: 11, color: C.ink400 }}>Fill in the details below</p>
                         </div>
@@ -454,7 +454,7 @@ const ReportModal = ({ open, onClose, onSave, editData, saving, currentUserName 
                                 display: 'inline-block',
                             }} />
                         ) : editData ? <Edit2 size={13} /> : <Plus size={13} strokeWidth={2.5} />}
-                        {saving ? 'Saving…' : editData ? 'Update Report' : 'Add Report'}
+                        {saving ? 'Saving…' : editData ? 'Update Lead' : 'Add Lead'}
                     </button>
                 </div>
             </div>
@@ -1047,7 +1047,7 @@ const SalesReports = () => {
                             boxShadow: '0 4px 14px rgba(79,70,229,0.38)',
                         }}>
                             <Plus size={13} strokeWidth={2.5} />
-                            Add Report
+                            Add Lead
                         </button>
                     </div>
 
@@ -1082,7 +1082,7 @@ const SalesReports = () => {
                                                 </div>
                                                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: C.ink600 }}>No reports found</p>
                                                 <p style={{ margin: 0, fontSize: 11, color: C.ink400 }}>
-                                                    {search || filterStatus ? 'Try adjusting your filters' : 'Click "Add Report" to create your first entry'}
+                                                    {search || filterStatus ? 'Try adjusting your filters' : 'Click "Add Lead" to create your first entry'}
                                                 </p>
                                             </div>
                                         </td>
