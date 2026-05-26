@@ -497,6 +497,7 @@ const Attendance = () => {
             let deviceUUID = "";
             let productId = "";
 
+            // Step 1: Try Electron IPC (when running inside Electron window)
             if (window.hrmsAgent?.getDeviceInfo) {
                 try {
                     const info = await window.hrmsAgent.getDeviceInfo();
@@ -507,6 +508,27 @@ const Attendance = () => {
                 }
             }
 
+            // Step 2: Fallback — call local token server (browser tab on same PC)
+            // This is the key fix: website punch-in on the office PC works via agent
+            if (!deviceUUID || !productId) {
+                try {
+                    const agentBase = window.hrmsAgent?.getAgentConfig
+                        ? (await window.hrmsAgent.getAgentConfig()).tokenServerUrl
+                        : "http://127.0.0.1:57373";
+
+                    const r = await fetch(`${agentBase}/get-device-info`, {
+                        method: "GET",
+                        signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 3000); return c.signal; })(),
+                    });
+                    if (r.ok) {
+                        const info = await r.json();
+                        deviceUUID = info?.deviceUUID || "";
+                        productId = info?.productId || "";
+                    }
+                } catch (e) {
+                    console.warn("Agent token server unreachable:", e.message);
+                }
+            }
 
             const payload = {
                 deviceId: navigator.userAgent,
