@@ -908,8 +908,7 @@ const HRAttendanceOverview = () => {
                                 <tr>
                                     <th>Employee</th>
                                     <th>Department</th>
-                                    <th>Present</th>
-                                    <th>Half Days</th>
+                                    <th>Days Present</th>
                                     <th>Late</th>
                                     <th>Absent</th>
                                     <th>Leave Days</th>
@@ -921,7 +920,7 @@ const HRAttendanceOverview = () => {
                             <tbody>
                                 {filteredMonthly.length === 0 && (
                                     <tr>
-                                        <td colSpan={10} className="empty-cell">
+                                        <td colSpan={9} className="empty-cell">
                                             No data available
                                         </td>
                                     </tr>
@@ -990,43 +989,24 @@ const HRAttendanceOverview = () => {
                                                 </span>
                                             </td>
                                             <td>
-                                                <span
-                                                    style={{
-                                                        fontWeight: 700,
-                                                        color: "#15803D",
-                                                        fontSize: ".85rem",
-                                                    }}
-                                                >
-                                                    {s.presentDays}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {s.halfDays > 0 ? (
-                                                    <span
-                                                        style={{
-                                                            background:
-                                                                "#FEF3C7",
-                                                            color: "#92400E",
-                                                            padding:
-                                                                "2px 8px",
-                                                            borderRadius: 4,
-                                                            fontWeight: 700,
-                                                            fontSize: ".75rem",
-                                                        }}
-                                                    >
-                                                        {s.halfDays}
+                                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                                    <span style={{ fontWeight: 700, color: "#15803D", fontSize: ".85rem" }}>
+                                                        {s.presentDays + s.halfDays}
                                                     </span>
-                                                ) : (
-                                                    <span
-                                                        style={{
-                                                            color: "#374151",
-                                                            fontWeight: 500,
-                                                        }}
-                                                    >
-                                                        0
-                                                    </span>
-                                                )}
+                                                    {s.halfDays > 0 && (
+                                                        <span style={{
+                                                            fontSize: ".68rem", color: "#92400E",
+                                                            background: "#FEF3C7", padding: "1px 6px",
+                                                            borderRadius: 3, fontWeight: 600,
+                                                            border: "1px solid #FDE68A",
+                                                        }}>
+                                                            {s.halfDays} half
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
+
+
                                             <td>
                                                 {s.lateDays > 0 ? (
                                                     <span

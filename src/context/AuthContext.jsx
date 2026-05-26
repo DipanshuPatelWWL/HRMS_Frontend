@@ -13,7 +13,11 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem("token");
         if (token) {
             API.get("/auth/me")
-                .then(res => setUser(res.data.user))
+                .then(res => {
+                    setUser(res.data.user);
+                    // Re-sync token to agent on every page load/refresh
+                    sendTokenToAgent(token);
+                })
                 .catch(() => localStorage.removeItem("token"))
                 .finally(() => setChecking(false));
         } else {
@@ -21,29 +25,27 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    const sendTokenToAgent = (token) => {
+        if (window.hrmsAgent?.isElectron?.()) {
+            window.hrmsAgent.setToken(token);
+        }
+    };
+
     const login = (data) => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         setUser(data.user);
-
-        // ── Send token to Electron agent via local server ──
-        fetch("http://127.0.0.1:57373/set-token", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token: data.token }),
-        }).catch(() => {
-            // Electron not running — silently ignored
-        });
+        sendTokenToAgent(data.token);
     };
 
     const logout = () => {
         localStorage.removeItem("token");
         setUser(null);
 
-        // ── Clear token from Electron agent ──
-        fetch("http://127.0.0.1:57373/clear-token", {
-            method: "POST",
-        }).catch(() => { });
+        // IPC only — Electron window handles this
+        if (window.hrmsAgent?.isElectron?.()) {
+            window.hrmsAgent.clearToken();
+        }
     };
 
     if (checking) {

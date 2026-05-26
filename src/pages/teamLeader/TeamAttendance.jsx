@@ -344,7 +344,7 @@ const TeamAttendance = () => {
                                     {/* Stats row */}
                                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6, marginBottom: 10 }}>
                                         {[
-                                            { label: "Present", value: s.presentDays, color: "#22C55E" },
+                                            { label: "Present", value: s.presentDays + s.halfDays, color: "#22C55E" },
                                             { label: "Absent", value: s.absentDays, color: "#F87171" },
                                             { label: "Leave", value: s.leaveDays, color: "#A78BFA" },
                                         ].map(item => (

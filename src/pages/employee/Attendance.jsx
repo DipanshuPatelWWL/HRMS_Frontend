@@ -356,18 +356,45 @@ const Attendance = () => {
         try {
             const r = await API.get("/attendance/today");
             const rec = r.data.attendance;
+
             if (Array.isArray(rec)) {
                 const open = rec.find(a => a.punchIn && !a.punchOut);
                 const completed = rec.find(a => a.punchIn && a.punchOut);
                 setTodayRec(open || completed || rec[rec.length - 1]);
-            } else {
+            } else if (rec) {
                 setTodayRec(rec);
+            } else {
+                // No record for today — check if there's an open overnight punch-in
+                // (backend /today only returns today's dateString record).
+                // If null, keep todayRec as null; punch-out button stays disabled.
+                setTodayRec(null);
             }
+
             if (r.data.shiftEnd !== undefined) {
                 setShiftEndMinutes(r.data.shiftEnd);
             }
-        } catch {
-        }
+
+            if (!rec && r.data.shiftEnd !== undefined) {
+                const nowIST = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+                const nowHour = new Date(nowIST).getHours?.() ?? new Date().getHours();
+                const shiftEndHour = Math.floor(r.data.shiftEnd / 60);
+                const isOvernightWindow = shiftEndHour <= 4 && nowHour <= 4;
+                if (isOvernightWindow) {
+                    try {
+                        const now = new Date();
+                        const yesterday = new Date(now);
+                        yesterday.setDate(now.getDate() - 1);
+                        const yStr = yesterday.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }); // YYYY-MM-DD
+                        const yr = await API.get(`/attendance/monthly?month=${yesterday.getMonth() + 1}&year=${yesterday.getFullYear()}`);
+                        const yRec = (yr.data.data || []).find(d => {
+                            const ds = new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+                            return ds === yStr && d.punchIn && !d.punchOut;
+                        });
+                        if (yRec) setTodayRec(yRec);
+                    } catch { /* silent */ }
+                }
+            }
+        } catch { /* silent */ }
     };
 
     const fetchMonthly = async (m, y) => {
@@ -463,21 +490,36 @@ const Attendance = () => {
         fetchHolidays(viewMonth, viewYear);
     }, [viewMonth, viewYear]);
 
-    const doPunchIn = async (latitude, longitude, accuracy) => {
-        // null lat/lng is allowed — backend will verify by IP
-        // Only send location if we actually have it
-        const hasLocation = latitude !== null && latitude !== undefined &&
-            longitude !== null && longitude !== undefined;
+    const doPunchIn = async (latitude = null, longitude = null, accuracy = null) => {
         try {
             setLoading(true);
-            await API.post("/attendance/punch-in", {
-                ...(hasLocation ? {
-                    lat: latitude,
-                    lng: longitude,
-                    accuracy: accuracy ?? 0,
-                } : {}),
+
+            let deviceUUID = "";
+            let productId = "";
+
+            if (window.hrmsAgent?.getDeviceInfo) {
+                try {
+                    const info = await window.hrmsAgent.getDeviceInfo();
+                    deviceUUID = info?.deviceUUID || "";
+                    productId = info?.productId || "";
+                } catch (e) {
+                    console.warn("IPC bridge failed:", e);
+                }
+            }
+
+
+            const payload = {
                 deviceId: navigator.userAgent,
-            });
+                ...(deviceUUID && productId
+                    ? { deviceUUID, productId }
+                    : {}),
+                ...(latitude !== null && longitude !== null
+                    ? { lat: latitude, lng: longitude, accuracy: accuracy ?? 0 }
+                    : {}),
+            };
+
+            await API.post("/attendance/punch-in", payload);
+
             await Promise.all([
                 fetchToday(),
                 fetchMonthly(viewMonth, viewYear),
@@ -499,72 +541,24 @@ const Attendance = () => {
     const handlePunchIn = () => {
         if (!navigator.onLine) { saveOfflinePunch("punch-in"); return; }
 
-        // ─────────────────────────────────────────────
-        // Try GPS first — if unavailable/denied,
-        // backend will verify by IP (office network)
-        // ─────────────────────────────────────────────
+        // Always try to get location in parallel
+        // Backend decides: device match → allow, no device → use location
         if (!navigator.geolocation) {
-            // No GPS support (desktop PC) → try IP verification directly
             doPunchIn(null, null, null);
             return;
         }
 
-        const requestLocation = () => {
-            navigator.geolocation.getCurrentPosition(
-                ({ coords: { latitude, longitude, accuracy } }) => {
-                    if (accuracy > 150) {
-                        // Weak GPS — try IP verification as fallback
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Weak GPS Signal",
-                            html: `
-                            <p>GPS signal is weak (accuracy: ${Math.round(accuracy)}m).</p>
-                            <p style="margin-top:8px; font-size:0.85rem; color:#6B7280;">
-                                Trying office network verification...
-                            </p>
-                        `,
-                            confirmButtonColor: "#F97316",
-                            timer: 2000,
-                            timerProgressBar: true,
-                            showConfirmButton: false,
-                        }).then(() => {
-                            // Fall back to IP-only punch
-                            doPunchIn(null, null, null);
-                        });
-                        return;
-                    }
-                    doPunchIn(latitude, longitude, accuracy);
-                },
-                (err) => {
-                    console.warn("Geolocation error:", err);
-
-                    if (err.code === 1) {
-                        // Permission denied — try IP verification silently
-                        // Backend will allow if on office network
-                        doPunchIn(null, null, null);
-                    } else {
-                        // Other errors — also try IP fallback
-                        doPunchIn(null, null, null);
-                    }
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
-        };
-
-        if (navigator.permissions) {
-            navigator.permissions.query({ name: "geolocation" }).then(result => {
-                if (result.state === "denied") {
-                    // GPS denied → try IP verification
-                    doPunchIn(null, null, null);
-                    return;
-                }
-                requestLocation();
-            }).catch(() => {
-                requestLocation();
-            });
-        } else {
-            requestLocation();
-        }
+        navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+                doPunchIn(coords.latitude, coords.longitude, coords.accuracy);
+            },
+            (err) => {
+                console.warn("GPS unavailable:", err.message);
+                // No GPS — backend will rely on device verification
+                doPunchIn(null, null, null);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
     };
 
 
@@ -862,8 +856,10 @@ const Attendance = () => {
                             </button>
                             <button
                                 onClick={navigator.onLine ? handlePunchOut : () => saveOfflinePunch("punch-out")}
-                                // ✅ FIX: enable only when punched in AND not yet punched out
-                                disabled={loading || !todayRec?.punchIn || !!todayRec?.punchOut}
+                                disabled={
+                                    loading ||
+                                    !(todayRec?.punchIn && !todayRec?.punchOut)  // today has open punch-in
+                                }
                                 className="btn-punch btn-punchout"
                             >
                                 <Icon d={icons.logout} size={15} />
