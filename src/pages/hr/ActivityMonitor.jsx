@@ -718,11 +718,13 @@ export default function ActivityMonitor() {
 
         const handleCaptureDone = (data) => {
             if (data.employeeId === selectedUser) {
+                if (pollRef.current) clearInterval(pollRef.current);
                 setCapturing(false);
                 setCaptureModal({
-                    screenshot: data.screenshot,
-                    webcamPhoto: data.webcamPhoto,
-                    completedAt: data.completedAt,
+                    screenshot: data.screenshot || null,
+                    webcamPhoto: data.webcamPhoto || null,
+                    completedAt: data.completedAt || new Date().toISOString(),
+                    failed: data.status === "failed" || (!data.screenshot && !data.webcamPhoto),
                 });
             }
         };
@@ -733,34 +735,43 @@ export default function ActivityMonitor() {
 
 
 
+    const pollRef = useRef(null);  // add this with other useRef declarations at top
+
     const handleCapture = async () => {
-        if (!selectedUser) return;
+        if (!selectedUser || capturing) return;
+        if (pollRef.current) clearInterval(pollRef.current);
         setCapturing(true);
         try {
             const res = await API.post(`/activity-monitor/capture-request/${selectedUser}`);
             const captureId = res.data?.captureId;
 
-            // Fallback: poll DB every 2s for up to 20s if socket doesn't fire
             let attempts = 0;
-            const pollInterval = setInterval(async () => {
+            pollRef.current = setInterval(async () => {
                 attempts++;
                 try {
                     const check = await API.get(`/activity-monitor/captures/${selectedUser}`);
                     const latest = check.data?.data?.[0];
                     if (latest && latest._id === captureId?.toString() && latest.status === "completed") {
-                        clearInterval(pollInterval);
+                        clearInterval(pollRef.current);
                         setCapturing(false);
                         setCaptureModal({
                             screenshot: latest.screenshot,
                             webcamPhoto: latest.webcamPhoto,
                             completedAt: latest.completedAt,
                         });
+                        return;
                     }
                 } catch (_) { }
 
-                if (attempts >= 10) {
-                    clearInterval(pollInterval);
+                if (attempts >= 15) {
+                    clearInterval(pollRef.current);
                     setCapturing(false);
+                    setCaptureModal({
+                        screenshot: null,
+                        webcamPhoto: null,
+                        completedAt: new Date().toISOString(),
+                        failed: true,
+                    });
                 }
             }, 2000);
 
@@ -993,7 +1004,10 @@ export default function ActivityMonitor() {
                         <div className="am-modal" onClick={e => e.stopPropagation()}>
                             <div className="am-modal-title">📸 Remote Capture</div>
                             <div className="am-modal-sub">
-                                Captured at {new Date(captureModal.completedAt).toLocaleTimeString()}
+                                {captureModal.failed
+                                    ? "⚠️ Capture failed — agent could not take screenshot"
+                                    : `Captured at ${new Date(captureModal.completedAt).toLocaleTimeString()}`
+                                }
                             </div>
                             <div className="am-modal-images">
                                 <div className="am-modal-img-box">
