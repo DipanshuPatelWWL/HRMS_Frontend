@@ -35,6 +35,7 @@ const STATUS_CONFIG = {
     absent: { label: "Absent", bg: "#F1F5F9", color: "#1E293B", dot: "#475569" },
     on_leave: { label: "On Leave", bg: "#F3E8FF", color: "#6B21A8", dot: "#7C3AED" },
     holiday: { label: "Holiday", bg: "#DBEAFE", color: "#1E3A8A", dot: "#2563EB" },
+    not_started: { label: "Office Closed", bg: "#F8FAFC", color: "#64748B", dot: "#94A3B8" },
 };
 
 const matchesStatus = (emp, filterStatus) => {
@@ -623,6 +624,7 @@ const HRAttendanceOverview = () => {
                             <option value="punched_out">Punched Out</option>
                             <option value="absent">Absent</option>
                             <option value="on_leave">On Leave</option>
+                            <option value="not_started">Office Closed</option>
                         </select>
                     )}
                     <select
@@ -834,48 +836,28 @@ const HRAttendanceOverview = () => {
                                             {fmtHours(emp.workHours)}
                                         </td>
                                         <td style={{ fontSize: ".71rem" }}>
+                                            {emp.attendanceStatus === "not_started" && (
+                                                <span style={{ background: "#F1F5F9", color: "#475569", padding: "2px 7px", borderRadius: 4, fontWeight: 600, fontSize: ".68rem" }}>
+                                                    Opens {emp.shiftStartHour != null
+                                                        ? `${emp.shiftStartHour % 12 || 12}:${String(emp.shiftStartMinute).padStart(2, "0")} ${emp.shiftStartHour >= 12 ? "PM" : "AM"}`
+                                                        : "10:00 AM"}
+                                                </span>
+                                            )}
                                             {emp.onLeave && (
-                                                <span
-                                                    style={{
-                                                        background: "#F3E8FF",
-                                                        color: "#6B21A8",
-                                                        padding: "2px 7px",
-                                                        borderRadius: 4,
-                                                        fontWeight: 700,
-                                                    }}
-                                                >
+                                                <span style={{ background: "#F3E8FF", color: "#6B21A8", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>
                                                     {emp.leaveType || "Leave"}
                                                 </span>
                                             )}
                                             {emp.isHalfDay && !emp.onLeave && (
-                                                <span
-                                                    style={{
-                                                        background: "#FEF3C7",
-                                                        color: "#92400E",
-                                                        padding: "2px 7px",
-                                                        borderRadius: 4,
-                                                        fontWeight: 700,
-                                                    }}
-                                                >
+                                                <span style={{ background: "#FEF3C7", color: "#92400E", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>
                                                     Half Day
                                                 </span>
                                             )}
-                                            {emp.isLate &&
-                                                !emp.isHalfDay &&
-                                                !emp.onLeave && (
-                                                    <span
-                                                        style={{
-                                                            background:
-                                                                "#FEE2E2",
-                                                            color: "#991B1B",
-                                                            padding: "2px 7px",
-                                                            borderRadius: 4,
-                                                            fontWeight: 700,
-                                                        }}
-                                                    >
-                                                        Late
-                                                    </span>
-                                                )}
+                                            {emp.isLate && !emp.isHalfDay && !emp.onLeave && (
+                                                <span style={{ background: "#FEE2E2", color: "#991B1B", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>
+                                                    Late
+                                                </span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

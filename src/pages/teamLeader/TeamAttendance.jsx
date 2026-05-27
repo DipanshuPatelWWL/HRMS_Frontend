@@ -19,6 +19,7 @@ const STATUS_CONFIG = {
     weekend: { label: "Weekend", bg: "#F8FAFC", color: "#94A3B8", border: "#E2E8F0", dot: "#CBD5E1" },
     future: { label: "—", bg: "transparent", color: "#CBD5E1", border: "transparent", dot: "#E2E8F0" },
     not_joined: { label: "—", bg: "transparent", color: "#E2E8F0", border: "transparent", dot: "#F1F5F9" },
+    not_started: { label: "Office Closed", bg: "#F8FAFC", color: "#64748B", border: "#E2E8F0", dot: "#94A3B8" },
 };
 
 // ─────────────────────────────────────────────
@@ -154,6 +155,7 @@ const TeamAttendance = () => {
     const absent = (data?.todaySummary || []).filter(e => e.attendanceStatus === "absent").length;
     const onLeave = (data?.todaySummary || []).filter(e => e.attendanceStatus === "on_leave").length;
     const missedPO = (data?.todaySummary || []).filter(e => e.missedPunchOut).length;
+    const officeNotOpen = (data?.todaySummary || []).filter(e => e.attendanceStatus === "not_started").length;
 
     return (
         <DashboardLayout>
@@ -220,8 +222,11 @@ const TeamAttendance = () => {
                     <StatCard label="Team Size" value={data?.teamMembers?.length ?? "—"} color="#6366F1" sub="Total members" />
                     <StatCard label="Punched In" value={loading ? "—" : punchedIn} color="#22C55E" sub="Today" />
                     <StatCard label="Punched Out" value={loading ? "—" : punchedOut} color="#3B82F6" sub="Completed today" />
-                    <StatCard label="Absent" value={loading ? "—" : absent} color="#F87171" sub="Today" />
+                    <StatCard label="Absent" value={loading ? "—" : absent} color="#F87171" sub="After shift start" />
                     <StatCard label="On Leave" value={loading ? "—" : onLeave} color="#A78BFA" sub="Today" />
+                    {officeNotOpen > 0 && (
+                        <StatCard label="Office Closed" value={officeNotOpen} color="#94A3B8" sub="Shift not started" />
+                    )}
                 </div>
 
                 {/* Missed punch-out banner */}
@@ -310,6 +315,13 @@ const TeamAttendance = () => {
                                             {fmtHours(emp.workHours)}
                                         </td>
                                         <td style={{ fontSize: ".72rem", color: "#94A3B8" }}>
+                                            {emp.attendanceStatus === "not_started" && (
+                                                <span style={{ background: "#F1F5F9", color: "#475569", padding: "2px 8px", borderRadius: 4, fontWeight: 600, fontSize: ".68rem" }}>
+                                                    Opens {emp.shiftStartHour != null
+                                                        ? `${emp.shiftStartHour % 12 || 12}:${String(emp.shiftStartMinute).padStart(2, "0")} ${emp.shiftStartHour >= 12 ? "PM" : "AM"}`
+                                                        : "10:00 AM"}
+                                                </span>
+                                            )}
                                             {emp.onLeave && <span style={{ background: "#F3E8FF", color: "#7C3AED", padding: "2px 8px", borderRadius: 4, fontWeight: 700 }}>On Leave</span>}
                                             {emp.isHalfDay && !emp.onLeave && <span style={{ background: "#FEF3C7", color: "#D97706", padding: "2px 8px", borderRadius: 4, fontWeight: 700 }}>Half Day</span>}
                                             {emp.isLate && !emp.isHalfDay && !emp.onLeave && <span style={{ background: "#FEE2E2", color: "#DC2626", padding: "2px 8px", borderRadius: 4, fontWeight: 700 }}>Late</span>}
