@@ -592,12 +592,6 @@ const css = `
   color: #6B7280;
   margin-bottom: 20px;
 }
-.am-modal-images {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
-}
 .am-modal-img-box {
   border: 2px solid #E5E7EB;
   border-radius: 12px;
@@ -1009,19 +1003,12 @@ export default function ActivityMonitor() {
                                     : `Captured at ${new Date(captureModal.completedAt).toLocaleTimeString()}`
                                 }
                             </div>
-                            <div className="am-modal-images">
+                            <div style={{ marginBottom: 20 }}>
                                 <div className="am-modal-img-box">
                                     <div className="am-modal-img-label">🖥️ Screenshot</div>
                                     {captureModal.screenshot
-                                        ? <img src={captureModal.screenshot} alt="screenshot" />
+                                        ? <img src={captureModal.screenshot} alt="screenshot" style={{ width: "100%", height: 320, objectFit: "cover", display: "block" }} />
                                         : <div className="am-modal-no-img">No screenshot available</div>
-                                    }
-                                </div>
-                                <div className="am-modal-img-box">
-                                    <div className="am-modal-img-label">📷 Webcam</div>
-                                    {captureModal.webcamPhoto
-                                        ? <img src={captureModal.webcamPhoto} alt="webcam" />
-                                        : <div className="am-modal-no-img">No webcam available</div>
                                     }
                                 </div>
                             </div>
