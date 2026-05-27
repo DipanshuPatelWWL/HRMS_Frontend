@@ -20,6 +20,7 @@ const STATUS_CONFIG = {
     future: { label: "—", bg: "transparent", color: "#CBD5E1", border: "transparent", dot: "#E2E8F0" },
     not_joined: { label: "—", bg: "transparent", color: "#E2E8F0", border: "transparent", dot: "#F1F5F9" },
     not_started: { label: "Office Closed", bg: "#F8FAFC", color: "#64748B", border: "#E2E8F0", dot: "#94A3B8" },
+    missed_punchout: { label: "Missed Punch Out", bg: "#FFF7ED", color: "#C2410C", border: "#FED7AA", dot: "#F97316" },
 };
 
 // ─────────────────────────────────────────────

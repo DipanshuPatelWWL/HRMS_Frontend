@@ -36,6 +36,7 @@ const STATUS_CONFIG = {
     on_leave: { label: "On Leave", bg: "#F3E8FF", color: "#6B21A8", dot: "#7C3AED" },
     holiday: { label: "Holiday", bg: "#DBEAFE", color: "#1E3A8A", dot: "#2563EB" },
     not_started: { label: "Office Closed", bg: "#F8FAFC", color: "#64748B", dot: "#94A3B8" },
+    missed_punchout: { label: "Missed Punch Out", bg: "#FFF7ED", color: "#C2410C", dot: "#F97316" },
 };
 
 const matchesStatus = (emp, filterStatus) => {
