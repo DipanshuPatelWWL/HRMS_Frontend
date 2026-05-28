@@ -3,6 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import API, { BASE_URL, QR_CODE_URL } from "../../services/api";
 import Swal from "sweetalert2";
+import ActiveSessions from "../../components/common/ActiveSessions";
 
 // react-icons — lucide set
 import {
@@ -10,7 +11,7 @@ import {
     LuCalendar, LuCircleDot, LuPhone, LuCake, LuGlobe, LuHeart,
     LuPencil, LuCreditCard, LuLock, LuUpload, LuX, LuCheck,
     LuTriangleAlert, LuRefreshCw, LuSave, LuKeyRound, LuEye,
-    LuEyeOff, LuChevronDown, LuFolder, LuInfo,
+    LuEyeOff, LuChevronDown, LuFolder, LuInfo, LuMonitor,
 } from "react-icons/lu";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
 import { QRCodeSVG } from "qrcode.react";
@@ -165,6 +166,7 @@ const TABS = [
     { id: "bank", label: "Bank", Icon: LuCreditCard },
     { id: "security", label: "Security", Icon: LuLock },
     { id: "idcard", label: "ID Card", Icon: LuBadge },
+    { id: "sessions", label: "Sessions", Icon: LuMonitor },
 ];
 
 const ROLE_COLORS = {
@@ -1533,6 +1535,20 @@ export default function Profile() {
         /* ── ID CARD ── */
         idcard: (
             <EmployeeIDCard user={user} logoImg={logoImg} BASE_URL={BASE_URL} />
+        ),
+        /* ── SESSIONS ── */
+        sessions: (
+            <div style={{ animation: "slideIn .25s ease" }}>
+                <div style={{ marginBottom: 22 }}>
+                    <p style={{ fontFamily: ff, fontWeight: 800, fontSize: 16, color: T.text, margin: "0 0 4px" }}>
+                        Active Sessions
+                    </p>
+                    <p style={{ fontFamily: ff, fontSize: 13, color: T.textSub, margin: 0 }}>
+                        Devices and browsers currently signed in to your account
+                    </p>
+                </div>
+                <ActiveSessions />
+            </div>
         ),
     };
 

@@ -11,6 +11,13 @@ const API = axios.create({
     timeout: 15000,
 });
 
+export const sessionAPI = {
+    getSessions: () => API.get("/auth/sessions"),
+    logoutSession: (sessionId) => API.delete(`/auth/sessions/${sessionId}`),
+    logoutAll: (keepCurrent = false) =>
+        API.post("/auth/sessions/logout-all", { keepCurrent }),
+};
+
 API.interceptors.request.use((req) => {
     const token = localStorage.getItem("token");
 

@@ -6,8 +6,9 @@ import {
     Search, RefreshCw, Plus, Edit2, Send, CheckCircle2, Clock,
     XCircle, ChevronLeft, ChevronRight, X, User, Calendar,
     Wrench, Globe, Zap, TrendingUp, Link, FileText, BarChart3,
-    AlertCircle,
+    AlertCircle, Trash2,
 } from 'lucide-react'
+import Swal from 'sweetalert2'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import API from '../../services/api'
 
@@ -900,6 +901,29 @@ const SalesReports = () => {
 
     useEffect(() => { fetchLeads() }, [fetchLeads])
 
+    const handleDeleteLead = async (e, id) => {
+        e.stopPropagation()
+        const result = await Swal.fire({
+            title: 'Delete this lead?',
+            text: 'This lead will be removed from your list. This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel',
+        })
+        if (!result.isConfirmed) return
+        try {
+            await API.delete(`/deleteLead/${id}`)
+            setReports(prev => prev.filter(r => r._id !== id))
+            showToast('Lead deleted successfully')
+        } catch (err) {
+            showToast(err.response?.data?.message || 'Failed to delete lead', 'error')
+        }
+    }
+
+
     const stats = useMemo(() => ({
         total: reports.length,
         pending: reports.filter(r => r.review_status === 'pending_review').length,
@@ -1243,6 +1267,19 @@ const SalesReports = () => {
                                                                 color={C.white}
                                                                 hoverBg={C.emerald}
                                                                 border={C.emeraldDark}
+                                                            />
+                                                        )}
+
+                                                        {/* Delete — only for draft leads */}
+                                                        {editable && (
+                                                            <ActionBtn
+                                                                onClick={(e) => handleDeleteLead(e, report._id)}
+                                                                icon={Trash2}
+                                                                label="Delete"
+                                                                bg={C.redLight}
+                                                                color={C.redDark}
+                                                                hoverBg="#fde8e8"
+                                                                border={C.redBorder}
                                                             />
                                                         )}
                                                     </div>

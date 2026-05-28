@@ -27,10 +27,11 @@ const C = {
 }
 
 const STATUS = {
-    draft: { label: 'Draft', color: '#334155', bg: '#f1f5f9' },
+    draft: { label: 'Draft', color: '#475569', bg: '#f1f5f9' },
     pending_review: { label: 'Pending Review', color: '#1d4ed8', bg: '#eff6ff' },
     approved: { label: 'Approved', color: '#047857', bg: '#ecfdf5' },
     rejected: { label: 'Rejected', color: '#b91c1c', bg: '#fef2f2' },
+    deleted: { label: 'Deleted', color: '#7f1d1d', bg: '#fef2f2' },
 }
 
 const STAGES = {
@@ -91,7 +92,7 @@ const globalStyles = `
     .refresh-btn:hover { background: #f1f5f9 !important; }
     input:focus, select:focus, textarea:focus { outline: none; }
     @media (max-width: 768px) {
-        .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
+        .stats-grid { grid-template-columns: repeat(3,1fr) !important; }
         .toolbar { flex-direction: column !important; align-items: stretch !important; }
         .toolbar-search { width: 100% !important; }
         .toolbar-select { width: 100% !important; }
@@ -1052,6 +1053,7 @@ const DownloadModal = ({ open, onClose, reports, salesUsers }) => {
 /* ─── Main ── */
 const ManagerSalesReports = () => {
     const [reports, setReports] = useState([])
+    const [deletedReports, setDeletedReports] = useState([])
     const [loading, setLoading] = useState(true)
     const [actioningId, setActioningId] = useState(null)
     const [search, setSearch] = useState('')
@@ -1059,6 +1061,7 @@ const ManagerSalesReports = () => {
     const [searchFocused, setSearchFocused] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(10)
+    const [activeView, setActiveView] = useState('active')  // 'active' | 'deleted'
     const [rejectModal, setRejectModal] = useState({ open: false, reportId: null, reportName: '' })
     const [detailModal, setDetailModal] = useState({ open: false, report: null })
     const [sendModal, setSendModal] = useState({ open: false, reportId: null })
@@ -1074,8 +1077,12 @@ const ManagerSalesReports = () => {
     const fetchReports = useCallback(async () => {
         setLoading(true)
         try {
-            const { data } = await API.get('/manager/leads')
-            setReports(data.leads || [])
+            const [activeRes, deletedRes] = await Promise.all([
+                API.get('/manager/leads'),
+                API.get('/manager/leads?show_deleted=true'),
+            ])
+            setReports(activeRes.data.leads || [])
+            setDeletedReports(deletedRes.data.leads || [])
         } catch (err) {
             showToast(err.response?.data?.message || 'Failed to fetch reports', 'error')
         } finally { setLoading(false) }
@@ -1101,26 +1108,32 @@ const ManagerSalesReports = () => {
 
     const stats = useMemo(() => ({
         total: reports.length,
+        draft: reports.filter(r => r.review_status === 'draft').length,
         pending: reports.filter(r => r.review_status === 'pending_review').length,
         approved: reports.filter(r => r.review_status === 'approved').length,
         rejected: reports.filter(r => r.review_status === 'rejected').length,
-    }), [reports])
+        deleted: deletedReports.length,
+    }), [reports, deletedReports])
 
     const filtered = useMemo(() => {
         const q = search.toLowerCase()
-        return reports.filter(r => {
+        const source = activeView === 'deleted' ? deletedReports : reports
+        return source.filter(r => {
             const matchSearch = !q ||
                 r.client_name?.toLowerCase().includes(q) ||
                 r.country?.toLowerCase().includes(q) ||
                 r.services?.toLowerCase().includes(q) ||
                 r.client_email?.toLowerCase().includes(q) ||
                 r.marketer?.toLowerCase().includes(q)
-            const matchStatus = !filterStatus || r.review_status === filterStatus
+            const matchStatus = activeView === 'deleted'
+                ? true
+                : (!filterStatus || r.review_status === filterStatus)
             return matchSearch && matchStatus
         })
-    }, [reports, search, filterStatus])
+    }, [reports, deletedReports, search, filterStatus, activeView])
 
     useEffect(() => { setCurrentPage(1) }, [search, filterStatus, pageSize])
+    useEffect(() => { setFilterStatus(''); setCurrentPage(1) }, [activeView])
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
     const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
@@ -1194,11 +1207,25 @@ const ManagerSalesReports = () => {
                 </div>
 
                 {/* ── Stat Cards ── */}
-                <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-                    <StatCard label="Total Reports" value={stats.total} topColor="#3b82f6" loading={loading} active={filterStatus === ''} onClick={() => setFilterStatus('')} icon={FiFileText} />
-                    <StatCard label="Pending" value={stats.pending} topColor="#f59e0b" loading={loading} active={filterStatus === 'pending_review'} onClick={() => setFilterStatus(p => p === 'pending_review' ? '' : 'pending_review')} icon={FiClock} />
-                    <StatCard label="Approved" value={stats.approved} topColor="#10b981" loading={loading} active={filterStatus === 'approved'} onClick={() => setFilterStatus(p => p === 'approved' ? '' : 'approved')} icon={FiCheckCircle} />
-                    <StatCard label="Rejected" value={stats.rejected} topColor="#ef4444" loading={loading} active={filterStatus === 'rejected'} onClick={() => setFilterStatus(p => p === 'rejected' ? '' : 'rejected')} icon={FiXCircle} />
+                <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 14 }}>
+                    <StatCard label="Total Reports" value={stats.total} topColor="#3b82f6" loading={loading}
+                        active={activeView === 'active' && filterStatus === ''}
+                        onClick={() => { setActiveView('active'); setFilterStatus('') }} icon={FiFileText} />
+                    <StatCard label="Drafts" value={stats.draft} topColor="#94a3b8" loading={loading}
+                        active={activeView === 'active' && filterStatus === 'draft'}
+                        onClick={() => { setActiveView('active'); setFilterStatus(p => p === 'draft' ? '' : 'draft') }} icon={FiFileText} />
+                    <StatCard label="Pending" value={stats.pending} topColor="#f59e0b" loading={loading}
+                        active={activeView === 'active' && filterStatus === 'pending_review'}
+                        onClick={() => { setActiveView('active'); setFilterStatus(p => p === 'pending_review' ? '' : 'pending_review') }} icon={FiClock} />
+                    <StatCard label="Approved" value={stats.approved} topColor="#10b981" loading={loading}
+                        active={activeView === 'active' && filterStatus === 'approved'}
+                        onClick={() => { setActiveView('active'); setFilterStatus(p => p === 'approved' ? '' : 'approved') }} icon={FiCheckCircle} />
+                    <StatCard label="Rejected" value={stats.rejected} topColor="#ef4444" loading={loading}
+                        active={activeView === 'active' && filterStatus === 'rejected'}
+                        onClick={() => { setActiveView('active'); setFilterStatus(p => p === 'rejected' ? '' : 'rejected') }} icon={FiXCircle} />
+                    <StatCard label="Deleted" value={stats.deleted} topColor="#7f1d1d" loading={loading}
+                        active={activeView === 'deleted'}
+                        onClick={() => { setActiveView('deleted'); setFilterStatus('') }} icon={FiXCircle} />
                 </div>
 
                 {/* ── Main Panel ── */}
@@ -1224,15 +1251,30 @@ const ManagerSalesReports = () => {
                                 }}
                             />
                         </div>
-                        <select className="toolbar-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{
-                            padding: '9px 13px', borderRadius: 9, border: `1.5px solid ${C.slate300}`,
-                            background: C.white, fontSize: 13, color: C.text, outline: 'none',
-                            fontFamily: 'inherit', cursor: 'pointer', fontWeight: 600, flex: '0 0 auto',
-                        }}>
+                        <select
+                            className="toolbar-select"
+                            value={activeView === 'deleted' ? 'deleted' : filterStatus}
+                            onChange={e => {
+                                if (e.target.value === 'deleted') {
+                                    setActiveView('deleted')
+                                    setFilterStatus('')
+                                } else {
+                                    setActiveView('active')
+                                    setFilterStatus(e.target.value)
+                                }
+                            }}
+                            style={{
+                                padding: '9px 13px', borderRadius: 9, border: `1.5px solid ${C.slate300}`,
+                                background: C.white, fontSize: 13, color: C.text, outline: 'none',
+                                fontFamily: 'inherit', cursor: 'pointer', fontWeight: 600, flex: '0 0 auto',
+                            }}
+                        >
                             <option value="">All Status</option>
+                            <option value="draft">Draft</option>
                             <option value="pending_review">Pending Review</option>
                             <option value="approved">Approved</option>
                             <option value="rejected">Rejected</option>
+                            <option value="deleted">Deleted</option>
                         </select>
                         <div className="toolbar-right" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 20 }}>
                             <button className="refresh-btn action-btn" onClick={fetchReports} disabled={loading} style={{
@@ -1261,7 +1303,10 @@ const ManagerSalesReports = () => {
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                             <thead>
                                 <tr style={{ borderBottom: `1px solid ${C.slate100}`, background: C.slate50 }}>
-                                    {['SR.', 'Date', 'Client Name', 'Service', 'Country', 'Priority', 'Status', 'Lead Stage', 'Actions'].map(h => (
+                                    {(activeView === 'deleted'
+                                        ? ['SR.', 'Date', 'Client Name', 'Service', 'Country', 'Priority', 'Status', 'Deleted At', 'Actions']
+                                        : ['SR.', 'Date', 'Client Name', 'Service', 'Country', 'Priority', 'Status', 'Lead Stage', 'Actions']
+                                    ).map(h => (
                                         <th key={h} style={{
                                             padding: '11px 20px', textAlign: 'center',
                                             fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
@@ -1337,67 +1382,76 @@ const ManagerSalesReports = () => {
                                                     <StatusBadge status={report.review_status} />
                                                 </td>
                                                 <td style={{ padding: '14px 20px', textAlign: 'center' }}>
-                                                    {report.lead_stage
-                                                        ? <StageBadge stage={report.lead_stage} />
-                                                        : <span style={{ fontSize: 12, color: C.textMuted }}>—</span>
+                                                    {activeView === 'deleted'
+                                                        ? <span style={{ fontSize: 12, color: C.redDark, fontWeight: 700 }}>{fmtDate(report.deleted_at)}</span>
+                                                        : report.lead_stage
+                                                            ? <StageBadge stage={report.lead_stage} />
+                                                            : <span style={{ fontSize: 12, color: C.textMuted }}>—</span>
                                                     }
                                                 </td>
                                                 <td style={{ padding: '14px 20px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
-                                                        {pending ? (
-                                                            <>
-                                                                <button className="action-btn" onClick={e => handleApprove(e, report._id)} disabled={actioning} style={{
-                                                                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                                                                    padding: '6px 12px', borderRadius: 7,
-                                                                    border: `1px solid ${C.emeraldBorder}`,
-                                                                    background: actioning ? C.slate100 : C.emeraldLight,
-                                                                    color: actioning ? C.textMuted : C.emerald,
-                                                                    fontSize: 12, fontWeight: 800, cursor: actioning ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                                                                }}>
-                                                                    {actioning
-                                                                        ? <span style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${C.slate300}`, borderTopColor: C.emerald, animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
-                                                                        : <FiCheck size={12} strokeWidth={3} />
-                                                                    }
-                                                                    Approve
-                                                                </button>
-                                                                <button className="action-btn" onClick={e => openReject(e, report)} disabled={actioning} style={{
-                                                                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                                                                    padding: '6px 12px', borderRadius: 7,
-                                                                    border: `1px solid ${C.redBorder}`,
-                                                                    background: actioning ? C.slate100 : C.redLight,
-                                                                    color: actioning ? C.textMuted : C.redDark,
-                                                                    fontSize: 12, fontWeight: 800, cursor: actioning ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                                                                }}>
-                                                                    <FiX size={12} strokeWidth={3} />
-                                                                    Reject
-                                                                </button>
-                                                            </>
-                                                        ) : (
-                                                            // <span style={{ fontSize: 12, color: report.review_status === 'approved' ? C.emerald : C.redDark, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                            //     {report.review_status === 'approved' ? <FiCheckCircle size={12} /> : <FiXCircle size={12} />}
-                                                            //     {report.review_status === 'approved' ? 'Approved' : 'Rejected'}
-                                                            // </span>
-                                                            ""
-                                                        )}
-
-                                                        {report.review_status === 'approved' && !report.assigned_to && (
-                                                            <button className="action-btn" onClick={e => { e.stopPropagation(); setSendModal({ open: true, reportId: report._id }) }} style={{
-                                                                display: 'inline-flex', alignItems: 'center', gap: 5,
-                                                                padding: '6px 12px', borderRadius: 7, border: 'none',
-                                                                background: C.indigo, color: C.white,
-                                                                fontSize: 12, fontWeight: 800, cursor: 'pointer',
-                                                                boxShadow: '0 2px 8px rgba(79,70,229,0.3)',
+                                                        {activeView === 'deleted' ? (
+                                                            <span style={{
+                                                                padding: '5px 12px', borderRadius: 7,
+                                                                background: '#fef2f2', color: '#7f1d1d',
+                                                                fontSize: 12, fontWeight: 800,
+                                                                display: 'flex', alignItems: 'center', gap: 5,
                                                             }}>
-                                                                <FiSend size={11} />
-                                                                Send
-                                                            </button>
-                                                        )}
+                                                                <FiXCircle size={12} /> Deleted by Employee
+                                                            </span>
+                                                        ) : (
+                                                            <>
+                                                                {pending ? (
+                                                                    <>
+                                                                        <button className="action-btn" onClick={e => handleApprove(e, report._id)} disabled={actioning} style={{
+                                                                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                                                                            padding: '6px 12px', borderRadius: 7,
+                                                                            border: `1px solid ${C.emeraldBorder}`,
+                                                                            background: actioning ? C.slate100 : C.emeraldLight,
+                                                                            color: actioning ? C.textMuted : C.emerald,
+                                                                            fontSize: 12, fontWeight: 800, cursor: actioning ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                                                                        }}>
+                                                                            {actioning
+                                                                                ? <span style={{ width: 11, height: 11, borderRadius: '50%', border: `2px solid ${C.slate300}`, borderTopColor: C.emerald, animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+                                                                                : <FiCheck size={12} strokeWidth={3} />
+                                                                            }
+                                                                            Approve
+                                                                        </button>
+                                                                        <button className="action-btn" onClick={e => openReject(e, report)} disabled={actioning} style={{
+                                                                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                                                                            padding: '6px 12px', borderRadius: 7,
+                                                                            border: `1px solid ${C.redBorder}`,
+                                                                            background: actioning ? C.slate100 : C.redLight,
+                                                                            color: actioning ? C.textMuted : C.redDark,
+                                                                            fontSize: 12, fontWeight: 800, cursor: actioning ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                                                                        }}>
+                                                                            <FiX size={12} strokeWidth={3} />
+                                                                            Reject
+                                                                        </button>
+                                                                    </>
+                                                                ) : ""}
 
-                                                        {report.assigned_to && (
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '4px 8px', borderRadius: 6, background: '#ecfdf5' }}>
-                                                                <span style={{ fontSize: 10, fontWeight: 800, color: '#047857', textTransform: 'uppercase' }}>Assigned To</span>
-                                                                <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{report.assigned_to?.name}</span>
-                                                            </div>
+                                                                {report.review_status === 'approved' && !report.assigned_to && (
+                                                                    <button className="action-btn" onClick={e => { e.stopPropagation(); setSendModal({ open: true, reportId: report._id }) }} style={{
+                                                                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                                                                        padding: '6px 12px', borderRadius: 7, border: 'none',
+                                                                        background: C.indigo, color: C.white,
+                                                                        fontSize: 12, fontWeight: 800, cursor: 'pointer',
+                                                                        boxShadow: '0 2px 8px rgba(79,70,229,0.3)',
+                                                                    }}>
+                                                                        <FiSend size={11} />
+                                                                        Send
+                                                                    </button>
+                                                                )}
+
+                                                                {report.assigned_to && (
+                                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '4px 8px', borderRadius: 6, background: '#ecfdf5' }}>
+                                                                        <span style={{ fontSize: 10, fontWeight: 800, color: '#047857', textTransform: 'uppercase' }}>Assigned To</span>
+                                                                        <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{report.assigned_to?.name}</span>
+                                                                    </div>
+                                                                )}
+                                                            </>
                                                         )}
                                                     </div>
                                                 </td>

@@ -25,6 +25,21 @@ const fmtTime = (iso) => {
     });
 };
 
+/* ── Group titles by hour slot ── */
+const groupByHour = (titles) => {
+    const slots = {};
+    titles.forEach(t => {
+        if (!t.firstSeen) return;
+        const d = new Date(t.firstSeen);
+        if (isNaN(d)) return;
+        const h = d.getHours();
+        const label = `${String(h).padStart(2, "0")}:00 – ${String(h + 1).padStart(2, "0")}:00`;
+        if (!slots[label]) slots[label] = { hour: h, label, titles: [] };
+        slots[label].titles.push(t);
+    });
+    return Object.values(slots).sort((a, b) => a.hour - b.hour);
+};
+
 /* ── App icon map — SVG paths for common apps ── */
 const APP_ICONS = {
     "google chrome": (
@@ -641,6 +656,103 @@ const css = `
   0%,80%,100% { transform: scale(0); opacity:.4; }
   40% { transform: scale(1); opacity:1; }
 }
+/* ── Timeline / hour-group styles ── */
+.am-hour-group {}
+
+.am-hour-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px;
+  background: linear-gradient(90deg, #EEF2FF, #F5F3FF);
+  border-bottom: 1.5px solid #C7D2FE;
+  border-top: 1.5px solid #C7D2FE;
+}
+
+.am-hour-badge {
+  font-size: 11px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  background: #4F46E5;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 6px;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.am-hour-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6366F1;
+}
+
+.am-hour-group .am-title-row {
+  padding-left: 28px;
+}
+
+/* ── NEW — add at end of css string ── */
+.am-stream-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 1000px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+.am-stream-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #0A0C10;
+  color: #fff;
+}
+.am-stream-title {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 700;
+}
+.am-stream-live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #ef4444;
+  animation: am-pulse 1s infinite;
+}
+.am-stream-screen {
+  background: #000;
+  aspect-ratio: 16/9;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.am-stream-screen img { width: 100%; height: 100%; object-fit: contain; }
+.am-stream-locked {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px; color: #9CA3AF;
+}
+.am-stream-locked-icon { font-size: 52px; opacity: .4; }
+.am-stream-locked-text { font-size: 15px; font-weight: 600; }
+.am-stream-waiting {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; color: #6B7280; min-height: 200px;
+}
+.am-stream-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  background: #F9FAFB;
+  border-top: 1px solid #E5E7EB;
+  font-size: 12px; color: #6B7280;
+}
+.am-stream-stop-btn {
+  padding: 8px 20px;
+  background: #DC2626; color: #fff;
+  border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  font-family: "'DM Sans', sans-serif";
+  cursor: pointer;
+}
+.am-stream-stop-btn:hover { background: #B91C1C; }
 `;
 
 /* ── Chevron SVG ── */
@@ -663,6 +775,12 @@ export default function ActivityMonitor() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [capturing, setCapturing] = useState(false);
     const [captureModal, setCaptureModal] = useState(null);
+    const [streaming, setStreaming] = useState(false);
+    const [streamFrame, setStreamFrame] = useState(null);
+    const [streamLocked, setStreamLocked] = useState(false);
+    const [streamModal, setStreamModal] = useState(false);
+    const streamIdRef = useRef(null);
+    const [timelineView, setTimelineView] = useState(false);
     const styleRef = useRef(false);
 
     /* Inject CSS once */
@@ -723,8 +841,35 @@ export default function ActivityMonitor() {
             }
         };
 
+        // ── NEW ──
+        const handleStreamStarted = ({ streamId, targetUserId }) => {
+            if (targetUserId === selectedUser) {
+                streamIdRef.current = streamId;
+            }
+        };
+
+        const handleStreamFrame = (data) => {
+            if (data.streamId !== streamIdRef.current) return;
+            if (data.locked) {
+                setStreamLocked(true);
+                setStreamFrame(null);
+            } else if (data.unlocked) {
+                setStreamLocked(false);
+            } else if (data.frame) {
+                setStreamLocked(false);
+                setStreamFrame(data.frame);
+            }
+        };
+
+        socket.on("stream:started", handleStreamStarted);
+        socket.on("stream:frame", handleStreamFrame);
         socket.on("capture:done", handleCaptureDone);
-        return () => socket.off("capture:done", handleCaptureDone);
+
+        return () => {
+            socket.off("capture:done", handleCaptureDone);
+            socket.off("stream:started", handleStreamStarted);
+            socket.off("stream:frame", handleStreamFrame);
+        };
     }, [selectedUser]);
 
 
@@ -775,6 +920,25 @@ export default function ActivityMonitor() {
         }
     };
 
+
+    // ── NEW — add after handleCapture ──
+    const handleStartStream = () => {
+        if (!selectedUser) return;
+        setStreamFrame(null);
+        setStreamLocked(false);
+        setStreamModal(true);
+        setStreaming(true);
+        socket.emit("stream:request", { targetUserId: selectedUser });
+    };
+
+    const handleStopStream = () => {
+        setStreaming(false);
+        setStreamModal(false);
+        setStreamFrame(null);
+        streamIdRef.current = null;
+        socket.emit("stream:stop_request", { targetUserId: selectedUser });
+    };
+
     const toggle = (name) =>
         setOpenCards(prev => ({ ...prev, [name]: !prev[name] }));
 
@@ -817,12 +981,52 @@ export default function ActivityMonitor() {
                     </button>
 
                     <button
+                        onClick={() => setTimelineView(v => !v)}
+                        style={{
+                            display: "flex", alignItems: "center", gap: 7,
+                            padding: "8px 16px",
+                            background: timelineView ? "#4F46E5" : "#fff",
+                            color: timelineView ? "#fff" : "#4F46E5",
+                            border: "2px solid #4F46E5",
+                            borderRadius: 10, fontSize: 13.5, fontWeight: 600,
+                            fontFamily: "'DM Sans', sans-serif",
+                            cursor: "pointer", whiteSpace: "nowrap",
+                            transition: "all .2s",
+                        }}
+                        title="Toggle hourly timeline view"
+                    >
+                        🕐 {timelineView ? "Timeline ON" : "Timeline"}
+                    </button>
+
+                    <button
                         className="am-capture-btn"
                         onClick={handleCapture}
                         disabled={capturing || !selectedUser}
                         title="Take screenshot + webcam photo from employee PC"
                     >
                         {capturing ? "⏳ Capturing..." : "📸 Capture"}
+                    </button>
+
+                    <button
+                        onClick={streaming ? handleStopStream : handleStartStream}
+                        disabled={!selectedUser}
+                        style={{
+                            display: "flex", alignItems: "center", gap: 7,
+                            padding: "8px 16px",
+                            background: streaming ? "#DC2626" : "#7C3AED",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: 10,
+                            fontSize: 13.5, fontWeight: 600,
+                            fontFamily: "'DM Sans', sans-serif",
+                            cursor: !selectedUser ? "not-allowed" : "pointer",
+                            opacity: !selectedUser ? 0.6 : 1,
+                            boxShadow: streaming ? "0 2px 8px rgba(220,38,38,.35)" : "0 2px 8px rgba(124,58,237,.35)",
+                            transition: "all .2s",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        {streaming ? "⏹ Stop Live" : "📹 Live View"}
                     </button>
                 </div>
 
@@ -944,47 +1148,57 @@ export default function ActivityMonitor() {
                                         <span></span>
                                     </div>
 
-                                    {app.titles?.map((t, i) => (
-                                        <div key={i} className="am-title-row">
-                                            {/* Bullet */}
-                                            <div
-                                                className="am-title-bullet"
-                                                style={{ background: cfg.dot }}
-                                            />
+                                    {timelineView ? (
+                                        /* ── Timeline (hourly grouped) view ── */
+                                        groupByHour(app.titles || []).map(slot => (
+                                            <div key={slot.label} className="am-hour-group">
+                                                {/* Hour label bar */}
+                                                <div className="am-hour-label">
+                                                    <span className="am-hour-badge">🕐 {slot.label}</span>
+                                                    <span className="am-hour-count">
+                                                        {slot.titles.length} window{slot.titles.length !== 1 ? "s" : ""}
+                                                    </span>
+                                                </div>
 
-                                            {/* Title text */}
-                                            <span className="am-title-text" title={t.windowTitle}>
-                                                {t.windowTitle}
-                                            </span>
-
-                                            {/* Start time */}
-                                            <div className="am-time-cell am-time-start">
-                                                <div className="am-time-label">Start</div>
-                                                <div className="am-time-value">{fmtTime(t.firstSeen)}</div>
+                                                {slot.titles.map((t, i) => (
+                                                    <div key={i} className="am-title-row">
+                                                        <div className="am-title-bullet" style={{ background: cfg.dot }} />
+                                                        <span className="am-title-text" title={t.windowTitle}>{t.windowTitle}</span>
+                                                        <div className="am-time-cell am-time-start">
+                                                            <div className="am-time-label">Start</div>
+                                                            <div className="am-time-value">{fmtTime(t.firstSeen)}</div>
+                                                        </div>
+                                                        <div className="am-time-cell am-time-end">
+                                                            <div className="am-time-label">End</div>
+                                                            <div className="am-time-value">{fmtTime(t.lastSeen)}</div>
+                                                        </div>
+                                                        <span className="am-visit-count">{t.visits} {t.visits === 1 ? "time" : "times"}</span>
+                                                        <span className="am-title-dur">{t.totalDurationFormatted || fmtDur(t.totalDuration)}</span>
+                                                        {t.isIncognito ? <span className="am-incognito">🕵️ incognito</span> : <span />}
+                                                    </div>
+                                                ))}
                                             </div>
-
-                                            {/* End time */}
-                                            <div className="am-time-cell am-time-end">
-                                                <div className="am-time-label">End</div>
-                                                <div className="am-time-value">{fmtTime(t.lastSeen)}</div>
+                                        ))
+                                    ) : (
+                                        /* ── Default flat view ── */
+                                        app.titles?.map((t, i) => (
+                                            <div key={i} className="am-title-row">
+                                                <div className="am-title-bullet" style={{ background: cfg.dot }} />
+                                                <span className="am-title-text" title={t.windowTitle}>{t.windowTitle}</span>
+                                                <div className="am-time-cell am-time-start">
+                                                    <div className="am-time-label">Start</div>
+                                                    <div className="am-time-value">{fmtTime(t.firstSeen)}</div>
+                                                </div>
+                                                <div className="am-time-cell am-time-end">
+                                                    <div className="am-time-label">End</div>
+                                                    <div className="am-time-value">{fmtTime(t.lastSeen)}</div>
+                                                </div>
+                                                <span className="am-visit-count">{t.visits} {t.visits === 1 ? "time" : "times"}</span>
+                                                <span className="am-title-dur">{t.totalDurationFormatted || fmtDur(t.totalDuration)}</span>
+                                                {t.isIncognito ? <span className="am-incognito">🕵️ incognito</span> : <span />}
                                             </div>
-
-                                            {/* Visits */}
-                                            <span className="am-visit-count">
-                                                {t.visits} {t.visits === 1 ? "time" : "times"}
-                                            </span>
-
-                                            {/* Duration */}
-                                            <span className="am-title-dur">
-                                                {t.totalDurationFormatted || fmtDur(t.totalDuration)}
-                                            </span>
-
-                                            {/* Incognito tag */}
-                                            {t.isIncognito ? (
-                                                <span className="am-incognito">🕵️ incognito</span>
-                                            ) : <span />}
-                                        </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -1015,6 +1229,55 @@ export default function ActivityMonitor() {
                             <button className="am-modal-close" onClick={() => setCaptureModal(null)}>
                                 Close
                             </button>
+                        </div>
+                    </div>
+                )}
+
+
+               // ── NEW — add after captureModal block ──
+                {streamModal && (
+                    <div className="am-modal-overlay" onClick={handleStopStream}>
+                        <div className="am-stream-modal" onClick={e => e.stopPropagation()}>
+
+                            {/* Header */}
+                            <div className="am-stream-header">
+                                <div className="am-stream-title">
+                                    <div className="am-stream-live-dot" />
+                                    Live View —&nbsp;
+                                    {employees.find(e => e._id === selectedUser)?.name || selectedUser}
+                                </div>
+                                <span style={{ fontSize: 11, color: "#9CA3AF", fontFamily: "monospace" }}>
+                                    {new Date().toLocaleTimeString()}
+                                </span>
+                            </div>
+
+                            {/* Screen */}
+                            <div className="am-stream-screen">
+                                {streamLocked ? (
+                                    <div className="am-stream-locked">
+                                        <div className="am-stream-locked-icon">🔒</div>
+                                        <div className="am-stream-locked-text">Screen is locked</div>
+                                    </div>
+                                ) : streamFrame ? (
+                                    <img src={streamFrame} alt="live screen" />
+                                ) : (
+                                    <div className="am-stream-waiting">
+                                        <div className="am-loading" style={{ padding: 0 }}>
+                                            <span /><span /><span />
+                                        </div>
+                                        <div style={{ fontSize: 13 }}>Waiting for stream...</div>
+                                        <div style={{ fontSize: 11 }}>Employee app must be running</div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="am-stream-footer">
+                                <span>~2 fps · JPEG compressed · encrypted via Socket.IO</span>
+                                <button className="am-stream-stop-btn" onClick={handleStopStream}>
+                                    ⏹ Stop Stream
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
