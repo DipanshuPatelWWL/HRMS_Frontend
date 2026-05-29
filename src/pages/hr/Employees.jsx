@@ -58,6 +58,12 @@ const DEPARTMENT_DESIGNATIONS = {
         "Senior Full Stack Developer", "Tech Lead", "Team Lead - Development",
         "Software Engineer", "Senior Software Engineer", "Engineering Manager", "CTO",
     ],
+    "HR": [
+        "HR Intern", "HR Trainee", "HR Executive", "HR Generalist",
+        "Senior HR Executive", "HR Specialist", "HR Business Partner",
+        "Talent Acquisition Executive", "Senior Talent Acquisition Executive",
+        "HR Lead", "HR Manager", "Senior HR Manager", "HR Head", "CHRO",
+    ],
 };
 
 const ACCOUNT_TYPES = [
@@ -449,6 +455,7 @@ const FormFields = ({ form, onChange }) => {
                         <option value="SEO">SEO</option>
                         <option value="Sales">Sales</option>
                         <option value="Development">Development</option>
+                        <option value="HR">HR</option>
                     </select>
                 </div>
             </div>
@@ -1950,8 +1957,9 @@ const Employees = () => {
         }
         setSubmitting(true);
         try {
-            const daysInMonth = getDaysInMonth(); // ✅ fix: was missing, caused perDay = NaN
+            const daysInMonth = getDaysInMonth();
             const role = form.role?.toLowerCase?.() || form.role;
+            const successPhone = form.phone; // capture before clearing form
             const payload = {
                 name: form.name, email: form.email, role: role,
                 password: form.password,
@@ -1964,20 +1972,24 @@ const Employees = () => {
                     : undefined,
             };
             await API.post("/users/create", payload);
+            // ✅ Close modal FIRST, then show Swal on top of nothing
             setAddModal(false);
             setForm(EMPTY_FORM);
-            await fetchEmployees(); // ✅ fix: re-fetch instead of stale local patch
-            Swal.fire({
-                icon: "success",
-                title: "Employee Added",
-                text: form.phone
-                    ? "Employee added successfully! Login credentials sent on Email."
-                    : "Employee added successfully! (No phone provided — SMS not sent)",
-                confirmButtonColor: "#6366F1",
-                timer: 3000,
-                timerProgressBar: true,
-            });
+            await fetchEmployees();
+            setTimeout(() => {
+                Swal.fire({
+                    icon: "success",
+                    title: "Employee Added",
+                    text: successPhone
+                        ? "Employee added successfully! Login credentials sent on Email."
+                        : "Employee added successfully! (No phone provided — SMS not sent)",
+                    confirmButtonColor: "#6366F1",
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            }, 150); // small delay so modal unmounts before Swal renders
         } catch (err) {
+            // ✅ On error: keep modal open, Swal shows on top via CSS z-index fix
             Swal.fire({
                 icon: "error",
                 title: "Create Failed",
@@ -2011,17 +2023,21 @@ const Employees = () => {
                 salary: (form.role === "employee" || form.role === "tl") ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth } : undefined,
             };
             await API.put(`/users/update/${editTarget._id}`, payload);
+            // ✅ Close modal FIRST, then show Swal
             setEditTarget(null);
-            await fetchEmployees(); // ✅ fix: re-fetch instead of stale local patch
-            Swal.fire({
-                icon: "success",
-                title: "Updated",
-                text: "Employee updated successfully!",
-                confirmButtonColor: "#6366F1",
-                timer: 2500,
-                timerProgressBar: true,
-            });
+            await fetchEmployees();
+            setTimeout(() => {
+                Swal.fire({
+                    icon: "success",
+                    title: "Updated",
+                    text: "Employee updated successfully!",
+                    confirmButtonColor: "#6366F1",
+                    timer: 2500,
+                    timerProgressBar: true,
+                });
+            }, 150);
         } catch (err) {
+            // ✅ Keep modal open on error
             Swal.fire({
                 icon: "error",
                 title: "Update Failed",
@@ -2036,23 +2052,37 @@ const Employees = () => {
         const { type, employee } = confirm;
         setActionLoading(true);
         try {
+            let successTitle = "";
+            let successText = "";
+
             if (type === "delete") {
                 await API.delete(`/users/delete/${employee._id}`);
                 if (editTarget?._id === employee._id) setEditTarget(null);
-                Swal.fire({ icon: "success", title: "Deleted", text: "Employee deleted successfully", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
+                successTitle = "Deleted"; successText = "Employee deleted successfully";
             } else if (type === "terminate") {
                 await API.put(`/users/update-status/${employee._id}`, { status: "terminated" });
                 if (editTarget?._id === employee._id) setEditTarget(null);
-                Swal.fire({ icon: "success", title: "Terminated", text: "Employee terminated successfully", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
+                successTitle = "Terminated"; successText = "Employee terminated successfully";
             } else if (type === "deactivate") {
                 await API.put(`/users/update-status/${employee._id}`, { status: "inactive" });
-                Swal.fire({ icon: "success", title: "Deactivated", text: "Employee deactivated", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
+                successTitle = "Deactivated"; successText = "Employee deactivated";
             } else if (type === "activate") {
                 await API.put(`/users/update-status/${employee._id}`, { status: "active" });
-                Swal.fire({ icon: "success", title: "Activated", text: "Employee activated", confirmButtonColor: "#6366F1", timer: 2500, timerProgressBar: true });
+                successTitle = "Activated"; successText = "Employee activated";
             }
+            // ✅ Close confirm dialog FIRST, then show Swal
             setConfirm(null);
             await fetchEmployees();
+            setTimeout(() => {
+                Swal.fire({
+                    icon: "success",
+                    title: successTitle,
+                    text: successText,
+                    confirmButtonColor: "#6366F1",
+                    timer: 2500,
+                    timerProgressBar: true,
+                });
+            }, 150);
         } catch (err) {
             Swal.fire({
                 icon: "error",
@@ -2214,35 +2244,43 @@ const Employees = () => {
                 .emp-root { font-family: 'Inter', -apple-system, sans-serif; }
 
                 /* ── MODAL BACKDROP FIX ── */
-                .modal-backdrop {
-                    position: fixed !important;
-                    inset: 0 !important;
-                    top: 0 !important;
-                    left: 0 !important;
-                    right: 0 !important;
-                    bottom: 0 !important;
-                    z-index: 99999 !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    padding: 1rem !important;
-                    background: rgba(15, 23, 42, 0.55) !important;
-                    backdrop-filter: blur(6px) !important;
-                    -webkit-backdrop-filter: blur(6px) !important;
-                    overflow-y: auto !important;
-                }
+              .modal-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+    background: rgba(15, 23, 42, 0.55) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    overflow-y: auto !important;
+}
 
-                /* ── MODAL BOX FIX ── */
-                .modal {
-                    position: relative !important;
-                    z-index: 100000 !important;
-                    background: #ffffff !important;
-                    border-radius: 16px !important;
-                    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25), 0 8px 20px rgba(0, 0, 0, 0.15) !important;
-                    padding: 1.5rem !important;
-                    width: 100% !important;
-                    margin: auto !important;
-                }
+/* ── MODAL BOX FIX ── */
+.modal {
+    position: relative !important;
+    z-index: 100000 !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25), 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+    padding: 1.5rem !important;
+    width: 100% !important;
+    margin: auto !important;
+}
+
+/* ── Swal always on top ── */
+.swal2-container {
+    z-index: 999999 !important;
+}
+.swal2-popup {
+    z-index: 1000000 !important;
+}
 
                 /* ── Toolbar ── */
                 .emp-toolbar {
@@ -2591,7 +2629,7 @@ const Employees = () => {
                                             <line x1="12" y1="8" x2="12" y2="16" />
                                             <line x1="8" y1="12" x2="16" y2="12" />
                                         </svg>
-                                        Add Employee
+                                        Add User
                                     </button>
                                     <button className="btn btn-ghost" onClick={openAssignModal} style={{
                                         border: "1px solid #e2e8f0", color: "#374151", fontWeight: 600, gap: "6px"
@@ -2768,7 +2806,7 @@ const Employees = () => {
                                             <line x1="19" y1="11" x2="22" y2="11" />
                                         </svg>
                                     </span>
-                                    Add New Employee
+                                    Add New User
                                 </span>
                                 <p style={{ fontSize: ".8rem", color: "#1e293b", marginTop: "0px", fontWeight: 500, paddingLeft: "36px" }}>
                                     Fill in the details below
@@ -2786,7 +2824,7 @@ const Employees = () => {
                         <div style={{ display: "flex", gap: ".65rem", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
                             <button className="btn btn-ghost" onClick={() => setAddModal(false)} style={{ flex: 1, color: "#0f172a" }}>Cancel</button>
                             <button className="btn btn-primary" onClick={handleCreate} disabled={submitting} style={{ flex: 2, justifyContent: "center" }}>
-                                {submitting ? <><span className="spinner" />Processing...</> : "Add Employee"}
+                                {submitting ? <><span className="spinner" />Processing...</> : "Add User"}
                             </button>
                         </div>
                     </div>
@@ -3107,7 +3145,7 @@ const Employees = () => {
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
                             <div>
-                                <span className="modal-title" style={{ color: "#0f172a" }}>👥 Assign Team to TL</span>
+                                <span className="modal-title" style={{ color: "#0f172a" }}> Assign Team to TL</span>
                                 <p style={{ fontSize: ".8rem", color: "#1e293b", marginTop: "4px", fontWeight: 500 }}>
                                     Select a Team Leader and employees to assign
                                 </p>

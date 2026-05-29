@@ -398,7 +398,7 @@ export default function ScanLogsPage() {
                     }}>
                         <StatCard label="Total Scans" value={stats.total.toLocaleString()} icon="📊" color="#6c63ff" />
                         <StatCard label="Scans Today" value={stats.scansToday.toLocaleString()} icon="📅" color="#059669" />
-                        <StatCard label="Unique Employees" value={stats.uniqueEmployees.toLocaleString()} icon="👤" color="#d97706" />
+                        <StatCard label="Unique Employees" value={stats.uniqueEmployees.toLocaleString()} color="#d97706" />
                         {stats.deviceBreakdown?.[0] && (
                             <StatCard
                                 label="Top Device"

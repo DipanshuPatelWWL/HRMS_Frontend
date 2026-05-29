@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import DashboardLayout from "../layout/DashboardLayout";
-import StopwatchLoader from "./StopwatchLoader";
 import API from "../../services/api";
 
 /* ─── SVG Icons ──────────────────────────────────────────────────────────── */
@@ -474,11 +473,6 @@ const HolidayCalendar = () => {
                             {holidays.length} holiday{holidays.length !== 1 ? "s" : ""} this month
                         </p>
                     </div>
-                    {loading && (
-                        <div style={{ flexShrink: 0 }}>
-                            <StopwatchLoader />
-                        </div>
-                    )}
                 </div>
 
                 {/* ── Two-column layout (collapses on tablet/mobile) ── */}

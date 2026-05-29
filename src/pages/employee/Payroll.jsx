@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { generatePayslipPDF } from "../../utils/payslipPDF";
-import StopwatchLoader from "../../components/common/StopwatchLoader";
 import Swal from "sweetalert2";
 
 const DownloadIcon = () => (
@@ -139,8 +138,6 @@ const Payroll = () => {
 
             <div className="card">
                 <p className="fw-600" style={{ marginBottom: "1rem" }}>My Payslips</p>
-
-                {loading && <StopwatchLoader />}
 
                 {!loading && data.length === 0 && (
                     <p style={{ color: "var(--text-3)", fontSize: ".875rem", textAlign: "center", padding: "2rem 0" }}>

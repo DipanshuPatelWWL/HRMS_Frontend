@@ -57,8 +57,7 @@ const css = `
 .tk-root * { box-sizing: border-box; margin: 0; padding: 0; }
 .tk-root {
     font-family: 'DM Sans', sans-serif;
-    background: #F0F2F7;
-    color: #111318;
+    color: #0e1013;
     min-height: 100vh;
 }
 

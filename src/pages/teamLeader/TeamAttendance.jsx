@@ -259,7 +259,6 @@ const TeamAttendance = () => {
 
                 {!loading && data?.teamMembers?.length === 0 && (
                     <div className="empty-box">
-                        <p style={{ fontSize: "2.5rem", marginBottom: 12 }}>👤</p>
                         <p style={{ fontWeight: 700, color: "#475569", marginBottom: 6 }}>No team members assigned</p>
                         <p style={{ fontSize: ".82rem" }}>Ask HR to assign employees to your team.</p>
                     </div>

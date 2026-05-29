@@ -276,7 +276,8 @@ const Attendance = () => {
     const [todayRec, setTodayRec] = useState(null);
     const [monthly, setMonthly] = useState([]);
     const [selected, setSelected] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loadingIn, setLoadingIn] = useState(false);
+    const [loadingOut, setLoadingOut] = useState(false);
     const [holidays, setHolidays] = useState([]);
     const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
     const [viewYear, setViewYear] = useState(now.getFullYear());
@@ -492,8 +493,6 @@ const Attendance = () => {
 
     const doPunchIn = async (latitude = null, longitude = null, accuracy = null) => {
         try {
-            setLoading(true);
-
             let deviceUUID = "";
             let productId = "";
 
@@ -556,15 +555,16 @@ const Attendance = () => {
             });
             await fetchToday();
         } finally {
-            setLoading(false);
+            setLoadingIn(false);
         }
     };
 
     const handlePunchIn = () => {
+        if (loadingIn || loadingOut || !!todayRec?.punchIn) return;
         if (!navigator.onLine) { saveOfflinePunch("punch-in"); return; }
 
-        // Always try to get location in parallel
-        // Backend decides: device match → allow, no device → use location
+        setLoadingIn(true); // ← spin immediately, before GPS resolves
+
         if (!navigator.geolocation) {
             doPunchIn(null, null, null);
             return;
@@ -576,7 +576,6 @@ const Attendance = () => {
             },
             (err) => {
                 console.warn("GPS unavailable:", err.message);
-                // No GPS — backend will rely on device verification
                 doPunchIn(null, null, null);
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -586,11 +585,11 @@ const Attendance = () => {
 
 
     const handlePunchOut = async () => {
+        if (loadingIn || loadingOut || !(todayRec?.punchIn && !todayRec?.punchOut)) return;
         if (!navigator.onLine) { saveOfflinePunch("punch-out"); return; }
         try {
-            setLoading(true);
+            setLoadingOut(true);
             await API.post("/attendance/punch-out");
-            // Await both so calendar + history update atomically
             await Promise.all([
                 fetchToday(),
                 fetchMonthly(viewMonth, viewYear),
@@ -604,7 +603,7 @@ const Attendance = () => {
             });
             await fetchToday();
         } finally {
-            setLoading(false);
+            setLoadingOut(false);
         }
     };
 
@@ -868,25 +867,23 @@ const Attendance = () => {
                         <div className="punch-btns">
                             <button
                                 onClick={handlePunchIn}
-                                disabled={loading || !!todayRec?.punchIn}
+                                disabled={loadingIn || loadingOut || !!todayRec?.punchIn}
+                                style={loadingIn ? { pointerEvents: "none" } : {}}
                                 className="btn-punch btn-punchin"
                             >
-                                <Icon d={icons.login} size={15} color="#052e16" />
-                                {loading
+                                {loadingIn
                                     ? <><span className="spinner" /> Punching In...</>
-                                    : navigator.onLine ? "Punch In" : "Punch In (Offline)"}
+                                    : <><Icon d={icons.login} size={15} color="#052e16" />{navigator.onLine ? "Punch In" : "Punch In (Offline)"}</>}
                             </button>
                             <button
                                 onClick={navigator.onLine ? handlePunchOut : () => saveOfflinePunch("punch-out")}
-                                disabled={
-                                    loading ||
-                                    !(todayRec?.punchIn && !todayRec?.punchOut)  // today has open punch-in
-                                }
+                                disabled={loadingIn || loadingOut || !(todayRec?.punchIn && !todayRec?.punchOut)}
+                                style={loadingOut ? { pointerEvents: "none" } : {}}
                                 className="btn-punch btn-punchout"
                             >
-                                <Icon d={icons.logout} size={15} />
-                                {loading ? <><span className="spinner" /> Punching Out...</>
-                                    : navigator.onLine ? "Punch Out" : "Punch Out (Offline)"}
+                                {loadingOut
+                                    ? <><span className="spinner" /> Punching Out...</>
+                                    : <><Icon d={icons.logout} size={15} />{navigator.onLine ? "Punch Out" : "Punch Out (Offline)"}</>}
                             </button>
                         </div>
                     </div>

@@ -1,5 +1,6 @@
 import { FaCheckCircle, FaClock } from "react-icons/fa";
 import { MdPolicy } from "react-icons/md";
+import "react-quill-new/dist/quill.snow.css";
 
 const STATUS_CONFIG = {
     acknowledged: { color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", Icon: FaCheckCircle, label: "Acknowledged" },
@@ -57,7 +58,9 @@ const PolicyCard = ({ policy, selected, onSelect, onOpen }) => {
                     {policy.publishedAt && ` · ${new Date(policy.publishedAt).toLocaleDateString()}`}
                 </div>
                 {policy.description && (
-                    <div style={{ fontSize: "0.8rem", color: "#444", marginTop: 4 }}>{policy.description}</div>
+                    <div style={{ fontSize: "0.8rem", color: "#444", marginTop: 4 }}>
+                        {policy.description}
+                    </div>
                 )}
             </div>
 

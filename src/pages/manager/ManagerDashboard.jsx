@@ -208,26 +208,21 @@ const ManagerDashboard = () => {
                     API.get("/reports/dashboard"),
                     API.get("/reports/hr-dashboard"),
                     API.get("/leave/all?status=pending&limit=5"),
-                    API.get(`/attendance/hr-overview?month=${new Date().getMonth() + 1}&year=${new Date().getFullYear()}`),
+                    API.get(`/attendance/hr-overview?month=${new Date().getMonth() + 1}&year=${new Date().getFullYear()}&limit=10`),
                     API.get("/users"),
                     API.get("/payroll/stats"),
                     API.get("/tasks/stats"),
                     API.get("/tickets?limit=5"),
                 ]);
 
-                if (
-                    hrDashRes.status === "fulfilled" &&
-                    hrDashRes.value.data?.data
-                ) {
-                    setStats(hrDashRes.value.data.data);
-                } else if (
-                    dashRes.status === "fulfilled" &&
-                    dashRes.value.data?.data
-                ) {
-                    setStats(dashRes.value.data.data);
-                } else {
-                    setStats({});
-                }
+                // Merge both dashboard responses so no field is missed
+                const hrData = hrDashRes.status === "fulfilled"
+                    ? (hrDashRes.value.data?.data ?? hrDashRes.value.data ?? {})
+                    : {};
+                const dashData = dashRes.status === "fulfilled"
+                    ? (dashRes.value.data?.data ?? dashRes.value.data ?? {})
+                    : {};
+                setStats({ ...dashData, ...hrData }); // hrDashboard fields win
 
                 if (leaveRes.status === "fulfilled") {
                     const d = leaveRes.value.data;
@@ -238,27 +233,33 @@ const ManagerDashboard = () => {
 
                 if (attendRes.status === "fulfilled") {
                     const d = attendRes.value.data;
-                    // hr-overview returns todaySummary array
-                    const list = d?.todaySummary || d?.attendance || d?.data;
+                    const list =
+                        d?.todaySummary ||
+                        d?.today ||
+                        d?.attendance ||
+                        d?.records ||
+                        d?.data;
                     setTeamAttendance(Array.isArray(list) ? list : Array.isArray(d) ? d : []);
                 }
 
                 if (employeeRes.status === "fulfilled") {
                     const d = employeeRes.value.data;
-                    setEmployees(
-                        Array.isArray(d) ? d : d?.users || d?.data || []
-                    );
+                    const list = d?.users || d?.employees || d?.data || (Array.isArray(d) ? d : []);
+                    setEmployees(list);
                 }
 
                 if (payrollRes.status === "fulfilled") {
-                    // Support both { stats: {...} } and { data: {...} } shapes
                     const raw = payrollRes.value.data;
-                    setPayrollStats(raw?.stats || raw?.data || raw || null);
+                    setPayrollStats(
+                        raw?.stats ?? raw?.data?.stats ?? raw?.data ?? raw ?? null
+                    );
                 }
 
                 if (taskRes.status === "fulfilled") {
                     const raw = taskRes.value.data;
-                    setTaskStats(raw?.stats || raw?.data?.stats || raw?.data || raw || null);
+                    setTaskStats(
+                        raw?.stats ?? raw?.data?.stats ?? raw?.data ?? raw ?? null
+                    );
                 }
 
                 if (ticketRes.status === "fulfilled") {
@@ -280,9 +281,13 @@ const ManagerDashboard = () => {
 
     const handleLeaveAction = async (leaveId, action) => {
         try {
-            await API.put(`/leave/hr-approve/${leaveId}`, {
-                action: action === "approve" ? "approved" : "rejected",
-            });
+            await API.put(`/leave/${leaveId}/status`, {
+                status: action === "approve" ? "approved" : "rejected",
+            }).catch(() =>
+                API.put(`/leave/hr-approve/${leaveId}`, {
+                    action: action === "approve" ? "approved" : "rejected",
+                })
+            );
             setLeaveRequests((prev) =>
                 prev.map((l) =>
                     l._id === leaveId
@@ -305,32 +310,44 @@ const ManagerDashboard = () => {
     const greeting =
         hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-    // Payroll display value — handle multiple possible field names
+    // hr-dashboard returns payrollTotal, payrollCount, payrollSummary directly on stats
     const payrollPaidAmount =
-        payrollStats?.paidAmount ||
-        payrollStats?.totalPaid ||
-        payrollStats?.totalNet ||
-        null;
-    const payrollPaidCount = payrollStats?.paid ?? null;
-    const payrollTotal = payrollStats?.total ?? null;
+        payrollStats?.paidAmount
+        ?? payrollStats?.totalPaid
+        ?? payrollStats?.totalNet
+        ?? stats?.payrollSummary?.netTotal
+        ?? stats?.payrollTotal        // ← from hr-dashboard
+        ?? null;
+    const payrollPaidCount =
+        payrollStats?.paid
+        ?? payrollStats?.paidCount
+        ?? stats?.payrollCount        // ← from hr-dashboard
+        ?? null;
+    const payrollTotal =
+        payrollStats?.total
+        ?? stats?.payrollCount        // ← from hr-dashboard
+        ?? null;
     const payrollPct =
         payrollPaidCount != null && payrollTotal && payrollTotal > 0
             ? Math.round((payrollPaidCount / payrollTotal) * 100)
-            : payrollPaidAmount
-                ? 68
-                : 0;
-    const payrollDisplay = payrollPaidAmount
-        ? `₹${(payrollPaidAmount / 1000).toFixed(0)}k`
-        : payrollPaidCount != null
-            ? `${payrollPaidCount} paid`
-            : "—";
+            : 0;
+    const payrollDisplay =
+        payrollPaidAmount != null && payrollPaidAmount > 0
+            ? `₹${(payrollPaidAmount / 1000).toFixed(0)}k`
+            : payrollPaidCount != null
+                ? `${payrollPaidCount} payrolls`
+                : "0 payrolls";
 
     const statCards = [
         {
             title: "Total Employees",
             value: loading
                 ? "—"
-                : stats?.totalEmployees ?? employees.length ?? "—",
+                : stats?.totalEmployees
+                ?? stats?.totalUsers
+                ?? stats?.total
+                ?? employees.length
+                ?? "—",
             accent: "purple",
             sub: "Company-wide",
             icon: FaUsers,
@@ -339,11 +356,14 @@ const ManagerDashboard = () => {
             title: "Present Today",
             value: loading
                 ? "—"
-                : stats?.presentToday ??
-                teamAttendance.filter(
+                : stats?.presentToday
+                ?? stats?.present
+                ?? stats?.todayPresent
+                ?? teamAttendance.filter(
                     (a) =>
                         a.attendanceStatus === "punched_in" ||
-                        a.status === "present"
+                        a.status === "present" ||
+                        a.status === "punched_in"
                 ).length,
             accent: "green",
             sub: "Checked in",
@@ -354,7 +374,7 @@ const ManagerDashboard = () => {
             value: loading
                 ? "—"
                 : stats?.pendingLeaves ??
-                leaveRequests.filter((l) => l.status === "pending").length,
+                leaveRequests.filter((l) => l.status === "pending").length ?? "—",
             accent: "amber",
             sub: "Awaiting approval",
             icon: FaClipboardList,
@@ -373,16 +393,15 @@ const ManagerDashboard = () => {
             title: "Payroll (Month)",
             value: loading ? "—" : payrollDisplay,
             accent: "blue",
-            sub: `${payrollPaidCount ?? 0} paid · ${(payrollStats?.draft ?? 0)
-                } draft`,
+            sub: `${stats?.payrollCount ?? payrollPaidCount ?? 0} generated · ₹${((stats?.payrollTotal ?? 0) / 1000).toFixed(0)}k total`,
             icon: FaMoneyBillWave,
             payrollPct: loading ? 0 : payrollPct,
         },
         {
             title: "Total Tasks",
-            value: loading ? "—" : taskStats?.total ?? "—",
+            value: loading ? "—" : taskStats?.total ?? stats?.totalTasks ?? "—",
             accent: "indigo",
-            sub: `${taskStats?.inProgress ?? 0} in-progress · ${taskStats?.done ?? 0} done`,
+            sub: `${taskStats?.inProgress ?? taskStats?.in_progress ?? 0} in-progress · ${taskStats?.done ?? taskStats?.completed ?? 0} done`,
             icon: FaTasks,
         },
     ];
@@ -800,12 +819,6 @@ const ManagerDashboard = () => {
                     </div>
                     <div className="mgr-btn-row">
                         <button
-                            onClick={() => navigate("/manager-employees")}
-                            className="mgr-btn mgr-btn-primary"
-                        >
-                            + Add Employee
-                        </button>
-                        <button
                             onClick={() =>
                                 navigate("/manager-payroll-management")
                             }
@@ -896,48 +909,24 @@ const ManagerDashboard = () => {
                                     <LeaveRow
                                         key={req._id}
                                         name={
+                                            req.user?.name ||
                                             req.employee?.fullName ||
                                             req.employee?.name ||
                                             req.employeeName ||
                                             "Employee"
                                         }
-                                        type={req.leaveType || req.type || "Leave"}
+                                        type={req.type || req.leaveType || "Leave"}
                                         dates={
-                                            req.startDate
-                                                ? `${new Date(
-                                                    req.startDate
-                                                ).toLocaleDateString(
-                                                    "en-IN",
-                                                    {
-                                                        day: "numeric",
-                                                        month: "short",
-                                                    }
-                                                )}${req.endDate &&
-                                                    req.endDate !==
-                                                    req.startDate
-                                                    ? ` – ${new Date(
-                                                        req.endDate
-                                                    ).toLocaleDateString(
-                                                        "en-IN",
-                                                        {
-                                                            day: "numeric",
-                                                            month: "short",
-                                                        }
-                                                    )}`
+                                            (req.fromDate || req.startDate)
+                                                ? `${new Date(req.fromDate || req.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}${(req.toDate || req.endDate) && (req.toDate || req.endDate) !== (req.fromDate || req.startDate)
+                                                    ? ` – ${new Date(req.toDate || req.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
                                                     : ""
                                                 }`
                                                 : "—"
                                         }
                                         status={req.status || "pending"}
-                                        onApprove={() =>
-                                            handleLeaveAction(
-                                                req._id,
-                                                "approve"
-                                            )
-                                        }
-                                        onReject={() =>
-                                            handleLeaveAction(req._id, "reject")
-                                        }
+                                        onApprove={() => handleLeaveAction(req._id, "approve")}
+                                        onReject={() => handleLeaveAction(req._id, "reject")}
                                     />
                                 ))
                         )}
@@ -996,28 +985,25 @@ const ManagerDashboard = () => {
                                 <AttendanceRow
                                     key={a._id || i}
                                     name={
+                                        a.user?.name ||
                                         a.employee?.fullName ||
                                         a.employee?.name ||
                                         a.employeeName ||
                                         a.name ||
                                         "Employee"
                                     }
-                                    status={a.attendanceStatus || a.status}
+                                    status={a.attendanceStatus || a.status || a.attendStatus}
                                     checkIn={
-                                        a.punchIn || a.checkIn
-                                            ? new Date(
-                                                a.punchIn || a.checkIn
-                                            ).toLocaleTimeString("en-IN", {
+                                        a.punchIn || a.checkIn || a.loginTime
+                                            ? new Date(a.punchIn || a.checkIn || a.loginTime).toLocaleTimeString("en-IN", {
                                                 hour: "2-digit",
                                                 minute: "2-digit",
                                             })
                                             : null
                                     }
                                     checkOut={
-                                        a.punchOut || a.checkOut
-                                            ? new Date(
-                                                a.punchOut || a.checkOut
-                                            ).toLocaleTimeString("en-IN", {
+                                        a.punchOut || a.checkOut || a.logoutTime
+                                            ? new Date(a.punchOut || a.checkOut || a.logoutTime).toLocaleTimeString("en-IN", {
                                                 hour: "2-digit",
                                                 minute: "2-digit",
                                             })

@@ -4,6 +4,8 @@ import { FaCheckCircle, FaClock } from "react-icons/fa";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import API from "../../services/api";
 import Swal from "sweetalert2";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 
 // ─── Sub-component: Response Stats Bar ───────────────────────
 const StatsBar = ({ stats }) => {
@@ -90,13 +92,26 @@ const PolicyForm = ({ initial, onSave, onClose }) => {
                     </div>
                     <div>
                         <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Policy Content</label>
-                        <textarea
-                            value={form.content}
-                            onChange={e => setForm(p => ({ ...p, content: e.target.value }))}
-                            rows={10}
-                            style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: "0.875rem", resize: "vertical", boxSizing: "border-box" }}
-                            placeholder="Write the full policy here."
-                        />
+                        <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid #ddd" }}>
+                            <ReactQuill
+                                theme="snow"
+                                value={form.content}
+                                onChange={val => setForm(p => ({ ...p, content: val }))}
+                                modules={{
+                                    toolbar: [
+                                        [{ header: [1, 2, 3, false] }],
+                                        ["bold", "italic", "underline", "strike"],
+                                        [{ color: [] }, { background: [] }],
+                                        [{ list: "ordered" }, { list: "bullet" }],
+                                        [{ indent: "-1" }, { indent: "+1" }],
+                                        ["link"],
+                                        ["clean"],
+                                    ],
+                                }}
+                                style={{ minHeight: 220, fontSize: "0.875rem" }}
+                                placeholder="Paste or write the full policy here..."
+                            />
+                        </div>
                     </div>
                 </div>
                 <div style={{ padding: "14px 20px", borderTop: "1px solid #eee", display: "flex", gap: 10 }}>
@@ -183,6 +198,17 @@ const ResponsesDrawer = ({ policyId, policyTitle, onClose }) => {
                             <div style={{ fontSize: "0.78rem", color: "#666", marginTop: 2 }}>
                                 {r.employee?.department} · {r.employee?.designation}
                             </div>
+                            {r.policyContent && (
+                                <div
+                                    style={{
+                                        marginTop: 8, padding: "8px 10px",
+                                        background: "#f0f0ff", borderRadius: 6,
+                                        fontSize: "0.78rem", color: "#333",
+                                        maxHeight: 100, overflowY: "auto",
+                                    }}
+                                    dangerouslySetInnerHTML={{ __html: r.policyContent }}
+                                />
+                            )}
                             <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
                                 <span style={{ color: STATUS_COLOR[r.status], fontWeight: 700, fontSize: "0.78rem", textTransform: "capitalize" }}>
                                     {r.status}
@@ -364,8 +390,16 @@ const PolicyManagement = () => {
                                             </span>
                                             <span style={{ fontSize: "0.75rem", color: "#aaa" }}>v{policy.version}</span>
                                         </div>
-                                        {policy.description && (
-                                            <div style={{ fontSize: "0.8rem", color: "#666", marginTop: 4 }}>{policy.description}</div>
+                                        {policy.content && (
+                                            <div
+                                                className="ql-editor"
+                                                style={{
+                                                    fontSize: "0.9rem", color: "#181717", marginTop: 6,
+                                                    maxHeight: 70, overflow: "hidden", padding: 10, minHeight: "unset",
+                                                    pointerEvents: "none",
+                                                }}
+                                                dangerouslySetInnerHTML={{ __html: policy.content }}
+                                            />
                                         )}
                                         {policy.stats && <StatsBar stats={policy.stats} />}
                                     </div>

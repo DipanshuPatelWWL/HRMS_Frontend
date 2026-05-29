@@ -1233,8 +1233,6 @@ export default function ActivityMonitor() {
                     </div>
                 )}
 
-
-               // ── NEW — add after captureModal block ──
                 {streamModal && (
                     <div className="am-modal-overlay" onClick={handleStopStream}>
                         <div className="am-stream-modal" onClick={e => e.stopPropagation()}>

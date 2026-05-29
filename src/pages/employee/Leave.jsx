@@ -11,6 +11,7 @@ import {
     Info,
     ClipboardList,
     SplitSquareHorizontal,
+    Timer,
 } from "lucide-react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
@@ -22,21 +23,29 @@ const statusBadge = (s) => {
         approved: {
             cls: "badge-success",
             icon: <CheckCircle2 size={11} strokeWidth={2.5} />,
+            label: "approved",
         },
         rejected: {
             cls: "badge-danger",
             icon: <XCircle size={11} strokeWidth={2.5} />,
+            label: "rejected",
         },
         pending: {
             cls: "badge-warn",
             icon: <Clock size={11} strokeWidth={2.5} />,
+            label: "pending",
+        },
+        "short-leave": {
+            cls: "badge-short",
+            icon: <Timer size={11} strokeWidth={2.5} />,
+            label: "short leave",
         },
     };
-    const { cls, icon } = map[s] || { cls: "badge-neutral", icon: null };
+    const { cls, icon, label } = map[s] || { cls: "badge-neutral", icon: null, label: s };
     return (
         <span className={`badge ${cls}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
             {icon}
-            {s}
+            {label}
         </span>
     );
 };
@@ -112,10 +121,34 @@ const Leave = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Client-side Mon/Fri block for short leave
+        if (form.type === "short-leave") {
+            const day = new Date().getDay();
+            if (day === 1 || day === 5) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Not Allowed",
+                    text: "Short leave cannot be applied on Monday or Friday.",
+                    confirmButtonColor: "#EF4444",
+                });
+                return;
+            }
+        }
+
         setSubmitting(true);
         setSuccess("");
+
+        // Auto-fill today's date for short leave
+        const payload = { ...form };
+        if (form.type === "short-leave") {
+            const todayStr = new Date().toISOString().split("T")[0];
+            payload.fromDate = todayStr;
+            payload.toDate = todayStr;
+        }
+
         try {
-            await API.post("/leave/apply", form);
+            await API.post("/leave/apply", payload);
             setSuccess("Leave request submitted successfully.");
             setForm({ type: "casual", fromDate: "", toDate: "", reason: "" });
             fetchLeaves();
@@ -364,7 +397,7 @@ const Leave = () => {
                     margin: 0;
                 }
 
-                /* ── Mobile: flatten item ──────────────── */
+             /* ── Mobile: flatten item ──────────────── */
                 @media (max-width: 480px) {
                     .lv-item {
                         flex-direction: column;
@@ -378,6 +411,48 @@ const Leave = () => {
                         padding-top: .6rem;
                         border-top: 1px solid var(--border);
                     }
+                }
+
+                /* ── Short leave balance strip ─────────── */
+                .lv-sl-strip {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: .75rem;
+                    flex-wrap: wrap;
+                    border-radius: var(--radius-md);
+                    padding: .75rem 1rem;
+                    margin-bottom: .9rem;
+                    border: 1px solid #bfdbfe;
+                    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+                }
+                .lv-sl-strip.zero {
+                    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+                    border-color: #fdba74;
+                }
+                .lv-sl-label {
+                    font-size: .75rem;
+                    font-weight: 600;
+                    color: #1e40af;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+                .lv-sl-strip.zero .lv-sl-label { color: #9a3412; }
+                .lv-sl-strip.zero { color: #c2410c; }
+                .lv-sl-num {
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                    line-height: 1;
+                    color: #1e40af;
+                }
+                .lv-sl-strip.zero .lv-sl-num { color: #9a3412; }
+
+                /* ── Short-leave status chip ───────────── */
+                .badge-short {
+                    background: #eff6ff;
+                    color: #1d4ed8;
+                    border: 1px solid #bfdbfe;
                 }
             `}</style>
 
@@ -395,7 +470,7 @@ const Leave = () => {
                         Apply Leave
                     </p>
 
-                    {/* Balance card */}
+                    {/* ── Selected-type dynamic balance card (unchanged) ── */}
                     {(() => {
                         const bal = leaveBalance || {};
                         let typeTotal = 0, typeUsed = 0, typeLabel = "";
@@ -411,6 +486,29 @@ const Leave = () => {
                             typeTotal = bal.earned?.total ?? 0;
                             typeUsed = bal.earned?.used ?? 0;
                             typeLabel = "Earned Leave Balance";
+                        } else if (form.type === "short-leave") {
+                            const sl = bal.shortLeave || {};
+                            const slAvail = sl.available ?? Math.max(0, 1 - (sl.used || 0));
+                            const isZero = slAvail === 0;
+                            return (
+                                <div className={`lv-sl-strip${isZero ? " zero" : ""}`} style={{ marginBottom: "1.1rem" }}>
+                                    <div>
+                                        <div className="lv-sl-label">
+                                            <Timer size={12} strokeWidth={2.2} />
+                                            Short Leave Balance
+                                        </div>
+                                        <div style={{ fontSize: ".72rem", color: isZero ? "#c2410c" : "#1e40af", marginTop: 2 }}>
+                                            Used: {sl.used ?? 0} this month
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: "right" }}>
+                                        <div className="lv-sl-num">{slAvail}</div>
+                                        <div className="lv-sl-label" style={{ justifyContent: "flex-end" }}>
+                                            {isZero ? "exhausted" : "available"}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
                         } else {
                             return null; // unpaid — no balance to show
                         }
@@ -422,7 +520,12 @@ const Leave = () => {
                                         <Wallet size={12} strokeWidth={2.2} />
                                         {typeLabel}
                                     </div>
-                                    <div className="lv-balance-sub">Used: {typeUsed} this year</div>
+                                    <div className="lv-balance-sub">
+                                        {form.type === "casual"
+                                            ? `Accrued: ${typeTotal} of 12 this year · Used: ${typeUsed}`
+                                            : `Used: ${typeUsed} this year`
+                                        }
+                                    </div>
                                 </div>
                                 <div style={{ textAlign: "right" }}>
                                     <div className="lv-balance-num">{remaining}</div>
@@ -445,38 +548,82 @@ const Leave = () => {
                                 <option value="sick">Sick Leave</option>
                                 <option value="earned">Earned Leave</option>
                                 <option value="unpaid">Unpaid Leave</option>
+                                <option value="short-leave">Short Leave</option>
                             </select>
                         </div>
 
-                        {/* Date pickers */}
-                        <div className="lv-date-row">
-                            <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                    <CalendarDays size={12} strokeWidth={2.2} />
-                                    From date
-                                </label>
-                                <input
-                                    type="date"
-                                    className="input"
-                                    value={form.fromDate}
-                                    onChange={e => setForm({ ...form, fromDate: e.target.value })}
-                                    required
-                                />
+                        {/* Date pickers — hidden for short leave (auto-set to today) */}
+                        {form.type !== "short-leave" && (
+                            <div className="lv-date-row">
+                                <div className="form-group" style={{ margin: 0 }}>
+                                    <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                        <CalendarDays size={12} strokeWidth={2.2} />
+                                        From date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        className="input"
+                                        value={form.fromDate}
+                                        onChange={e => setForm({ ...form, fromDate: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group" style={{ margin: 0 }}>
+                                    <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                        <CalendarDays size={12} strokeWidth={2.2} />
+                                        To date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        className="input"
+                                        value={form.toDate}
+                                        onChange={e => setForm({ ...form, toDate: e.target.value })}
+                                        required
+                                    />
+                                </div>
                             </div>
-                            <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                    <CalendarDays size={12} strokeWidth={2.2} />
-                                    To date
-                                </label>
-                                <input
-                                    type="date"
-                                    className="input"
-                                    value={form.toDate}
-                                    onChange={e => setForm({ ...form, toDate: e.target.value })}
-                                    required
-                                />
-                            </div>
-                        </div>
+                        )}
+
+                        {/* Short leave Monday/Friday block warning */}
+                        {form.type === "short-leave" && (() => {
+                            const today = new Date();
+                            const day = today.getDay(); // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
+                            const isBlocked = day === 1 || day === 5;
+                            const dayName = day === 1 ? "Monday" : "Friday";
+                            return isBlocked ? (
+                                <div style={{
+                                    display: "flex",
+                                    alignItems: "flex-start",
+                                    gap: ".45rem",
+                                    background: "#fef2f2",
+                                    border: "1px solid #fecaca",
+                                    borderRadius: 8,
+                                    padding: ".65rem .85rem",
+                                    fontSize: ".82rem",
+                                    color: "#991b1b",
+                                    fontWeight: 500,
+                                }}>
+                                    <AlertTriangle size={15} strokeWidth={2.2} style={{ marginTop: 1, flexShrink: 0 }} />
+                                    Short leave is not allowed on {dayName}s.
+                                </div>
+                            ) : (
+                                <div style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: ".45rem",
+                                    background: "#eff6ff",
+                                    border: "1px solid #bfdbfe",
+                                    borderRadius: 8,
+                                    padding: ".65rem .85rem",
+                                    fontSize: ".82rem",
+                                    color: "#1e40af",
+                                    fontWeight: 500,
+                                }}>
+                                    <Info size={15} strokeWidth={2.2} style={{ flexShrink: 0 }} />
+                                    Short leave will be applied for today.
+                                </div>
+                            );
+                        })()}
 
                         {/* Paid/unpaid estimate */}
                         {leaveEstimate && (
@@ -506,15 +653,29 @@ const Leave = () => {
                             </div>
                         )}
 
-                        <button
-                            type="submit"
-                            className="btn btn-primary"
-                            disabled={submitting}
-                            style={{ justifyContent: "center", display: "flex", alignItems: "center", gap: ".45rem" }}
-                        >
-                            <Send size={14} strokeWidth={2.2} />
-                            {submitting ? "Submitting…" : "Apply"}
-                        </button>
+                        {(() => {
+                            const today = new Date();
+                            const day = today.getDay();
+                            const isShortLeaveBlocked = form.type === "short-leave" && (day === 1 || day === 5);
+                            return (
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary"
+                                    disabled={submitting || isShortLeaveBlocked}
+                                    style={{
+                                        justifyContent: "center",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: ".45rem",
+                                        opacity: isShortLeaveBlocked ? 0.5 : 1,
+                                        cursor: isShortLeaveBlocked ? "not-allowed" : "pointer",
+                                    }}
+                                >
+                                    <Send size={14} strokeWidth={2.2} />
+                                    {submitting ? "Submitting…" : "Apply"}
+                                </button>
+                            );
+                        })()}
                     </form>
                 </div>
 
@@ -524,6 +685,7 @@ const Leave = () => {
                         <ClipboardList size={15} strokeWidth={2.2} style={{ opacity: .7 }} />
                         My Leaves
                     </p>
+
 
                     {leaves.length === 0 ? (
                         <div className="lv-empty">
@@ -544,8 +706,11 @@ const Leave = () => {
                                             alignItems: "center",
                                             gap: ".35rem",
                                         }}>
-                                            <SplitSquareHorizontal size={13} strokeWidth={2} style={{ opacity: .5 }} />
-                                            {l.type} Leave
+                                            {l.type === "short-leave"
+                                                ? <Timer size={13} strokeWidth={2} style={{ opacity: .5 }} />
+                                                : <SplitSquareHorizontal size={13} strokeWidth={2} style={{ opacity: .5 }} />
+                                            }
+                                            {l.type === "short-leave" ? "Short Leave" : `${l.type} Leave`}
                                         </p>
 
                                         {/* Dates & day count */}

@@ -49,7 +49,7 @@ const C = {
     ink50: '#f4f4f8',
 
     white: '#ffffff',
-    pageBg: '#f0f0f6',
+    pageBg: '#f8f7ff',
 }
 
 const STATUS = {

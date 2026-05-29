@@ -285,7 +285,11 @@ const EmployeeLeaves = () => {
                                                 {/* Balance summary chips */}
                                                 <div style={{ display: "flex", gap: ".4rem" }}>
                                                     {[
-                                                        { label: "Total", val: total, bg: "#eef2ff", color: "#4f46e5", border: "#c7d2fe" },
+                                                        {
+                                                            label: `Total (${new Date().toLocaleString("en-IN", { month: "short" })})`,
+                                                            val: total,
+                                                            bg: "#eef2ff", color: "#4f46e5", border: "#c7d2fe"
+                                                        },
                                                         { label: "Used", val: used, bg: "#fef2f2", color: "#dc2626", border: "#fecaca" },
                                                         { label: "Remaining", val: remaining, bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0" },
                                                     ].map(c => (

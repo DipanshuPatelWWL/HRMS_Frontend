@@ -685,7 +685,7 @@ export default function EmployeeScanner({ onFound, onEdit }) {
                         <rect x="2" y="5" width="20" height="14" rx="3" />
                         <path d="M8 10h8M8 14h5" />
                     </svg>
-                    HR Employee Lookup
+                    Employee Lookup
                 </div>
 
                 {/* manual input row */}

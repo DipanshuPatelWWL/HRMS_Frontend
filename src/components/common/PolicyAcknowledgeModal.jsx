@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { MdPolicy, MdClose } from "react-icons/md";
 import API from "../../services/api";
+import "react-quill-new/dist/quill.snow.css";
 
 const PolicyAcknowledgeModal = ({ policy, onClose, onSuccess }) => {
     const [checked, setChecked] = useState(false);
@@ -64,7 +65,12 @@ const PolicyAcknowledgeModal = ({ policy, onClose, onSuccess }) => {
                         <div style={{ textAlign: "center", padding: 40, color: "#888" }}>Loading policy...</div>
                     ) : fullPolicy?.content ? (
                         <div
-                            style={{ fontSize: "0.875rem", lineHeight: 1.7, color: "#222" }}
+                            className="ql-editor"
+                            style={{
+                                fontSize: "0.875rem", lineHeight: 1.7, color: "#222",
+                                padding: 0,          // ql-editor adds its own, override it
+                                minHeight: "unset",
+                            }}
                             dangerouslySetInnerHTML={{ __html: fullPolicy.content }}
                         />
                     ) : (

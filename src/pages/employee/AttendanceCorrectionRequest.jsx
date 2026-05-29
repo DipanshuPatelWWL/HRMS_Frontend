@@ -498,15 +498,6 @@ const AttendanceCorrectionRequest = () => {
                             New Request
                         </p>
 
-                        {/* Info banner */}
-                        <div className="corr-info-banner">
-                            <Info size={15} strokeWidth={2.2} />
-                            <span>
-                                Your request goes to HR for review. Once approved, your attendance
-                                record is automatically updated — no manual editing needed.
-                            </span>
-                        </div>
-
                         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: ".9rem" }}>
 
                             {/* Correction type */}

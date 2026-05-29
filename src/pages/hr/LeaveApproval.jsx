@@ -34,13 +34,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
 
     const typeStyle = leaveTypeColor[leave.type] || leaveTypeColor.casual;
 
-    // Days between two dates (working days estimate)
-    const daysBetween = (from, to) => {
-        const diff = new Date(to) - new Date(from);
-        return Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
-    };
-
-    const requestedDays = daysBetween(leave.fromDate, leave.toDate);
+    const requestedDays = leave.totalDays;
 
     const BalanceBar = ({ used, total, color }) => {
         const pct = total > 0 ? Math.min(100, (used / total) * 100) : 0;
@@ -394,13 +388,16 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                                 </span>
                                             )}
                                         </div>
-                                        <span style={{
-                                            fontSize: ".9rem",
-                                            fontWeight: 800,
-                                            color: balance.casual.total - balance.casual.used > 0
-                                                ? "#15803d"
-                                                : "#dc2626",
-                                        }}>
+                                        <span
+                                            title={`${balance.casual.used} used · ${Math.max(0, balance.casual.total - balance.casual.used)} remaining of ${balance.casual.total} accrued this year`}
+                                            style={{
+                                                fontSize: ".9rem",
+                                                fontWeight: 800,
+                                                color: balance.casual.total - balance.casual.used > 0
+                                                    ? "#15803d"
+                                                    : "#dc2626",
+                                            }}
+                                        >
                                             {Math.max(0, balance.casual.total - balance.casual.used)}/{balance.casual.total}
                                         </span>
                                     </div>
