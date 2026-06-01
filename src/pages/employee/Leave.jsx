@@ -475,8 +475,8 @@ const Leave = () => {
                         const bal = leaveBalance || {};
                         let typeTotal = 0, typeUsed = 0, typeLabel = "";
                         if (form.type === "casual") {
-                            typeTotal = bal.casual?.total ?? bal.total ?? 0;
-                            typeUsed = bal.casual?.used ?? bal.used ?? 0;
+                            typeTotal = bal.casual?.total ?? 0;
+                            typeUsed = bal.casual?.used ?? 0;
                             typeLabel = "Casual Leave Balance";
                         } else if (form.type === "sick") {
                             typeTotal = bal.sick?.total ?? 0;

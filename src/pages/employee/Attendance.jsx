@@ -207,6 +207,32 @@ const css = `
 .leg-swatch.absent  { background:#c5d6f3; border-color:#85b2f5; }
 .leg-swatch.today   { background:#EEF2FF; border-color:#6366F1; }
 
+/* Chart highlight pulse */
+.cal-cell.hl-present  { outline: 2.5px solid #22C55E; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(74,222,128,.25); }
+.cal-cell.hl-half-day { outline: 2.5px solid #EAB308; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(253,224,71,.25); }
+.cal-cell.hl-late     { outline: 2.5px solid #EF4444; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(248,113,113,.25); }
+.cal-cell.hl-absent   { outline: 2.5px solid #93C5FD; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(147,197,253,.25); }
+.cal-cell.hl-dim { opacity: 0.3; transform: scale(0.96); }
+
+/* Chart type toggle */
+.chart-toggle { display:flex; gap:4px; background:#F4F6FA; border-radius:9px; padding:3px; }
+.chart-toggle-btn {
+    display:flex; align-items:center; gap:5px;
+    padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:700;
+    border:none; cursor:pointer; font-family:'DM Sans',sans-serif;
+    transition:all .18s; color:#6B7280; background:transparent;
+}
+.chart-toggle-btn.active { background:#fff; color:#111318; box-shadow:0 1px 4px rgba(0,0,0,.1); }
+.chart-toggle-btn:hover:not(.active) { color:#374151; }
+
+/* Donut legend */
+.donut-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; height:220px; position:relative; }
+.donut-legend { display:flex; flex-direction:column; gap:7px; width:100%; margin-top:14px; }
+.donut-legend-row { display:flex; align-items:center; justify-content:space-between; font-size:.78rem; }
+.donut-legend-left { display:flex; align-items:center; gap:7px; font-weight:600; color:#374151; }
+.donut-legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.donut-legend-val { font-weight:700; color:#111318; font-family:'DM Mono',monospace; font-size:.78rem; }
+
 /* TABLE */
 .att-table-wrap { overflow-x:auto; margin-top:4px; }
 .att-table { width:100%; border-collapse:collapse; font-size:.83rem; }
@@ -282,15 +308,16 @@ const Attendance = () => {
     const [viewMonth, setViewMonth] = useState(now.getMonth() + 1);
     const [viewYear, setViewYear] = useState(now.getFullYear());
     const [monthlySummary, setMonthlySummary] = useState(null);
+    const [highlightStatus, setHighlightStatus] = useState(null);
+    const [chartType, setChartType] = useState("bar");
     const viewMonthRef = useRef(now.getMonth() + 1);
     const viewYearRef = useRef(now.getFullYear());
 
     useEffect(() => { viewMonthRef.current = viewMonth; }, [viewMonth]);
     useEffect(() => { viewYearRef.current = viewYear; }, [viewYear]);
 
-    const todayDay = now.getDate();
-    const todayMonth = now.getMonth() + 1;
-    const todayYear = now.getFullYear();
+    const nowIST = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    const [todayYear, todayMonth, todayDay] = nowIST.split("-").map(Number);
     const { user } = useContext(AuthContext);
     const [shiftEndMinutes, setShiftEndMinutes] = useState(null);
 
@@ -414,7 +441,9 @@ const Attendance = () => {
         ? new Date(Math.max(rawJoining.getTime(), rawCreated.getTime()))
         : rawJoining || rawCreated || null;
     const joiningDate = effectiveStart
-        ? new Date(new Date(effectiveStart).setHours(0, 0, 0, 0))
+        ? new Date(
+            new Date(effectiveStart).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
+        )
         : null;
 
 
@@ -609,15 +638,16 @@ const Attendance = () => {
 
     // Add this derived variable — used for stats and history table
     const pastMonthly = monthly.filter(d => {
-        const dt = new Date(d.date);
-        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        return dt <= todayMidnight;
+        const istDateStr = new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+        const nowISTStr = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+        return istDateStr <= nowISTStr;
     });
 
     // ── Stats ──
     const presentDays = pastMonthly.filter(d => {
         const dt = new Date(d.date);
-        return d.status === "present" && !d.isHalfDay && (!joiningDate || dt >= joiningDate);
+        return (d.status === "present" || d.status === "half-day" || d.isHalfDay || d.isLate)
+            && (!joiningDate || dt >= joiningDate);
     }).length;
 
     const halfDays = pastMonthly.filter(d => {
@@ -659,7 +689,7 @@ const Attendance = () => {
         : workingDaysFinal;
 
     const percentage = workingDaysFinal
-        ? Math.min(100, ((presentDays + halfDays) / workingDaysFinal) * 100).toFixed(1)
+        ? Math.min(100, (presentDays / workingDaysFinal) * 100).toFixed(1)
         : 0;
 
     const chartData = useMemo(() => ({
@@ -668,10 +698,13 @@ const Attendance = () => {
             label: "Days",
             data: [presentDays, halfDays, lateDays, absentDays],
             backgroundColor: ["#4ADE80", "#FDE047", "#F87171", "#c5d6f3"],
+            hoverBackgroundColor: ["#22C55E", "#EAB308", "#EF4444", "#60A5FA"],
             borderRadius: 8,
             borderSkipped: false,
         }],
     }), [presentDays, halfDays, lateDays, absentDays]);
+
+    const STATUS_MAP = ["present", "half-day", "late", "absent"];
 
     const chartOptions = {
         responsive: true, maintainAspectRatio: false,
@@ -684,6 +717,13 @@ const Attendance = () => {
                 padding: 10, cornerRadius: 8,
                 callbacks: { label: ctx => ` ${ctx.parsed.y} days` },
             },
+        },
+        onHover: (_, elements) => {
+            if (elements.length > 0) {
+                setHighlightStatus(STATUS_MAP[elements[0].index]);
+            } else {
+                setHighlightStatus(null);
+            }
         },
         scales: {
             y: { grid: { color: "#F3F4F6", drawBorder: false }, ticks: { stepSize: 1, color: "#9CA3AF", font: { size: 11 } }, border: { display: false } },
@@ -698,7 +738,9 @@ const Attendance = () => {
     const getRecord = (day) =>
         monthly.find(d => {
             const dt = new Date(d.date);
-            return dt.getDate() === day && dt.getMonth() + 1 === viewMonth && dt.getFullYear() === viewYear;
+            const istStr = dt.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+            const [y, m, dayNum] = istStr.split("-").map(Number);
+            return dayNum === day && m === viewMonth && y === viewYear;
         });
 
     const getHoliday = (day) =>
@@ -898,7 +940,9 @@ const Attendance = () => {
                         <div className="stat-box orange">
                             <div className="stat-label"><Icon d={icons.cal} size={12} color="#9CA3AF" /> Present Days</div>
                             <div className="stat-value">{presentDays}<span>/{workingDaysFinal}</span></div>
-                            <div className="stat-meta">{halfDays} half-day{halfDays !== 1 ? "s" : ""} · {absentDays} absent</div>
+                            <div className="stat-meta">
+                                {halfDays} half-day{halfDays !== 1 ? "s" : ""} · {lateDays} late · {absentDays} absent
+                            </div>
                         </div>
                         <div className="stat-box red">
                             <div className="stat-label"><Icon d={icons.clock} size={12} color="#9CA3AF" /> Late Arrivals</div>
@@ -1001,7 +1045,7 @@ const Attendance = () => {
                                 <span className="card-title-icon"><Icon d={icons.chart} size={14} /></span>
                                 Monthly Breakdown
                             </div>
-                            <div style={{ height: 220 }}>
+                            <div style={{ height: 220 }} onMouseLeave={() => setHighlightStatus(null)}>
                                 <Bar data={chartData} options={chartOptions} />
                             </div>
                             <div style={{ display: "flex", gap: 12, marginTop: 14, flexWrap: "wrap" }}>
@@ -1050,12 +1094,16 @@ const Attendance = () => {
                                     const weekend = isWeekend(currentDate);
                                     const isFuture = currentDate > now && !today;
 
-                                    // ✅ FIX: Don't mark today as absent before end of shift (19:00)
-                                    const isWorkInProgress = today && now.getHours() < 19;
+                                    const nowHourIST = parseInt(
+                                        new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", hour12: false })
+                                    );
+                                    const isWorkInProgress = today && nowHourIST < 19;
 
                                     let sCls = "";
-                                    const isBeforeJoining = joiningDate && currentDate < joiningDate;
-
+                                    const currentDateIST = new Date(
+                                        new Date(viewYear, viewMonth - 1, day).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
+                                    );
+                                    const isBeforeJoining = joiningDate && currentDateIST < joiningDate;
                                     if (holiday) {
                                         sCls = "s-holiday";
                                     } else if (isFuture) {
@@ -1086,7 +1134,21 @@ const Attendance = () => {
 
                                     const noStatus = !sCls ? "no-status" : "";
 
-                                    const cls = ["cal-cell", sCls, today ? "is-today" : "", noStatus, hasRecord ? "has-record" : ""]
+                                    // Map sCls → which highlight bucket it belongs to
+                                    const cellStatusKey =
+                                        sCls === "s-present" ? "present" :
+                                            sCls === "s-halfday" ? "half-day" :
+                                                sCls === "s-late" ? "late" :
+                                                    sCls === "s-absent" ? "absent" : null;
+
+                                    const hlClass =
+                                        highlightStatus && cellStatusKey
+                                            ? cellStatusKey === highlightStatus
+                                                ? `hl-${highlightStatus}`   // this cell matches — glow it
+                                                : "hl-dim"                  // another bar is hovered — fade it
+                                            : "";
+
+                                    const cls = ["cal-cell", sCls, today ? "is-today" : "", noStatus, hasRecord ? "has-record" : "", hlClass]
                                         .filter(Boolean).join(" ");
 
                                     return (

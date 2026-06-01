@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import NotificationBell from "../common/NotificationBell";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const pageTitles = {
     // ── Employee ──────────────────────────────────────────────
@@ -106,11 +106,7 @@ const CollapseIcon = ({ collapsed }) => (
     </svg>
 );
 
-/**
- * Resolve the page title for the current pathname.
- * Falls back to checking if any key is a prefix of the pathname
- * (handles dynamic segments like /employee/attendance/123).
- */
+
 const resolveTitle = (pathname) => {
     if (pageTitles[pathname]) return pageTitles[pathname];
 
@@ -122,14 +118,7 @@ const resolveTitle = (pathname) => {
     return match ? pageTitles[match] : "HRMS";
 };
 
-/**
- * Navbar
- *
- * Props:
- *  onSidebarOpen    – fn      – opens mobile drawer
- *  collapsed        – boolean – current desktop collapse state
- *  onToggleCollapse – fn      – toggles desktop collapse
- */
+
 const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
     const { user } = useContext(AuthContext);
     const { pathname } = useLocation();
@@ -143,43 +132,119 @@ const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
         .toUpperCase()
         .slice(0, 2) || "U";
 
+    const profilePath = `/${pathname.split("/")[1]}/profile`;
+
     return (
-        <div className={`topnav ${collapsed ? "nav-collapsed" : ""}`}>
-            <div className="topnav-left">
+        <>
+            <style>{`
+            /* ── Profile Link ── */
+            .profile_name {
+                text-decoration: none;
+                color: inherit;
+                outline: none;
+            }
 
-                {/* Mobile: hamburger opens the drawer */}
-                <button
-                    className="hamburger"
-                    onClick={onSidebarOpen}
-                    aria-label="Open menu"
-                >
-                    <HamburgerIcon />
-                </button>
+            /* ── User Chip ── */
+            .user-chip {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 5px 12px 5px 5px;
+                border-radius: 999px;
+                background: #f5f5fb;
+                border: 1px solid #e8e8f0;
+                cursor: pointer;
+                transition: background 0.2s ease, border-color 0.2s ease,
+                            box-shadow 0.2s ease, transform 0.15s ease;
+            }
 
-                {/* Desktop: collapse / expand toggle */}
-                <button
-                    className="sidebar-toggle-btn desktop-toggle"
-                    onClick={onToggleCollapse}
-                    aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                >
-                    <CollapseIcon collapsed={collapsed} />
-                </button>
+            .user-chip:hover {
+                background: #ececf8;
+                border-color: #c5c5e8;
+                box-shadow: 0 2px 8px rgba(99, 99, 200, 0.15);
+                transform: translateY(-1px);
+            }
 
-                <span className="page-title">{title}</span>
-            </div>
+            .user-chip:active {
+                transform: translateY(0px);
+                box-shadow: none;
+                background: #e0e0f5;
+            }
 
-            <div className="topnav-right">
-                <NotificationBell />
+            /* ── Avatar ── */
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                color: #fff;
+                font-size: 13px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                letter-spacing: 0.5px;
+                box-shadow: 0 2px 6px rgba(99, 102, 241, 0.35);
+                transition: transform 0.2s ease;
+            }
 
-                <div className="user-chip">
-                    <div className="user-avatar">{initials}</div>
+            .user-chip:hover .user-avatar {
+                transform: scale(1.08);
+            }
 
-                    <span className="user-chip-name">{user?.name}</span>
+            /* ── Username ── */
+            .user-chip-name {
+                font-size: 13.5px;
+                font-weight: 500;
+                color: #2d2d4e;
+                white-space: nowrap;
+                transition: color 0.2s ease;
+            }
 
+            .user-chip:hover .user-chip-name {
+                color: #4f46e5;
+            }
+
+            /* ── Mobile ── */
+            @media (max-width: 768px) {
+                .user-chip-name {
+                    display: none;
+                }
+                .user-chip {
+                    padding: 5px;
+                    border-radius: 50%;
+                }
+            }
+        `}</style>
+
+            <div className={`topnav ${collapsed ? "nav-collapsed" : ""}`}>
+                <div className="topnav-left">
+                    <button className="hamburger" onClick={onSidebarOpen} aria-label="Open menu">
+                        <HamburgerIcon />
+                    </button>
+                    <button
+                        className="sidebar-toggle-btn desktop-toggle"
+                        onClick={onToggleCollapse}
+                        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                    >
+                        <CollapseIcon collapsed={collapsed} />
+                    </button>
+                    <span className="page-title">{title}</span>
+                </div>
+
+                <div className="topnav-right">
+                    <NotificationBell />
+                    <Link to={profilePath} className="profile_name">
+                        <div className="user-chip">
+                            <div className="user-avatar">{initials}</div>
+                            <span className="user-chip-name">{user?.name}</span>
+                        </div>
+                    </Link>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

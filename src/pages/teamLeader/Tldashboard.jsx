@@ -60,7 +60,7 @@ const TLDashboard = () => {
             .finally(() => setTeamLoading(false));
 
         // 3. Pending leave approvals for TL's team
-        API.get("/leaves?status=pending")
+        API.get("/leave/all?status=pending")
             .then(res => {
                 const leaves = res.data.leaves || res.data.data || [];
                 setPendingLeaves(leaves.length);
