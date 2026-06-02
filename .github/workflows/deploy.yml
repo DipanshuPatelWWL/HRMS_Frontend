@@ -30,7 +30,10 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          port: 65002
+          port: ${{ secrets.PORT }}
+          timeout: 120s
+          command_timeout: 2m
+          debug: true
           script: |
             echo "SSH Connected Successfully"
             pwd
@@ -42,7 +45,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          port: 65002
+          port: ${{ secrets.PORT }}
+          timeout: 120s
+          command_timeout: 2m
           script: |
             rm -rf /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/*
             echo "Old files removed"
@@ -53,7 +58,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          port: 65002
+          port: ${{ secrets.PORT }}
           source: "dist/*"
           target: "/home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms"
 
@@ -63,7 +68,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          port: 65002
+          port: ${{ secrets.PORT }}
+          timeout: 120s
+          command_timeout: 2m
           script: |
             cat > /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/.htaccess << 'EOF'
             RewriteEngine On
@@ -80,7 +87,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          port: 65002
+          port: ${{ secrets.PORT }}
+          timeout: 120s
+          command_timeout: 2m
           script: |
             chmod -R 755 /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms
             echo "Deployment Completed Successfully"
