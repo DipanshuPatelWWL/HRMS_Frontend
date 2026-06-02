@@ -1,4 +1,4 @@
-import API from "./API"; // your configured axios instance with baseURL + auth interceptor
+import API from "./api";
 
 const BASE = "/assets";
 
