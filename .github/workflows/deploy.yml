@@ -19,7 +19,7 @@ jobs:
           node-version: 22
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Vite App
         run: npm run build
@@ -32,9 +32,20 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 65002
           script: |
-            echo "SSH Connected Successfully"
+            echo "✅ SSH Connected Successfully"
             pwd
             whoami
+
+      - name: Clean Existing Deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 65002
+          script: |
+            rm -rf /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/*
+            echo "✅ Old files removed"
 
       - name: Deploy Frontend Files
         uses: appleboy/scp-action@v0.1.7
@@ -46,6 +57,23 @@ jobs:
           source: "dist/*"
           target: "/home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms"
 
+      - name: Create React .htaccess
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 65002
+          script: |
+            cat > /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/.htaccess << 'EOF'
+            RewriteEngine On
+            RewriteBase /
+            RewriteRule ^index\.html$ - [L]
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule . /index.html [L]
+            EOF
+
       - name: Set Permissions
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -55,4 +83,4 @@ jobs:
           port: 65002
           script: |
             chmod -R 755 /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms
-            echo "Deployment Completed"
+            echo "✅ Deployment Completed Successfully"
