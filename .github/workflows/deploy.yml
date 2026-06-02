@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -18,18 +18,41 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
       - name: Build Vite App
         run: npm run build
 
-      - name: Deploy to Hostinger
-        uses: easingthemes/ssh-deploy@main
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.HOST }}
-          REMOTE_USER: ${{ secrets.USERNAME }}
-          REMOTE_PORT: ${{ secrets.PORT }}
-          SOURCE: "dist/"
-          TARGET: "/home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/"
+      - name: Test SSH Connection
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 65002
+          script: |
+            echo "SSH Connected Successfully"
+            pwd
+            whoami
+
+      - name: Deploy Frontend Files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 65002
+          source: "dist/*"
+          target: "/home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms"
+
+      - name: Set Permissions
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 65002
+          script: |
+            chmod -R 755 /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms
+            echo "Deployment Completed"
