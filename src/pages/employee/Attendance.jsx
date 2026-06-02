@@ -443,6 +443,7 @@ const Attendance = () => {
     const joiningDate = effectiveStart
         ? new Date(
             new Date(effectiveStart).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
+            + "T00:00:00+05:30"
         )
         : null;
 
@@ -638,31 +639,41 @@ const Attendance = () => {
 
     // Add this derived variable — used for stats and history table
     const pastMonthly = monthly.filter(d => {
-        const istDateStr = new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
-        const nowISTStr = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+        // d.date may be a synthetic absent object with a local Date — use dateString if available
+        const istDateStr = d.dateString
+            ? d.dateString
+            : new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+        const nowISTStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
         return istDateStr <= nowISTStr;
     });
 
+    const toISTDate = (d) => new Date(
+        (d.dateString
+            ? d.dateString
+            : new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
+        ) + "T00:00:00+05:30"
+    );
+
     // ── Stats ──
     const presentDays = pastMonthly.filter(d => {
-        const dt = new Date(d.date);
+        const istStr = d.dateString
+            ? d.dateString + "T00:00:00+05:30"
+            : new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }) + "T00:00:00+05:30";
+        const dt = new Date(istStr);
         return (d.status === "present" || d.status === "half-day" || d.isHalfDay || d.isLate)
             && (!joiningDate || dt >= joiningDate);
     }).length;
 
     const halfDays = pastMonthly.filter(d => {
-        const dt = new Date(d.date);
-        return d.isHalfDay && (!joiningDate || dt >= joiningDate);
+        return d.isHalfDay && (!joiningDate || toISTDate(d) >= joiningDate);
     }).length;
-    // ✅ FIX: Count only isLate=true records (not half-days which have isLate=false)
+
     const lateDays = pastMonthly.filter(d => {
-        const dt = new Date(d.date);
-        return d.isLate && (!joiningDate || dt >= joiningDate);
+        return d.isLate && (!joiningDate || toISTDate(d) >= joiningDate);
     }).length;
 
     const absentDays = pastMonthly.filter(d => {
-        const dt = new Date(d.date);
-        return d.status === "absent" && (!joiningDate || dt >= joiningDate);
+        return d.status === "absent" && (!joiningDate || toISTDate(d) >= joiningDate);
     }).length;
 
     // ✅ FIX: Quota used this month = lateDays (isLate=true count)
@@ -1101,7 +1112,9 @@ const Attendance = () => {
 
                                     let sCls = "";
                                     const currentDateIST = new Date(
-                                        new Date(viewYear, viewMonth - 1, day).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
+                                        new Date(viewYear, viewMonth - 1, day)
+                                            .toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
+                                        + "T00:00:00+05:30"
                                     );
                                     const isBeforeJoining = joiningDate && currentDateIST < joiningDate;
                                     if (holiday) {
