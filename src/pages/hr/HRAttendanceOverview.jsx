@@ -1165,11 +1165,12 @@ const HRAttendanceOverview = () => {
                                 {filteredLeaves.map((leave) => {
                                     const from = new Date(leave.fromDate);
                                     const to = new Date(leave.toDate);
-                                    const days =
+                                    const days = leave.totalDays || (
                                         Math.ceil(
                                             (to - from) /
                                             (1000 * 60 * 60 * 24)
-                                        ) + 1;
+                                        ) + 1
+                                    );
                                     return (
                                         <tr key={leave._id}>
                                             <td>

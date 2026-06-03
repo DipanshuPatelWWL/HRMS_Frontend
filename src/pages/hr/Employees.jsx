@@ -472,7 +472,7 @@ const FormFields = ({ form, onChange }) => {
                         {designations.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                 </div>
-                {(["employee", "tl"].includes(form.role?.toLowerCase?.())) && (
+                {(["employee", "tl", "hr"].includes(form.role?.toLowerCase?.())) && (
                     <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
                             Monthly Salary <span style={{ color: "var(--danger)" }}>*</span>
@@ -1171,14 +1171,15 @@ const SalaryStructureTab = ({ employeeId }) => {
         conveyance: "Conveyance / Internet",
         otherAllowance: "Other Allowance",
     };
-    const DEFAULT_PERCENTS = { basic: 40, hra: 20, specialAllowance: 25, conveyance: 10, otherAllowance: 5 };
+
+    const DEFAULT_PERCENTS = { basic: 50, hra: 20, specialAllowance: 10, conveyance: 15, otherAllowance: 5 };
 
     const [monthlySalary, setMonthlySalary] = useState(0);
     const [structure, setStructure] = useState({
-        basic: { enabled: true, percent: 40 },
+        basic: { enabled: true, percent: 50 },
         hra: { enabled: true, percent: 20 },
-        specialAllowance: { enabled: true, percent: 25 },
-        conveyance: { enabled: true, percent: 10 },
+        specialAllowance: { enabled: true, percent: 10 },
+        conveyance: { enabled: true, percent: 15 },
         otherAllowance: { enabled: true, percent: 5 },
     });
     const [deductions, setDeductions] = useState({
@@ -1237,10 +1238,19 @@ const SalaryStructureTab = ({ employeeId }) => {
         setStructure(prev => ({ ...prev, [key]: { ...prev[key], enabled: !prev[key].enabled } }));
         setResult(null);
     };
+
     const handleStructurePercent = (key, val) => {
-        setStructure(prev => ({ ...prev, [key]: { ...prev[key], percent: Number(val) } }));
+        setStructure(prev => ({
+            ...prev,
+            [key]: {
+                ...prev[key],
+                percent: Number(val),
+                amount: round2((Number(val) / 100) * monthlySalary),
+            }
+        }));
         setResult(null);
     };
+
     const handleDeductionToggle = (key) => {
         setDeductions(prev => ({ ...prev, [key]: { ...prev[key], enabled: !prev[key].enabled } }));
         setResult(null);
@@ -1293,6 +1303,17 @@ const SalaryStructureTab = ({ employeeId }) => {
                         ({totalPercent}% / 100%)
                     </span>
                 </p>
+                {Math.round(totalPercent) !== 100 && (
+                    <div style={{
+                        background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px",
+                        padding: "8px 12px", fontSize: ".78rem", color: "#991b1b",
+                        fontWeight: 600, marginBottom: ".5rem", display: "flex", alignItems: "center", gap: 6,
+                    }}>
+                        ⚠ Components must total exactly 100%.
+                        Currently {totalPercent > 100 ? "over" : "under"} by {Math.abs(100 - totalPercent)}%
+                        — adjust percentages before saving.
+                    </div>
+                )}
 
                 {COMPONENT_KEYS.map(key => (
                     <div key={key} style={{
@@ -1512,7 +1533,12 @@ const SalaryStructureTab = ({ employeeId }) => {
 
             <button className="btn btn-primary" onClick={handleSave}
                 disabled={saving || Math.round(totalPercent) !== 100}
-                style={{ justifyContent: "center" }}>
+                title={Math.round(totalPercent) !== 100 ? `Total is ${totalPercent}% — must be 100% to save` : ""}
+                style={{
+                    justifyContent: "center",
+                    opacity: Math.round(totalPercent) !== 100 ? 0.5 : 1,
+                    cursor: Math.round(totalPercent) !== 100 ? "not-allowed" : "pointer",
+                }}>
                 {saving ? <><span className="spinner" />Saving...</> : "💾 Save Salary Structure"}
             </button>
         </div>
@@ -1554,7 +1580,7 @@ const ShiftTab = ({ employeeId }) => {
 
     // ── hours / minutes options ──
     const HOURS = Array.from({ length: 24 }, (_, i) => i);
-    const MINUTES = [0, 15, 30, 45];
+    const MINUTES = Array.from({ length: 60 }, (_, i) => i);
 
     useEffect(() => {
         const load = async () => {
@@ -1967,7 +1993,7 @@ const Employees = () => {
                 dob: form.dob || undefined,
                 joiningDate: form.joiningDate || undefined,
                 maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
-                salary: (["employee", "tl"].includes(role))
+                salary: (["employee", "tl", "hr"].includes(role))
                     ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth }
                     : undefined,
             };
@@ -2006,8 +2032,8 @@ const Employees = () => {
             return;
         }
         const roleCheck = form.role?.toLowerCase?.() || form.role;
-        if (["employee", "tl"].includes(roleCheck) && !form.monthlySalary) {
-            Swal.fire({ icon: "warning", title: "Salary Required", text: "Salary is required for employees and team leaders", confirmButtonColor: "#6366F1" });
+        if (["employee", "tl", "hr"].includes(roleCheck) && !form.monthlySalary) {
+            Swal.fire({ icon: "warning", title: "Salary Required", text: "Salary is required for employees, team leaders and HR", confirmButtonColor: "#6366F1" });
             return;
         }
         setSubmitting(true);
@@ -2020,7 +2046,7 @@ const Employees = () => {
                 dob: form.dob || undefined,
                 joiningDate: form.joiningDate || undefined,
                 maritalStatus: form.maritalStatus || undefined, nationality: form.nationality || undefined,
-                salary: (form.role === "employee" || form.role === "tl") ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth } : undefined,
+                salary: (["employee", "tl", "hr"].includes(form.role)) ? { monthly: Number(form.monthlySalary), perDay: Number(form.monthlySalary) / daysInMonth } : undefined,
             };
             await API.put(`/users/update/${editTarget._id}`, payload);
             // ✅ Close modal FIRST, then show Swal
@@ -2982,7 +3008,7 @@ const Employees = () => {
                                             borderRadius: "10px",
                                             border: "1px solid #e2e8f0",
                                         }}>
-                                            {(editEmp.role === "employee" || editEmp.role === "tl") && (
+                                            {(["employee", "tl", "hr"].includes(editEmp.role?.toLowerCase?.())) && (
                                                 <button
                                                     onClick={() => { setEditTarget(null); handleViewSalary(editEmp); }}
                                                     style={{

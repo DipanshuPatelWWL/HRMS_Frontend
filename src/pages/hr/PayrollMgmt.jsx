@@ -3,6 +3,7 @@ import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { generatePayslipPDF } from "../../utils/payslipPDF";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
+import Swal from "sweetalert2";
 
 import {
     FiCreditCard, FiSettings, FiList, FiRefreshCw,
@@ -271,7 +272,19 @@ const PayrollMgmt = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Delete this draft payroll?")) return;
+        const result = await Swal.fire({
+            title: "Delete Payroll?",
+            text: "This draft payroll will be permanently deleted.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc2626",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Yes, delete it",
+            cancelButtonText: "Cancel",
+        });
+
+        if (!result.isConfirmed) return;
+
         try {
             await API.delete(`/payroll/${id}`);
             setPayrolls(prev => prev.filter(p => p._id !== id));

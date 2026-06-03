@@ -4,7 +4,6 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import AttendanceModal from "../../components/common/AttendanceModal";
 import { Bar } from "react-chartjs-2";
 import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -73,12 +72,32 @@ const css = `
 .btn-pdf:hover { background: #FFE4E6; }
 
 /* PUNCH CARD */
+/* PUNCH CARD */
 .punch-card {
     background: linear-gradient(135deg, #1A1D23 0%, #2D3142 100%);
     border-radius: 16px; padding: 24px 28px;
     display: flex; justify-content: space-between; align-items: center;
     gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
     position: relative; overflow: hidden;
+}
+@media (max-width: 768px) {
+    .punch-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .punch-card > div:last-child {
+        width: 100%;
+        align-items: flex-start !important;
+        margin-left: 0 !important;
+    }
+    .punch-btns {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    .punch-btns .btn-punch {
+        flex: 1;
+        justify-content: center;
+    }
 }
 .punch-card::before {
     content:''; position:absolute; top:-40px; right:-40px;
@@ -195,6 +214,10 @@ const css = `
 .cal-cell.s-holiday  .cal-dot { background:#D946EF; }
 .cal-cell.s-weekend  .cal-dot { background:#6D28D9; }
 .cal-cell.s-absent   .cal-dot { background:#3B6CB7; }
+.cal-cell.s-leave  { background:#FFF0F9; border-color:#F472B6; color:#9D174D; font-weight:700; }
+.cal-cell.s-leave  .cal-dot { background:#EC4899; }
+.leg-swatch.leave  { background:#FFF0F9; border-color:#F472B6; }
+.tbadge.leave      { background:#FFF0F9; color:#9D174D; border: 1px solid #F472B6; }
 .cal-cell.is-today.no-status .cal-dot { background:#4338CA; }
 .cal-legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:14px; padding-top:12px; border-top:1.5px solid #F0F1F5; }
 .leg-item { display:flex; align-items:center; gap:6px; font-size:.73rem; font-weight:600; color:#374151; }
@@ -250,6 +273,7 @@ const css = `
 .tbadge.absent   { background:#c5d6f3; color:#1e3a8a; }
 .tbadge.holiday  { background:#DBEAFE; color:#1E3A8A; }
 .tbadge.weekend  { background:#F3E8FF; color:#6B21A8; }
+.tbadge.leave    { background:#FFF0F9; color:#9D174D; border: 1px solid #F472B6; }
 .time-chip { display:inline-flex; align-items:center; gap:4px; font-family:'DM Mono',monospace; font-size:.76rem; color:#374151; background:#F3F4F6; padding:3px 8px; border-radius:5px; }
 `;
 
@@ -312,6 +336,11 @@ const Attendance = () => {
     const [chartType, setChartType] = useState("bar");
     const viewMonthRef = useRef(now.getMonth() + 1);
     const viewYearRef = useRef(now.getFullYear());
+    const mountedRef = useRef(true);
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => { mountedRef.current = false; };
+    }, []);
 
     useEffect(() => { viewMonthRef.current = viewMonth; }, [viewMonth]);
     useEffect(() => { viewYearRef.current = viewYear; }, [viewYear]);
@@ -320,6 +349,10 @@ const Attendance = () => {
     const [todayYear, todayMonth, todayDay] = nowIST.split("-").map(Number);
     const { user } = useContext(AuthContext);
     const [shiftEndMinutes, setShiftEndMinutes] = useState(null);
+    const [shiftReminderEmail, setShiftReminderEmail] = useState(
+        user?.shiftReminderEmail !== undefined ? user.shiftReminderEmail : true
+    );
+    const [reminderToggleLoading, setReminderToggleLoading] = useState(false);
 
 
     // Refs to track which notifications have already fired this session
@@ -380,6 +413,20 @@ const Attendance = () => {
     }, [shiftEndMinutes]);
 
 
+    const handleReminderToggle = async () => {
+        setReminderToggleLoading(true);
+        try {
+            const newVal = !shiftReminderEmail;
+            await API.put("/users/me/preferences", { shiftReminderEmail: newVal });
+            setShiftReminderEmail(newVal);
+        } catch {
+            setShiftReminderEmail(prev => prev);
+        } finally {
+            setReminderToggleLoading(false);
+        }
+    };
+
+
     const fetchToday = async () => {
         try {
             const r = await API.get("/attendance/today");
@@ -392,12 +439,8 @@ const Attendance = () => {
             } else if (rec) {
                 setTodayRec(rec);
             } else {
-                // No record for today — check if there's an open overnight punch-in
-                // (backend /today only returns today's dateString record).
-                // If null, keep todayRec as null; punch-out button stays disabled.
                 setTodayRec(null);
             }
-
             if (r.data.shiftEnd !== undefined) {
                 setShiftEndMinutes(r.data.shiftEnd);
             }
@@ -577,15 +620,17 @@ const Attendance = () => {
             ]);
         } catch (e) {
             const msg = e.response?.data?.message || "Punch-in failed";
-            Swal.fire({
-                icon: "error",
-                title: "Punch-In Failed",
-                text: msg,
-                confirmButtonColor: "#EF4444",
-            });
-            await fetchToday();
+            if (mountedRef.current) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Punch-In Failed",
+                    text: msg,
+                    confirmButtonColor: "#EF4444",
+                });
+                await fetchToday();
+            }
         } finally {
-            setLoadingIn(false);
+            if (mountedRef.current) setLoadingIn(false);
         }
     };
 
@@ -593,22 +638,37 @@ const Attendance = () => {
         if (loadingIn || loadingOut || !!todayRec?.punchIn) return;
         if (!navigator.onLine) { saveOfflinePunch("punch-in"); return; }
 
-        setLoadingIn(true); // ← spin immediately, before GPS resolves
+        setLoadingIn(true);
 
         if (!navigator.geolocation) {
             doPunchIn(null, null, null);
             return;
         }
 
+        let settled = false;
+        const fallbackTimer = setTimeout(() => {
+            if (!settled) {
+                settled = true;
+                console.warn("GPS timed out — proceeding without location");
+                doPunchIn(null, null, null);
+            }
+        }, 8000);
+
         navigator.geolocation.getCurrentPosition(
             ({ coords }) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(fallbackTimer);
                 doPunchIn(coords.latitude, coords.longitude, coords.accuracy);
             },
             (err) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(fallbackTimer);
                 console.warn("GPS unavailable:", err.message);
                 doPunchIn(null, null, null);
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: false, timeout: 7000, maximumAge: 60000 }
         );
     };
 
@@ -625,15 +685,17 @@ const Attendance = () => {
                 fetchMonthly(viewMonth, viewYear),
             ]);
         } catch (e) {
-            Swal.fire({
-                icon: "error",
-                title: "Punch-Out Failed",
-                text: e.response?.data?.message || "Punch-out failed",
-                confirmButtonColor: "#EF4444",
-            });
-            await fetchToday();
+            if (mountedRef.current) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Punch-Out Failed",
+                    text: e.response?.data?.message || "Punch-out failed",
+                    confirmButtonColor: "#EF4444",
+                });
+                await fetchToday();
+            }
         } finally {
-            setLoadingOut(false);
+            if (mountedRef.current) setLoadingOut(false);
         }
     };
 
@@ -779,7 +841,8 @@ const Attendance = () => {
         XLSX.writeFile(wb, `attendance_${MONTHS[viewMonth - 1]}_${viewYear}.xlsx`);
     };
 
-    const exportPDF = () => {
+    const exportPDF = async () => {
+        const { default: jsPDF } = await import("jspdf");
         const doc = new jsPDF();
         doc.setFont("helvetica", "bold"); doc.setFontSize(16);
         doc.text(`Attendance — ${MONTHS[viewMonth - 1]} ${viewYear}`, 14, 18);
@@ -902,42 +965,87 @@ const Attendance = () => {
                             )}
                         </div>
 
-                        {"Notification" in window && Notification.permission === "denied" && (
-                            <div style={{
-                                fontSize: ".72rem",
-                                color: "#FBBf24",
-                                background: "rgba(251,191,36,.1)",
-                                border: "1px solid rgba(251,191,36,.25)",
-                                borderRadius: 8,
-                                padding: "6px 12px",
-                                zIndex: 1,
-                                maxWidth: 260,
-                            }}>
-                                🔔 Notifications blocked — enable in browser settings to get shift reminders.
-                            </div>
-                        )}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 23, zIndex: 1, alignItems: "flex-end", marginLeft: "auto" }}>
 
-                        <div className="punch-btns">
-                            <button
-                                onClick={handlePunchIn}
-                                disabled={loadingIn || loadingOut || !!todayRec?.punchIn}
-                                style={loadingIn ? { pointerEvents: "none" } : {}}
-                                className="btn-punch btn-punchin"
-                            >
-                                {loadingIn
-                                    ? <><span className="spinner" /> Punching In...</>
-                                    : <><Icon d={icons.login} size={15} color="#052e16" />{navigator.onLine ? "Punch In" : "Punch In (Offline)"}</>}
-                            </button>
-                            <button
-                                onClick={navigator.onLine ? handlePunchOut : () => saveOfflinePunch("punch-out")}
-                                disabled={loadingIn || loadingOut || !(todayRec?.punchIn && !todayRec?.punchOut)}
-                                style={loadingOut ? { pointerEvents: "none" } : {}}
-                                className="btn-punch btn-punchout"
-                            >
-                                {loadingOut
-                                    ? <><span className="spinner" /> Punching Out...</>
-                                    : <><Icon d={icons.logout} size={15} />{navigator.onLine ? "Punch Out" : "Punch Out (Offline)"}</>}
-                            </button>
+                            {/* ── Shift-end email reminder toggle ── */}
+                            <div style={{
+                                display: "flex", alignItems: "center", gap: 9,
+                                background: "rgba(255,255,255,0.07)",
+                                border: "1px solid rgba(255,255,255,0.13)",
+                                borderRadius: 10, padding: "6px 12px",
+                            }}>
+                                <span style={{ fontSize: ".75rem", color: "#CBD5E1", fontWeight: 600, whiteSpace: "nowrap" }}>
+                                    📧 Shift-end email reminder
+                                </span>
+                                <button
+                                    onClick={handleReminderToggle}
+                                    disabled={reminderToggleLoading}
+                                    title={shiftReminderEmail ? "Click to disable email reminders" : "Click to enable email reminders"}
+                                    style={{
+                                        position: "relative", width: 42, height: 24,
+                                        borderRadius: 99, border: "none", cursor: reminderToggleLoading ? "not-allowed" : "pointer",
+                                        background: shiftReminderEmail ? "#4ADE80" : "rgba(255,255,255,0.18)",
+                                        transition: "background 0.25s ease",
+                                        flexShrink: 0, padding: 0, outline: "none",
+                                        opacity: reminderToggleLoading ? 0.6 : 1,
+                                    }}
+                                >
+                                    <span style={{
+                                        position: "absolute", top: 3,
+                                        left: shiftReminderEmail ? 21 : 3,
+                                        width: 18, height: 18, borderRadius: "50%",
+                                        background: "#fff",
+                                        transition: "left 0.25s ease",
+                                        boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
+                                    }} />
+                                </button>
+                                <span style={{
+                                    fontSize: ".72rem", fontWeight: 700, minWidth: 24,
+                                    color: shiftReminderEmail ? "#4ADE80" : "#8892A4",
+                                }}>
+                                    {reminderToggleLoading ? "…" : shiftReminderEmail ? "ON" : "OFF"}
+                                </span>
+                            </div>
+
+                            {/* Punch buttons */}
+                            <div className="punch-btns">
+                                <button
+                                    onClick={handlePunchIn}
+                                    disabled={loadingIn || loadingOut || !!todayRec?.punchIn}
+                                    style={loadingIn ? { pointerEvents: "none" } : {}}
+                                    className="btn-punch btn-punchin"
+                                >
+                                    {loadingIn
+                                        ? <><span className="spinner" /> Punching In...</>
+                                        : <><Icon d={icons.login} size={15} color="#052e16" />{navigator.onLine ? "Punch In" : "Punch In (Offline)"}</>}
+                                </button>
+                                <button
+                                    onClick={navigator.onLine ? handlePunchOut : () => saveOfflinePunch("punch-out")}
+                                    disabled={loadingIn || loadingOut || !(todayRec?.punchIn && !todayRec?.punchOut)}
+                                    style={loadingOut ? { pointerEvents: "none" } : {}}
+                                    className="btn-punch btn-punchout"
+                                >
+                                    {loadingOut
+                                        ? <><span className="spinner" /> Punching Out...</>
+                                        : <><Icon d={icons.logout} size={15} />{navigator.onLine ? "Punch Out" : "Punch Out (Offline)"}</>}
+                                </button>
+                            </div>
+
+                            {/* Notification-blocked warning */}
+                            {"Notification" in window && Notification.permission === "denied" && (
+                                <div style={{
+                                    fontSize: ".72rem",
+                                    color: "#FBBf24",
+                                    background: "rgba(251,191,36,.1)",
+                                    border: "1px solid rgba(251,191,36,.25)",
+                                    borderRadius: 8,
+                                    padding: "6px 12px",
+                                    zIndex: 1,
+                                    maxWidth: 260,
+                                }}>
+                                    🔔 Notifications blocked — enable in browser settings to get shift reminders.
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -1119,31 +1227,31 @@ const Attendance = () => {
                                     const isBeforeJoining = joiningDate && currentDateIST < joiningDate;
                                     if (holiday) {
                                         sCls = "s-holiday";
-                                    } else if (isFuture) {
-                                        sCls = "";
                                     } else if (weekend) {
-                                        sCls = "s-weekend";
+                                        sCls = "s-weekend";  // always show weekend color, past AND future
+                                    } else if (isBeforeJoining || isFuture) {
+                                        sCls = "";           // blank for future non-weekend, non-holiday days
                                     } else if (rec) {
-                                        if (!isBeforeJoining) {
-                                            if (rec.status === "absent" || (!rec.punchIn && !rec.punchOut)) {
-                                                sCls = "s-absent";
-                                            } else if (rec.isHalfDay) {
-                                                sCls = "s-halfday";
-                                            } else if (rec.isLate) {
-                                                sCls = "s-late";
-                                            } else {
-                                                sCls = "s-present";
-                                            }
+                                        if (rec.status === "leave" || rec.onLeave || rec.leaveApproved) {
+                                            sCls = "s-leave";
+                                        } else if (rec.status === "absent" || (!rec.punchIn && !rec.punchOut)) {
+                                            sCls = "s-absent";
+                                        } else if (rec.isHalfDay) {
+                                            sCls = "s-halfday";
+                                        } else if (rec.isLate) {
+                                            sCls = "s-late";
+                                        } else {
+                                            sCls = "s-present";
                                         }
-                                    } else if (!isWorkInProgress && !isBeforeJoining) {
+                                    } else if (!isWorkInProgress) {
                                         sCls = "s-absent";
                                     }
 
                                     // const isBeforeJoining = joiningDate && currentDate < joiningDate;
-
                                     const hasRecord =
                                         !isBeforeJoining &&
-                                        !!(rec || holiday || (!isFuture && (weekend || sCls === "s-absent")));
+                                        !isFuture &&
+                                        !!(rec || holiday || weekend || sCls === "s-absent");
 
                                     const noStatus = !sCls ? "no-status" : "";
 
@@ -1199,7 +1307,7 @@ const Attendance = () => {
                                             }
                                         >
                                             {day}
-                                            {(hasRecord || today) && <span className="cal-dot" />}
+                                            {(hasRecord || today) && !isFuture && <span className="cal-dot" />}
                                         </div>
                                     );
                                 })}
@@ -1212,6 +1320,7 @@ const Attendance = () => {
                                 <div className="leg-item"><span className="leg-swatch holiday" /><span>Holiday</span></div>
                                 <div className="leg-item"><span className="leg-swatch weekend" /><span>Weekend</span></div>
                                 <div className="leg-item"><span className="leg-swatch absent" /><span>Absent</span></div>
+                                <div className="leg-item"><span className="leg-swatch leave" /><span>Leave</span></div>
                                 <div className="leg-item"><span className="leg-swatch today" /><span>Today</span></div>
                             </div>
                         </div>
@@ -1245,20 +1354,22 @@ const Attendance = () => {
                                         const badgeCls =
                                             item.status === "holiday" ? "holiday" :
                                                 item.status === "weekend" ? "weekend" :
-                                                    item.isHalfDay ? "half-day" :
-                                                        item.isLate ? "late" :
-                                                            item.eightHourPassUsed ? "pass" :   // ✅ distinct purple badge
-                                                                item.status === "present" ? "present" :
-                                                                    "absent";
+                                                    item.status === "leave" || item.onLeave || item.leaveApproved ? "leave" :
+                                                        item.isHalfDay ? "half-day" :
+                                                            item.isLate ? "late" :
+                                                                item.eightHourPassUsed ? "pass" :
+                                                                    item.status === "present" ? "present" :
+                                                                        "absent";
 
                                         const badgeLabel =
                                             item.status === "holiday" ? "Holiday" :
                                                 item.status === "weekend" ? "Weekend" :
-                                                    item.isHalfDay ? "Half Day" :
-                                                        item.isLate ? `Late (+${item.lateMinutes}m)` :
-                                                            item.eightHourPassUsed ? "Present (8h Pass)" :
-                                                                item.status === "present" ? "Present" :
-                                                                    "Absent";
+                                                    item.status === "leave" || item.onLeave || item.leaveApproved ? "On Leave" :
+                                                        item.isHalfDay ? "Half Day" :
+                                                            item.isLate ? `Late (+${item.lateMinutes}m)` :
+                                                                item.eightHourPassUsed ? "Present (8h Pass)" :
+                                                                    item.status === "present" ? "Present" :
+                                                                        "Absent";
                                         return (
                                             <tr key={item._id} onClick={() => setSelected(item)}>
                                                 <td style={{ fontWeight: 600, color: "#111318" }}>

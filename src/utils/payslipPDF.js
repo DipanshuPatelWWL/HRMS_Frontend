@@ -107,15 +107,18 @@ export const generatePayslipPDF = async (p) => {
 
   // ── Attendance deduction rows ─────────────────────────
   const attendanceDeductRows = [
-    p.absentAmt > 0
+    p.absentDays > 0
       ? `<tr>
-           <td style="padding:7px 10px;color:#374151;font-size:13px;">
-             Absent (${p.absentDays || 0} days × ${fmt(p.perDaySalary)})
-           </td>
-           <td style="padding:7px 10px;color:#dc2626;font-size:13px;text-align:right;">
-             −${fmt(p.absentAmt)}
-           </td>
-         </tr>`
+       <td style="padding:7px 10px;color:#374151;font-size:13px;">
+         Absent (${p.absentDays || 0} days × ${fmt(p.perDaySalary)})
+         <span style="font-size:11px;color:#6b7280;margin-left:6px;">
+           (reflected in gross earnings)
+         </span>
+       </td>
+       <td style="padding:7px 10px;color:#6b7280;font-size:13px;text-align:right;">
+         —
+       </td>
+     </tr>`
       : "",
 
     p.halfDayDeduct > 0
