@@ -58,7 +58,7 @@ steps:
       username: ${{ secrets.USERNAME }}
       key: ${{ secrets.SSH_KEY }}
       port: 65002
-      source: "dist/*"
+      source: "dist/**"
       target: "/home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms"
 
   - name: Fix Dist Folder Structure
@@ -90,7 +90,9 @@ steps:
         cat > /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/.htaccess << 'EOF'
         RewriteEngine On
         RewriteBase /
+
         RewriteRule ^index\.html$ - [L]
+
         RewriteCond %{REQUEST_FILENAME} !-f
         RewriteCond %{REQUEST_FILENAME} !-d
         RewriteRule . /index.html [L]
