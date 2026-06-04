@@ -37,12 +37,12 @@ import {
 
 /* ─── Scoped styles ─── */
 const SIDEBAR_STYLES = `
-  .sidebar .nav-item-label,
-  .sidebar .sidebar-section-label,
-  .sidebar .sidebar-title,
-  .sidebar .nav-tooltip {
-    color: #0a0a0a !important;
-  }
+ .sidebar .nav-item-label,
+.sidebar .sidebar-section-label,
+.sidebar .sidebar-title,
+.sidebar .nav-tooltip {
+  color: var(--text-1) !important;
+}
 
   /* ── FIXED: logo gets NO background – transparent always ── */
   .sidebar-logo {
@@ -188,14 +188,14 @@ const SIDEBAR_STYLES = `
   }
 
   /* Tooltip on hover in collapsed mode */
-  .sidebar-collapsed .nav-item:hover::after {
+.sidebar-collapsed .nav-item:hover::after {
     content: attr(title);
     position: absolute;
     left: calc(100% + 10px);
     top: 50%;
     transform: translateY(-50%);
-    background: #1e1b4b;
-    color: #fff;
+    background: var(--text-1);
+    color: var(--surface);
     font-size: 0.75rem;
     font-weight: 500;
     white-space: nowrap;
@@ -206,14 +206,14 @@ const SIDEBAR_STYLES = `
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
 
- .sidebar-collapsed .nav-item:hover::before {
+.sidebar-collapsed .nav-item:hover::before {
     content: '';
     position: absolute;
     left: calc(100% + 4px);
     top: 50%;
     transform: translateY(-50%);
     border: 5px solid transparent;
-    border-right-color: #1e1b4b;
+    border-right-color: var(--text-1);
     pointer-events: none;
     z-index: 9999;
   }
@@ -287,7 +287,7 @@ const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
         <Link
             to={to}
             className={`nav-item ${active ? "active" : ""}`}
-            style={{ textDecoration: "none", color: "#0a0a0a" }}
+            style={{ textDecoration: "none", color: "var(--text-1)" }}
             onClick={onClick}
             title={label}
         >
@@ -322,7 +322,7 @@ const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
 
             <span
                 className="nav-item-label"
-                style={{ color: "#0a0a0a", fontWeight: active ? 600 : 500 }}
+                style={{ color: "var(--text-1)", fontWeight: active ? 600 : 500 }}
             >
                 {label}
             </span>
@@ -412,7 +412,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                     className="sidebar-logo"
                 />
 
-                <span className="sidebar-title" style={{ color: "#0a0a0a", fontWeight: 600, fontSize: "1rem" }}>
+                <span className="sidebar-title" style={{ color: "var(--text-1)", fontWeight: 600, fontSize: "1rem" }}>
                     HRMS
                 </span>
 
@@ -443,7 +443,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                 {/* ══ EMPLOYEE ══ */}
                 {user?.role === "employee" && (
                     <div className="sidebar-section">
-                        <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Employee</div>
+                        <div className="sidebar-section-label" style={{ color: "var(--text-3)" }}>Employee</div>
                         <NavItem to="/employee" label="Dashboard" iconKey="dashboard" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/attendance" label="Attendance" iconKey="attendance" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/holidays" label="Holiday Calendar" iconKey="holiday" onClick={onClose} collapsed={collapsed} />
@@ -470,7 +470,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                 {user?.role === "tl" && (
                     <>
                         <div className="sidebar-section">
-                            <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>My Space</div>
+                            <div className="sidebar-section-label" style={{ color: "var(--text-3)" }}>My Space</div>
                             <NavItem to="/tl" label="Dashboard" iconKey="dashboard" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/attendance" label="My Attendance" iconKey="attendance" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/holidays" label="Holiday Calendar" iconKey="holiday" onClick={onClose} collapsed={collapsed} />
@@ -486,7 +486,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/tl/policies" label="Policies" iconKey="policies" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
-                            <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Team</div>
+                            <div className="sidebar-section-label" style={{ color: "var(--text-3)" }}>Team</div>
                             <NavItem to="/tl/team" label="My Team" iconKey="team" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/leave-approval" label="Leave Approvals" iconKey="leaveApprove" onClick={onClose} collapsed={collapsed} />
@@ -500,7 +500,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                 {user?.role === "hr" && (
                     <>
                         <div className="sidebar-section">
-                            <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Overview</div>
+                            <div className="sidebar-section-label" style={{ color: "var(--text-3)" }}>Overview</div>
                             <NavItem to="/hr" label="Dashboard" iconKey="dashboard" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/employees" label="Employees" iconKey="employees" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr-attendance" label="Attendance Overview" iconKey="attendanceOverview" onClick={onClose} collapsed={collapsed} />
@@ -515,7 +515,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
-                            <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>
+                            <div className="sidebar-section-label" style={{ color: "var(--text-3)" }}>Management</div>
                             <NavItem to="/hr/leave-approval" label="Leave Approvals" iconKey="leaveApprove" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/employee-leave" label="Employee Leaves" iconKey="myAttendance" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/correction-requests" label="Attendance Management" iconKey="correctionRequests" onClick={onClose} collapsed={collapsed} />
@@ -530,7 +530,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                 {user?.role === "manager" && (
                     <>
                         <div className="sidebar-section">
-                            <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Overview</div>
+                            <div className="sidebar-section-label" style={{ color: "var(--text-3)" }}>Overview</div>
                             <NavItem to="/manager" label="Dashboard" iconKey="dashboard" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-employees" label="Employees" iconKey="employees" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-attendance" label="Attendance Overview" iconKey="attendanceOverview" onClick={onClose} collapsed={collapsed} />
@@ -547,7 +547,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                         </div>
                         <div className="sidebar-section">
-                            <div className="sidebar-section-label" style={{ color: "#0a0a0a" }}>Management</div>
+                            <div className="sidebar-section-label" style={{ color: "var(--text-3)" }}>Management</div>
                             <NavItem to="/manager-leave-approval" label="Leave Approvals" iconKey="leaveApprove" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-correction-requests" label="Attendance Management" iconKey="correctionRequests" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-payroll-management" label="Payroll" iconKey="payrollMgmt" onClick={onClose} collapsed={collapsed} />

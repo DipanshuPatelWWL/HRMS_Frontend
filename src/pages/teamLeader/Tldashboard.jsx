@@ -18,8 +18,8 @@ const TLBadge = () => (
         display: "inline-flex",
         alignItems: "center",
         gap: ".3rem",
-        background: "var(--brand-subtle, #e8f0fe)",
-        color: "var(--brand, #3b6ff5)",
+        background: "var(--brand-light)",
+        color: "var(--brand)",
         fontSize: ".72rem",
         fontWeight: 700,
         letterSpacing: ".04em",
@@ -141,7 +141,7 @@ const TLDashboard = () => {
                                 justifyContent: "space-between",
                                 padding: ".5rem .75rem",
                                 borderRadius: "8px",
-                                background: "var(--bg-2, #f8f9fa)",
+                                background: "var(--surface-3)",
                             }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: ".6rem" }}>
                                     {/* Avatar initials */}
@@ -162,8 +162,8 @@ const TLDashboard = () => {
                                 <span style={{
                                     fontSize: ".72rem", fontWeight: 600, padding: ".2rem .5rem",
                                     borderRadius: "999px",
-                                    background: member.status === "active" ? "var(--success-subtle, #e6f4ea)" : "var(--danger-subtle, #fce8e6)",
-                                    color: member.status === "active" ? "var(--success, #1e8e3e)" : "var(--danger, #d93025)",
+                                    background: member.status === "active" ? "var(--success-bg)" : "var(--danger-bg)",
+                                    color: member.status === "active" ? "var(--success)" : "var(--danger)",
                                 }}>
                                     {member.status}
                                 </span>

@@ -50,16 +50,16 @@ const css = `
 .att-root *, .att-root *::before, .att-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
 .att-root {
     font-family: 'DM Sans', sans-serif;
-    background: #F4F6FA;
-    color: #1A1D23;
+    background: var(--surface-2);
+    color: var(--text-1);
     min-height: 100vh;
     padding-bottom: 40px;
 }
 
 /* HEADER */
 .att-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
-.att-header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -.4px; color: #111318; }
-.att-header p  { font-size: .8rem; color: #494c52; margin-top: 3px; }
+.att-header h1 { font-size: 1.55rem; font-weight: 700; letter-spacing: -.4px; color: var(--text-1); }
+.att-header p  { font-size: .8rem; color: var(--text-2); margin-top: 3px; }
 .att-export-row { display: flex; gap: 8px; }
 .btn-export {
     display: flex; align-items: center; gap: 6px;
@@ -164,38 +164,37 @@ const css = `
 .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
 @media(max-width:860px){ .stats-grid{ grid-template-columns:repeat(2,1fr); } }
 @media(max-width:480px){ .stats-grid{ grid-template-columns:1fr; } }
-.stat-box { background:#fff; border-radius:14px; padding:20px 22px; border:1px solid #E8EBF0; position:relative; overflow:hidden; }
+.stat-box { background:var(--surface); border-radius:14px; padding:20px 22px; border:1px solid var(--border); position:relative; overflow:hidden; }
 .stat-box::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
 .stat-box.green::before  { background:linear-gradient(90deg,#4ADE80,#22C55E); }
 .stat-box.orange::before { background:linear-gradient(90deg,#FB923C,#F97316); }
 .stat-box.red::before    { background:linear-gradient(90deg,#F87171,#EF4444); }
-.stat-label { font-size:.71rem; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:rgba(95, 92, 92, 0.9); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
-.stat-value { font-size:2.4rem; font-weight:700; letter-spacing:-1.5px; line-height:1; color:#111318; }
-.stat-value span { font-size:.95rem; font-weight:500; color:#9CA3AF; letter-spacing:0; }
-.stat-meta { font-size:.75rem; color:#9CA3AF; margin-top:6px; }
+.stat-label { font-size:.71rem; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:var(--text-3); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.stat-value { font-size:2.4rem; font-weight:700; letter-spacing:-1.5px; line-height:1; color:var(--text-1); }
+.stat-value span { font-size:.95rem; font-weight:500; color:var(--text-3); letter-spacing:0; }
+.stat-meta { font-size:.75rem; color:var(--text-3); margin-top:6px; }
 
 /* LAYOUT */
 .bottom-grid { display:grid; grid-template-columns:1fr 1.5fr; gap:20px; margin-bottom:24px; }
 @media(max-width:860px){ .bottom-grid{ grid-template-columns:1fr; } }
-.att-card { background:#fff; border-radius:14px; border:1px solid #E8EBF0; padding:22px 24px; }
-.card-title { font-size:.875rem; font-weight:700; color:#111318; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.att-card { background:var(--surface); border-radius:14px; border:1px solid var(--border); padding:22px 24px; }align-items:center; gap:8px; }
 .card-title-icon { width:28px; height:28px; border-radius:8px; background:#F4F6FA; display:flex; align-items:center; justify-content:center; color:#6B7280; flex-shrink:0; }
 
 /* CALENDAR NAV */
 .cal-nav { display:flex; align-items:center; gap:8px; margin-bottom:12px; padding-bottom:12px; border-top:1.5px solid #F0F1F5; }
-.cal-nav-arrow { width:32px; height:32px; border-radius:8px; border:1.5px solid #E8EBF0; background:#FAFAFA; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#374151; transition:all .15s; flex-shrink:0; }
-.cal-nav-arrow:hover { background:#F3F4F6; border-color:#D1D5DB; }
+.cal-nav-arrow { width:32px; height:32px; border-radius:8px; border:1.5px solid var(--border); background:var(--surface-2); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-2); transition:all .15s; flex-shrink:0; }
+.cal-nav-arrow:hover { background:var(--surface-3); border-color:var(--border-strong); }
 .cal-nav-center { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; }
-.cal-select { -webkit-appearance:none; appearance:none; border:1.5px solid #E8EBF0; border-radius:8px; padding:5px 10px; font-size:.82rem; font-weight:600; color:#111318; background:#FAFAFA; cursor:pointer; font-family:'DM Sans',sans-serif; outline:none; transition:border-color .15s; }
-.cal-select:focus { border-color:#6366F1; background:#fff; }
+.cal-select { -webkit-appearance:none; appearance:none; border:1.5px solid var(--border); border-radius:8px; padding:5px 10px; font-size:.82rem; font-weight:600; color:var(--text-1); background:var(--surface-2); cursor:pointer; font-family:'DM Sans',sans-serif; outline:none; transition:border-color .15s; }
+.cal-select:focus { border-color:#6366F1; background:var(--surface); }
 .cal-today-btn { padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:700; border:1.5px solid #C7D2FE; background:#EEF2FF; color:#4F46E5; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .15s; white-space:nowrap; }
 .cal-today-btn:hover { background:#E0E7FF; }
 
 /* CALENDAR GRID */
 .cal-day-names { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
-.cal-day-name { text-align:center; font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:rgb(73, 71, 71); padding:4px 0; }
+.cal-day-name { text-align:center; font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-2); padding:4px 0; }
+.cal-cell { height:46px; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:.83rem; font-weight:500; color:var(--text-3); background:var(--surface-3); border:1.5px solid var(--border); cursor:default; transition:transform .12s, box-shadow .12s; user-select:none; line-height:1; }
 .cal-cells { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-.cal-cell { height:46px; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:.83rem; font-weight:500; color:#6B7280; background:#F8F9FB; border:1.5px solid #ECEEF2; cursor:default; transition:transform .12s, box-shadow .12s; user-select:none; line-height:1; }
 .cal-cell.empty { background:transparent; border-color:transparent; pointer-events:none; }
 .cal-cell.has-record { cursor:pointer; }
 .cal-cell.has-record:hover { transform:scale(1.08); z-index:2; box-shadow:0 4px 14px rgba(0,0,0,.12); }
@@ -238,15 +237,10 @@ const css = `
 .cal-cell.hl-dim { opacity: 0.3; transform: scale(0.96); }
 
 /* Chart type toggle */
-.chart-toggle { display:flex; gap:4px; background:#F4F6FA; border-radius:9px; padding:3px; }
-.chart-toggle-btn {
-    display:flex; align-items:center; gap:5px;
-    padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:700;
-    border:none; cursor:pointer; font-family:'DM Sans',sans-serif;
-    transition:all .18s; color:#6B7280; background:transparent;
-}
-.chart-toggle-btn.active { background:#fff; color:#111318; box-shadow:0 1px 4px rgba(0,0,0,.1); }
-.chart-toggle-btn:hover:not(.active) { color:#374151; }
+.chart-toggle { display:flex; gap:4px; background:var(--surface-3); border-radius:9px; padding:3px; }
+.chart-toggle-btn { ... color:var(--text-3); background:transparent; }
+.chart-toggle-btn.active { background:var(--surface); color:var(--text-1); box-shadow:0 1px 4px rgba(0,0,0,.1); }
+.chart-toggle-btn:hover:not(.active) { color:var(--text-2); }
 
 /* Donut legend */
 .donut-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; height:220px; position:relative; }
@@ -260,10 +254,10 @@ const css = `
 .att-table-wrap { overflow-x:auto; margin-top:4px; }
 .att-table { width:100%; border-collapse:collapse; font-size:.83rem; }
 .att-table thead tr { border-bottom:1.5px solid #E8EBF0; }
-.att-table th { text-align:left; padding:8px 14px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#2f3032; white-space:nowrap; }
-.att-table td { padding:13px 14px; border-bottom:1px solid #F3F4F6; color:#374151; vertical-align:middle; }
+.att-table th { text-align:left; padding:8px 14px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-2); white-space:nowrap; }
+.att-table td { padding:13px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:middle; }
 .att-table tbody tr { cursor:pointer; transition:background .1s; }
-.att-table tbody tr:hover { background:#F9FAFB; }
+.att-table tbody tr:hover { background:var(--surface-2); }
 .att-table tbody tr:last-child td { border-bottom:none; }
 .tbadge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:6px; font-size:.72rem; font-weight:700; }
 .tbadge.pass { background: #EDE9FE; color: #5B21B6; }
@@ -274,7 +268,7 @@ const css = `
 .tbadge.holiday  { background:#DBEAFE; color:#1E3A8A; }
 .tbadge.weekend  { background:#F3E8FF; color:#6B21A8; }
 .tbadge.leave    { background:#FFF0F9; color:#9D174D; border: 1px solid #F472B6; }
-.time-chip { display:inline-flex; align-items:center; gap:4px; font-family:'DM Mono',monospace; font-size:.76rem; color:#374151; background:#F3F4F6; padding:3px 8px; border-radius:5px; }
+.time-chip { display:inline-flex; align-items:center; gap:4px; font-family:'DM Mono',monospace; font-size:.76rem; color:var(--text-2); background:var(--surface-3); padding:3px 8px; border-radius:5px; }
 `;
 
 const LiveClock = () => {
@@ -337,6 +331,7 @@ const Attendance = () => {
     const viewMonthRef = useRef(now.getMonth() + 1);
     const viewYearRef = useRef(now.getFullYear());
     const mountedRef = useRef(true);
+    const cachedGPSRef = useRef(null);
     useEffect(() => {
         mountedRef.current = true;
         return () => { mountedRef.current = false; };
@@ -531,13 +526,53 @@ const Attendance = () => {
         fetchMonthly(viewMonthRef.current, viewYearRef.current);
     };
 
+    // useEffect(() => {
+    //     fetchToday();
+    //     syncOfflinePunches();
+
+    //     // Request browser notification permission on first load
+    //     if ("Notification" in window && Notification.permission === "default") {
+    //         Notification.requestPermission();
+    //     }
+
+    //     window.addEventListener("online", syncOfflinePunches);
+
+    //     const onFocus = () => {
+    //         fetchToday();
+    //         fetchMonthly(viewMonthRef.current, viewYearRef.current);
+    //     };
+    //     window.addEventListener("focus", onFocus);
+
+    //     return () => {
+    //         window.removeEventListener("online", syncOfflinePunches);
+    //         window.removeEventListener("focus", onFocus);
+    //     };
+    // }, []);
+
+
+
     useEffect(() => {
         fetchToday();
         syncOfflinePunches();
 
-        // Request browser notification permission on first load
         if ("Notification" in window && Notification.permission === "default") {
             Notification.requestPermission();
+        }
+
+        // Pre-warm GPS silently so it's ready when user hits Punch In
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                ({ coords }) => {
+                    cachedGPSRef.current = {
+                        lat: coords.latitude,
+                        lng: coords.longitude,
+                        accuracy: coords.accuracy,
+                        ts: Date.now(),
+                    };
+                },
+                () => { },
+                { enableHighAccuracy: false, timeout: 5000, maximumAge: 120000 }
+            );
         }
 
         window.addEventListener("online", syncOfflinePunches);
@@ -564,69 +599,149 @@ const Attendance = () => {
         fetchHolidays(viewMonth, viewYear);
     }, [viewMonth, viewYear]);
 
-    const doPunchIn = async (latitude = null, longitude = null, accuracy = null) => {
+    // const doPunchIn = async (latitude = null, longitude = null, accuracy = null) => {
+    //     try {
+    //         let deviceUUID = "";
+    //         let productId = "";
+
+    //         // Step 1: Try Electron IPC (when running inside Electron window)
+    //         if (window.hrmsAgent?.getDeviceInfo) {
+    //             try {
+    //                 const info = await window.hrmsAgent.getDeviceInfo();
+    //                 deviceUUID = info?.deviceUUID || "";
+    //                 productId = info?.productId || "";
+    //             } catch (e) {
+    //                 console.warn("IPC bridge failed:", e);
+    //             }
+    //         }
+
+    //         // Step 2: Fallback — call local token server (browser tab on same PC)
+    //         // This is the key fix: website punch-in on the office PC works via agent
+    //         if (!deviceUUID || !productId) {
+    //             try {
+    //                 const agentBase = window.hrmsAgent?.getAgentConfig
+    //                     ? (await window.hrmsAgent.getAgentConfig()).tokenServerUrl
+    //                     : "http://127.0.0.1:57373";
+
+    //                 const r = await fetch(`${agentBase}/get-device-info`, {
+    //                     method: "GET",
+    //                     signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 3000); return c.signal; })(),
+    //                 });
+    //                 if (r.ok) {
+    //                     const info = await r.json();
+    //                     deviceUUID = info?.deviceUUID || "";
+    //                     productId = info?.productId || "";
+    //                 }
+    //             } catch (e) {
+    //                 console.warn("Agent token server unreachable:", e.message);
+    //             }
+    //         }
+
+    //         const payload = {
+    //             deviceId: navigator.userAgent,
+    //             ...(deviceUUID && productId
+    //                 ? { deviceUUID, productId }
+    //                 : {}),
+    //             ...(latitude !== null && longitude !== null
+    //                 ? { lat: latitude, lng: longitude, accuracy: accuracy ?? 0 }
+    //                 : {}),
+    //         };
+
+    //         await API.post("/attendance/punch-in", payload);
+
+    //         await Promise.all([
+    //             fetchToday(),
+    //             fetchMonthly(viewMonth, viewYear),
+    //         ]);
+    //     } catch (e) {
+    //         const msg = e.response?.data?.message || "Punch-in failed";
+    //         if (mountedRef.current) {
+    //             Swal.fire({
+    //                 icon: "error",
+    //                 title: "Punch-In Failed",
+    //                 text: msg,
+    //                 confirmButtonColor: "#EF4444",
+    //             });
+    //             await fetchToday();
+    //         }
+    //     } finally {
+    //         if (mountedRef.current) setLoadingIn(false);
+    //     }
+    // };
+
+
+
+    const getDeviceInfo = async () => {
+        if (window.hrmsAgent?.getDeviceInfo) {
+            try {
+                const info = await Promise.race([
+                    window.hrmsAgent.getDeviceInfo(),
+                    new Promise((_, rej) => setTimeout(() => rej(new Error("IPC timeout")), 1500)),
+                ]);
+                if (info?.deviceUUID && info?.productId) return info;
+            } catch (e) {
+                console.warn("IPC bridge failed:", e.message);
+            }
+        }
+
         try {
-            let deviceUUID = "";
-            let productId = "";
+            const agentBase = window.hrmsAgent?.getAgentConfig
+                ? (await window.hrmsAgent.getAgentConfig()).tokenServerUrl
+                : "http://127.0.0.1:57373";
 
-            // Step 1: Try Electron IPC (when running inside Electron window)
-            if (window.hrmsAgent?.getDeviceInfo) {
-                try {
-                    const info = await window.hrmsAgent.getDeviceInfo();
-                    deviceUUID = info?.deviceUUID || "";
-                    productId = info?.productId || "";
-                } catch (e) {
-                    console.warn("IPC bridge failed:", e);
-                }
-            }
+            const c = new AbortController();
+            const timer = setTimeout(() => c.abort(), 1500);
+            const r = await fetch(`${agentBase}/get-device-info`, { signal: c.signal });
+            clearTimeout(timer);
+            if (r.ok) return await r.json();
+        } catch (e) {
+            console.warn("Agent unreachable:", e.message);
+        }
 
-            // Step 2: Fallback — call local token server (browser tab on same PC)
-            // This is the key fix: website punch-in on the office PC works via agent
-            if (!deviceUUID || !productId) {
-                try {
-                    const agentBase = window.hrmsAgent?.getAgentConfig
-                        ? (await window.hrmsAgent.getAgentConfig()).tokenServerUrl
-                        : "http://127.0.0.1:57373";
+        return { deviceUUID: "", productId: "" };
+    };
 
-                    const r = await fetch(`${agentBase}/get-device-info`, {
-                        method: "GET",
-                        signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 3000); return c.signal; })(),
-                    });
-                    if (r.ok) {
-                        const info = await r.json();
-                        deviceUUID = info?.deviceUUID || "";
-                        productId = info?.productId || "";
-                    }
-                } catch (e) {
-                    console.warn("Agent token server unreachable:", e.message);
-                }
-            }
+    const getGPS = () => new Promise((resolve) => {
+        if (!navigator.geolocation) return resolve({ lat: null, lng: null, accuracy: null });
 
+        // Use cached result if under 2 minutes old
+        if (cachedGPSRef.current && Date.now() - cachedGPSRef.current.ts < 120_000) {
+            return resolve(cachedGPSRef.current);
+        }
+
+        const timer = setTimeout(() => {
+            console.warn("GPS timed out");
+            resolve({ lat: null, lng: null, accuracy: null });
+        }, 3000);
+
+        navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+                clearTimeout(timer);
+                resolve({ lat: coords.latitude, lng: coords.longitude, accuracy: coords.accuracy });
+            },
+            (err) => {
+                clearTimeout(timer);
+                console.warn("GPS error:", err.message);
+                resolve({ lat: null, lng: null, accuracy: null });
+            },
+            { enableHighAccuracy: false, timeout: 2800, maximumAge: 120000 }
+        );
+    });
+
+    const doPunchIn = async (lat, lng, accuracy, deviceUUID = "", productId = "") => {
+        try {
             const payload = {
                 deviceId: navigator.userAgent,
-                ...(deviceUUID && productId
-                    ? { deviceUUID, productId }
-                    : {}),
-                ...(latitude !== null && longitude !== null
-                    ? { lat: latitude, lng: longitude, accuracy: accuracy ?? 0 }
-                    : {}),
+                ...(deviceUUID && productId ? { deviceUUID, productId } : {}),
+                ...(lat != null && lng != null ? { lat, lng, accuracy: accuracy ?? 0 } : {}),
             };
 
             await API.post("/attendance/punch-in", payload);
-
-            await Promise.all([
-                fetchToday(),
-                fetchMonthly(viewMonth, viewYear),
-            ]);
+            await Promise.all([fetchToday(), fetchMonthly(viewMonth, viewYear)]);
         } catch (e) {
             const msg = e.response?.data?.message || "Punch-in failed";
             if (mountedRef.current) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Punch-In Failed",
-                    text: msg,
-                    confirmButtonColor: "#EF4444",
-                });
+                Swal.fire({ icon: "error", title: "Punch-In Failed", text: msg, confirmButtonColor: "#EF4444" });
                 await fetchToday();
             }
         } finally {
@@ -634,45 +749,57 @@ const Attendance = () => {
         }
     };
 
+    // const handlePunchIn = () => {
+    //     if (loadingIn || loadingOut || !!todayRec?.punchIn) return;
+    //     if (!navigator.onLine) { saveOfflinePunch("punch-in"); return; }
+
+    //     setLoadingIn(true);
+
+    //     if (!navigator.geolocation) {
+    //         doPunchIn(null, null, null);
+    //         return;
+    //     }
+
+    //     let settled = false;
+    //     const fallbackTimer = setTimeout(() => {
+    //         if (!settled) {
+    //             settled = true;
+    //             console.warn("GPS timed out — proceeding without location");
+    //             doPunchIn(null, null, null);
+    //         }
+    //     }, 8000);
+
+    //     navigator.geolocation.getCurrentPosition(
+    //         ({ coords }) => {
+    //             if (settled) return;
+    //             settled = true;
+    //             clearTimeout(fallbackTimer);
+    //             doPunchIn(coords.latitude, coords.longitude, coords.accuracy);
+    //         },
+    //         (err) => {
+    //             if (settled) return;
+    //             settled = true;
+    //             clearTimeout(fallbackTimer);
+    //             console.warn("GPS unavailable:", err.message);
+    //             doPunchIn(null, null, null);
+    //         },
+    //         { enableHighAccuracy: false, timeout: 7000, maximumAge: 60000 }
+    //     );
+    // };
+
+
     const handlePunchIn = () => {
         if (loadingIn || loadingOut || !!todayRec?.punchIn) return;
         if (!navigator.onLine) { saveOfflinePunch("punch-in"); return; }
 
         setLoadingIn(true);
 
-        if (!navigator.geolocation) {
-            doPunchIn(null, null, null);
-            return;
-        }
-
-        let settled = false;
-        const fallbackTimer = setTimeout(() => {
-            if (!settled) {
-                settled = true;
-                console.warn("GPS timed out — proceeding without location");
-                doPunchIn(null, null, null);
-            }
-        }, 8000);
-
-        navigator.geolocation.getCurrentPosition(
-            ({ coords }) => {
-                if (settled) return;
-                settled = true;
-                clearTimeout(fallbackTimer);
-                doPunchIn(coords.latitude, coords.longitude, coords.accuracy);
-            },
-            (err) => {
-                if (settled) return;
-                settled = true;
-                clearTimeout(fallbackTimer);
-                console.warn("GPS unavailable:", err.message);
-                doPunchIn(null, null, null);
-            },
-            { enableHighAccuracy: false, timeout: 7000, maximumAge: 60000 }
-        );
+        // Device info and GPS fire simultaneously — not sequentially
+        Promise.all([getDeviceInfo(), getGPS()])
+            .then(([{ deviceUUID, productId }, { lat, lng, accuracy }]) => {
+                doPunchIn(lat, lng, accuracy, deviceUUID, productId);
+            });
     };
-
-
 
     const handlePunchOut = async () => {
         if (loadingIn || loadingOut || !(todayRec?.punchIn && !todayRec?.punchOut)) return;
@@ -800,7 +927,7 @@ const Attendance = () => {
         },
         scales: {
             y: { grid: { color: "#F3F4F6", drawBorder: false }, ticks: { stepSize: 1, color: "#9CA3AF", font: { size: 11 } }, border: { display: false } },
-            x: { grid: { display: false }, ticks: { color: "#6B7280", font: { size: 11, weight: "600" } }, border: { display: false } },
+            x: { grid: { display: false }, ticks: { color: "var(--text-3)", font: { size: 11, weight: "600" } }, border: { display: false } },
         },
     };
 
@@ -1077,8 +1204,8 @@ const Attendance = () => {
                     {/* WORK SUMMARY */}
                     {monthlySummary && (
                         <div style={{
-                            background: "#fff",
-                            border: "1px solid #E8EBF0",
+                            background: "var(--surface)",
+                            border: "1px solid var(--border)",
                             borderRadius: 14,
                             padding: "16px 22px",
                             marginBottom: 24,
@@ -1091,7 +1218,7 @@ const Attendance = () => {
                                 <span style={{
                                     fontSize: ".68rem", fontWeight: 700,
                                     textTransform: "uppercase", letterSpacing: ".6px",
-                                    color: "#374151", display: "flex", alignItems: "center", gap: 6,
+                                    color: "var(--text-2)", display: "flex", alignItems: "center", gap: 6,
                                 }}>
                                     <Icon d={icons.clock} size={12} color="#6B7280" />
                                     Work Summary — {MONTHS[viewMonth - 1]} {viewYear}
@@ -1103,9 +1230,9 @@ const Attendance = () => {
                                 <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "#15803D", marginBottom: 6 }}>
                                     Total Hours
                                 </p>
-                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "#111318", letterSpacing: "-1px", lineHeight: 1 }}>
+                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-1)", letterSpacing: "-1px", lineHeight: 1 }}>
                                     {Math.floor(monthlySummary.totalWorkHours)}
-                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "#6B7280", letterSpacing: 0 }}>
+                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "var(--text-3)", letterSpacing: 0 }}>
                                         h {Math.round((monthlySummary.totalWorkHours % 1) * 60)}m
                                     </span>
                                 </p>
@@ -1119,9 +1246,9 @@ const Attendance = () => {
                                 <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "#1D4ED8", marginBottom: 6 }}>
                                     Avg / Day
                                 </p>
-                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "#111318", letterSpacing: "-1px", lineHeight: 1 }}>
+                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-1)", letterSpacing: "-1px", lineHeight: 1 }}>
                                     {Math.floor(monthlySummary.avgDailyHours)}
-                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "#6B7280", letterSpacing: 0 }}>
+                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "var(--text-3)", letterSpacing: 0 }}>
                                         h {Math.round((monthlySummary.avgDailyHours % 1) * 60)}m
                                     </span>
                                 </p>
@@ -1139,9 +1266,9 @@ const Attendance = () => {
                                 <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: monthlySummary.totalLateMinutes > 0 ? "#C2410C" : "#15803D", marginBottom: 6 }}>
                                     Total Late
                                 </p>
-                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "#111318", letterSpacing: "-1px", lineHeight: 1 }}>
+                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-1)", letterSpacing: "-1px", lineHeight: 1 }}>
                                     {monthlySummary.totalLateMinutes}
-                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "#6B7280", letterSpacing: 0 }}>
+                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "var(--text-3)", letterSpacing: 0 }}>
                                         {" "}min
                                     </span>
                                 </p>
@@ -1174,7 +1301,7 @@ const Attendance = () => {
                                     { color: "#F87171", label: "Late" },
                                     { color: "#c5d6f3", label: "Absent" },
                                 ].map(l => (
-                                    <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: ".72rem", color: "#6B7280", fontWeight: 500 }}>
+                                    <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: ".72rem", color: "var(--text-3)", fontWeight: 500 }}>
                                         <span style={{ width: 8, height: 8, borderRadius: 2, background: l.color, display: "inline-block" }} />
                                         {l.label}
                                     </div>

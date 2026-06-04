@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import NotificationBell from "../common/NotificationBell";
 import { Link, useLocation } from "react-router-dom";
+import { useTheme } from "../../hooks/useTheme";
 
 const pageTitles = {
     // ── Employee ──────────────────────────────────────────────
@@ -119,9 +120,32 @@ const resolveTitle = (pathname) => {
 };
 
 
+const SunIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="5" />
+        <line x1="12" y1="1" x2="12" y2="3" />
+        <line x1="12" y1="21" x2="12" y2="23" />
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+        <line x1="1" y1="12" x2="3" y2="12" />
+        <line x1="21" y1="12" x2="23" y2="12" />
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+);
+
+const MoonIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+);
+
 const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
     const { user } = useContext(AuthContext);
     const { pathname } = useLocation();
+    const { theme, toggle: toggleTheme } = useTheme();
 
     const title = resolveTitle(pathname);
 
@@ -206,6 +230,35 @@ const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
                 color: #4f46e5;
             }
 
+            /* ── Theme Toggle ── */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--topnav-border, #e8e8f0);
+    background: var(--bg-2, #f8f9fa);
+    color: var(--text-3, #6b7280);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease,
+                box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--brand-subtle, #e8f0fe);
+    color: var(--brand, #3b6ff5);
+    border-color: var(--brand, #3b6ff5);
+    box-shadow: 0 2px 8px rgba(99, 99, 200, 0.15);
+    transform: translateY(-1px) rotate(12deg);
+}
+
+.theme-toggle-btn:active {
+    transform: translateY(0) rotate(0deg);
+    box-shadow: none;
+}
+
             /* ── Mobile ── */
             @media (max-width: 768px) {
                 .user-chip-name {
@@ -235,6 +288,14 @@ const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
                 </div>
 
                 <div className="topnav-right">
+                    <button
+                        onClick={toggleTheme}
+                        className="theme-toggle-btn"
+                        aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+                        title={theme === "light" ? "Dark mode" : "Light mode"}
+                    >
+                        {theme === "light" ? <MoonIcon /> : <SunIcon />}
+                    </button>
                     <NotificationBell />
                     <Link to={profilePath} className="profile_name">
                         <div className="user-chip">
