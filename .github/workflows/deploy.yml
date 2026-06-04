@@ -1,95 +1,112 @@
 name: Deploy HRMS Frontend
 
 on:
-  push:
-    branches:
-      - main
+push:
+branches:
+- main
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+deploy:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+```
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
+  - name: Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: 24
 
-      - name: Install Dependencies
-        run: npm install
+  - name: Install Dependencies
+    run: npm install
 
-      - name: Build Vite App
-        run: npm run build
+  - name: Build Vite App
+    run: npm run build
 
-      - name: Test SSH Connection
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.PORT }}
-          timeout: 120s
-          command_timeout: 2m
-          debug: true
-          script: |
-            echo "SSH Connected Successfully"
-            pwd
-            whoami
+  - name: Test SSH Connection
+    uses: appleboy/ssh-action@v1.0.3
+    with:
+      host: ${{ secrets.HOST }}
+      username: ${{ secrets.USERNAME }}
+      key: ${{ secrets.SSH_KEY }}
+      port: 65002
+      timeout: 300s
+      command_timeout: 5m
+      script: |
+        echo "SSH Connected Successfully"
+        hostname
+        pwd
+        whoami
 
-      - name: Clean Existing Deployment
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.PORT }}
-          timeout: 120s
-          command_timeout: 2m
-          script: |
-            rm -rf /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/*
-            echo "Old files removed"
+  - name: Clean Existing Deployment
+    uses: appleboy/ssh-action@v1.0.3
+    with:
+      host: ${{ secrets.HOST }}
+      username: ${{ secrets.USERNAME }}
+      key: ${{ secrets.SSH_KEY }}
+      port: 65002
+      script: |
+        rm -rf /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/*
+        mkdir -p /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms
 
-      - name: Deploy Frontend Files
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.PORT }}
-          source: "dist/*"
-          target: "/home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms"
+  - name: Upload Build Files
+    uses: appleboy/scp-action@v0.1.7
+    with:
+      host: ${{ secrets.HOST }}
+      username: ${{ secrets.USERNAME }}
+      key: ${{ secrets.SSH_KEY }}
+      port: 65002
+      source: "dist/*"
+      target: "/home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms"
 
-      - name: Create React .htaccess
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.PORT }}
-          timeout: 120s
-          command_timeout: 2m
-          script: |
-            cat > /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/.htaccess << 'EOF'
-            RewriteEngine On
-            RewriteBase /
-            RewriteRule ^index\.html$ - [L]
-            RewriteCond %{REQUEST_FILENAME} !-f
-            RewriteCond %{REQUEST_FILENAME} !-d
-            RewriteRule . /index.html [L]
-            EOF
+  - name: Fix Dist Folder Structure
+    uses: appleboy/ssh-action@v1.0.3
+    with:
+      host: ${{ secrets.HOST }}
+      username: ${{ secrets.USERNAME }}
+      key: ${{ secrets.SSH_KEY }}
+      port: 65002
+      script: |
+        cd /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms
 
-      - name: Set Permissions
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.PORT }}
-          timeout: 120s
-          command_timeout: 2m
-          script: |
-            chmod -R 755 /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms
-            echo "Deployment Completed Successfully"
+        if [ -d "dist" ]; then
+          mv dist/* .
+          rm -rf dist
+        fi
+
+        echo "Current Deployment Structure:"
+        ls -la
+
+  - name: Create React .htaccess
+    uses: appleboy/ssh-action@v1.0.3
+    with:
+      host: ${{ secrets.HOST }}
+      username: ${{ secrets.USERNAME }}
+      key: ${{ secrets.SSH_KEY }}
+      port: 65002
+      script: |
+        cat > /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms/.htaccess << 'EOF'
+        RewriteEngine On
+        RewriteBase /
+        RewriteRule ^index\.html$ - [L]
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule . /index.html [L]
+        EOF
+
+  - name: Set Permissions
+    uses: appleboy/ssh-action@v1.0.3
+    with:
+      host: ${{ secrets.HOST }}
+      username: ${{ secrets.USERNAME }}
+      key: ${{ secrets.SSH_KEY }}
+      port: 65002
+      script: |
+        chmod -R 755 /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms
+
+        echo "Deployment Completed Successfully"
+
+        ls -la /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms
+```
