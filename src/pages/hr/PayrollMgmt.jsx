@@ -53,8 +53,8 @@ const useFadeIn = (delay = 0) => {
 // ─────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
     const s = status === "paid"
-        ? { bg: "#dcfce7", color: "#14532d", border: "#4ade80", dot: "#16a34a", label: "Paid", Icon: FiCheckCircle }
-        : { bg: "#fef3c7", color: "#78350f", border: "#f59e0b", dot: "#d97706", label: "Draft", Icon: FiClock };
+        ? { bg: "var(--success-bg)", color: "var(--success)", border: "var(--success)", dot: "var(--success)", label: "Paid", Icon: FiCheckCircle }
+        : { bg: "var(--warn-bg)", color: "var(--warn)", border: "var(--warn)", dot: "var(--warn)", label: "Draft", Icon: FiClock };
     return (
         <span style={{
             background: s.bg, color: s.color, border: `1.5px solid ${s.border}`,
@@ -76,8 +76,8 @@ const StatCard = ({ label, value, sub, accent, Icon, delay = 0 }) => {
     const ref = useFadeIn(delay);
     return (
         <div ref={ref} style={{
-            background: "#fff",
-            border: "1px solid #d1d5db",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
             borderRadius: 14,
             padding: "1.2rem 1.35rem",
             borderTop: `3px solid ${accent}`,
@@ -110,10 +110,10 @@ const StatCard = ({ label, value, sub, accent, Icon, delay = 0 }) => {
                         <Icon size={17} />
                     </span>
                 )}
-                <p style={{ fontSize: ".78rem", color: "#374151", textTransform: "uppercase", letterSpacing: ".5px", fontWeight: 700 }}>{label}</p>
+                <p style={{ fontSize: ".78rem", color: "var(--text-2)", textTransform: "uppercase", letterSpacing: ".5px", fontWeight: 700 }}>{label}</p>
             </div>
-            <p style={{ fontSize: "1.65rem", fontWeight: 800, color: "#111827", lineHeight: 1 }}>{value}</p>
-            {sub && <p style={{ fontSize: ".78rem", color: "#6b7280", marginTop: ".35rem", fontWeight: 500 }}>{sub}</p>}
+            <p style={{ fontSize: "1.65rem", fontWeight: 800, color: "var(--text-1)", lineHeight: 1 }}>{value}</p>
+            {sub && <p style={{ fontSize: ".78rem", color: "var(--text-3)", marginTop: ".35rem", fontWeight: 500 }}>{sub}</p>}
         </div>
     );
 };
@@ -127,10 +127,10 @@ const IconBtn = ({ onClick, disabled, title, children, variant = "ghost", style 
         outline: "none", ...style,
     };
     const variants = {
-        ghost: { background: "#f3f4f6", color: "#111827", borderColor: "#d1d5db" },
+        ghost: { background: "var(--surface-3)", color: "var(--text-1)", borderColor: "var(--border)" },
         primary: { background: "#2563eb", color: "#fff", borderColor: "#2563eb" },
         success: { background: "#15803d", color: "#fff", borderColor: "#15803d" },
-        danger: { background: "#fee2e2", color: "#7f1d1d", borderColor: "#fca5a5" },
+        danger: { background: "var(--warn-bg)", color: "var(--warn)", borderColor: "var(--warn)" },
     };
     return (
         <button
@@ -156,18 +156,18 @@ const AnimSelect = ({ value, onChange, children, minWidth = 120 }) => (
             onChange={onChange}
             style={{
                 appearance: "none", padding: "8px 34px 8px 13px",
-                borderRadius: 8, border: "1.5px solid #d1d5db",
-                background: "#fff", fontSize: ".85rem", fontWeight: 600,
-                color: "#111827", cursor: "pointer", minWidth,
+                borderRadius: 8, border: "1.5px solid var(--border)",
+                background: "var(--surface)", fontSize: ".85rem", fontWeight: 600,
+                color: "var(--text-1)", cursor: "pointer", minWidth,
                 transition: "border-color 0.18s, box-shadow 0.18s",
                 outline: "none",
             }}
             onFocus={e => { e.target.style.borderColor = "#3b82f6"; e.target.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.14)"; }}
-            onBlur={e => { e.target.style.borderColor = "#d1d5db"; e.target.style.boxShadow = "none"; }}
+            onBlur={e => { e.target.style.borderColor = "var(--border)"; e.target.style.boxShadow = "none"; }}
         >
             {children}
         </select>
-        <FiChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "#6b7280", pointerEvents: "none" }} />
+        <FiChevronDown size={14} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", color: "var(--text-3)", pointerEvents: "none" }} />
     </div>
 );
 
@@ -326,8 +326,8 @@ const PayrollMgmt = () => {
                 }
 
                 .pr-panel {
-                    background: #fff;
-                    border: 1px solid #d1d5db;
+                    background: var(--surface);
+                    border: 1px solid var(--border);
                     border-radius: 14px;
                     padding: 1.45rem;
                     margin-bottom: 1.25rem;
@@ -341,7 +341,7 @@ const PayrollMgmt = () => {
                 .pr-panel-title {
                     font-size: .85rem;
                     font-weight: 800;
-                    color: #111827;
+                    color: var(--text-1);
                     text-transform: uppercase;
                     letter-spacing: .6px;
                     margin-bottom: 1rem;
@@ -368,21 +368,21 @@ const PayrollMgmt = () => {
                 /* Table */
                 .pr-table { border-collapse: collapse; }
                 .pr-table th {
-                    background: #f3f4f6;
+                    background: var(--surface-3);
                     font-size: .76rem;
                     text-transform: uppercase;
                     letter-spacing: .5px;
-                    color: #374151;
+                    color: var(--text-2);
                     font-weight: 800;
-                    border-bottom: 1.5px solid #d1d5db;
+                    border-bottom: 1.5px solid var(--border);
                     padding: .75rem .9rem;
                     white-space: nowrap;
                 }
                 .pr-table td {
                     padding: .8rem .9rem;
-                    border-bottom: 1px solid #e5e7eb;
+                    border-bottom: 1px solid var(--border);
                     font-size: .88rem;
-                    color: #111827;
+                    color: var(--text-1);
                     transition: background 0.15s ease;
                 }
                 .pr-table tr:last-child td { border-bottom: none; }
@@ -390,8 +390,8 @@ const PayrollMgmt = () => {
                     transition: background 0.15s ease;
                     cursor: default;
                 }
-                .pr-table tbody tr:hover td { background: #f9fafb; }
-                .pr-table tbody tr.row-hovered td { background: #eff6ff; }
+                .pr-table tbody tr:hover td { background: var(--surface-2); }
+                .pr-table tbody tr.row-hovered td { background: var(--surface-3); }
 
                 /* Checkbox */
                 .pr-cb {
@@ -416,8 +416,8 @@ const PayrollMgmt = () => {
                     transform: scale(1.08);
                     box-shadow: 0 4px 14px rgba(37,99,235,0.38);
                 }
-                .emp-name { font-weight: 700; color: #0f172a; font-size: .9rem; }
-                .emp-meta { font-size: .75rem; color: #374151; font-weight: 500; margin-top: 1px; }
+                .emp-name { font-weight: 700; color: var(--text-1); font-size: .9rem; }
+                .emp-meta { font-size: .75rem; color: var(--text-2); font-weight: 500; margin-top: 1px; }
 
                 /* Action buttons area — always visible, stronger colors */
                 .pr-actions { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: flex-end; }
@@ -484,18 +484,18 @@ const PayrollMgmt = () => {
                 .pr-label {
                     display: flex; align-items: center; gap: 4px;
                     font-size: .78rem; font-weight: 700;
-                    color: #374151; margin-bottom: .35rem; letter-spacing: .3px;
+                    color: var(--text-2); margin-bottom: .35rem; letter-spacing: .3px;
                 }
 
                 /* Period cell */
                 .period-cell {
                     display: flex; align-items: center; gap: 6px;
-                    font-size: .86rem; color: #1f2937; font-weight: 500;
+                    font-size: .86rem; color: var(--text-1); font-weight: 500;
                 }
 
                 /* Net salary */
                 .net-salary {
-                    font-weight: 800; font-size: 1rem; color: #111827;
+                    font-weight: 800; font-size: 1rem; color: var(--text-1);
                 }
 
                 /* Deduction */
@@ -672,7 +672,7 @@ const PayrollMgmt = () => {
                             }}>
                                 <FiAlertCircle size={30} color="#6b7280" />
                             </div>
-                            <p style={{ fontWeight: 800, color: "#1f2937", fontSize: "1rem" }}>No payrolls found</p>
+                            <p style={{ fontWeight: 800, color: "var(--text-1)", fontSize: "1rem" }}>No payrolls found</p>
                             <p style={{ fontSize: ".88rem", color: "#6b7280", marginTop: ".3rem", fontWeight: 500 }}>
                                 Generate payroll for {MONTHS[filterMonth - 1]} {filterYear} above
                             </p>

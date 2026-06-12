@@ -386,16 +386,46 @@ const NotificationBell = () => {
         playSound();
         addDots(item.type);
         toast.info(
-            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 16 }}>{cfg.icon}</span>
-                <div>
-                    <div style={{ fontWeight: 700, fontSize: "0.84rem", color: cfg.color }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <div style={{
+                    fontSize: "1.2rem",
+                    minWidth: "38px",
+                    height: "38px",
+                    background: "rgba(255, 255, 255, 0.25)",
+                    borderRadius: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                }}>
+                    {cfg.icon}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                        fontWeight: 800,
+                        fontSize: "0.92rem",
+                        color: "#fff",
+                        marginBottom: 1,
+                        letterSpacing: "0.2px"
+                    }}>
                         {cfg.label}
                     </div>
-                    <div style={{ fontSize: "0.8rem" }}>{item.title || item.message}</div>
+                    <div style={{
+                        fontSize: "0.82rem",
+                        color: "rgba(255, 255, 255, 0.95)",
+                        lineHeight: 1.3,
+                        fontWeight: 500,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical"
+                    }}>
+                        {item.title || item.message}
+                    </div>
                 </div>
             </div>,
-            { autoClose: 4000, position: "top-right" }
+            { autoClose: 4000, position: "top-right", icon: false }
         );
     }, [ringBell, playSound, addDots]);
 

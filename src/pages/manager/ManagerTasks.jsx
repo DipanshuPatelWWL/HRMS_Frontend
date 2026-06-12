@@ -116,7 +116,7 @@ const CSS = `
     align-items: center;
     gap: 7px;
     padding: 9px 18px;
-    background: #fff;
+    background: var(--surface);
     border: 1.5px solid #E2E8F0;
     border-radius: 10px;
     font-size: .82rem;
@@ -147,7 +147,7 @@ const CSS = `
 @media(max-width:420px) { .mt-stats { grid-template-columns: 1fr; } }
 
 .mt-stat {
-    background: #fff;
+    background: var(--surface);
     border-radius: 14px;
     border: 1px solid #E8EBF0;
     padding: 16px 18px 14px;
@@ -205,7 +205,7 @@ const CSS = `
 
 /* ── Dept overview card ── */
 .mt-dept-card {
-    background: #fff;
+    background: var(--surface);
     border-radius: 16px;
     border: 1px solid #E8EBF0;
     margin-bottom: 22px;
@@ -304,7 +304,7 @@ const CSS = `
     padding: 9px 14px;
     border-radius: 9px;
     border: 1.5px solid #E2E8F0;
-    background: #fff;
+    background: var(--surface);
     font-size: .83rem;
     font-family: inherit;
     color: #111318;
@@ -318,7 +318,7 @@ const CSS = `
     padding: 9px 12px;
     border-radius: 9px;
     border: 1.5px solid #E2E8F0;
-    background: #fff;
+    background: var(--surface);
     font-size: .82rem;
     font-family: inherit;
     color: #111318;
@@ -332,7 +332,7 @@ const CSS = `
     padding: 8px 12px;
     border-radius: 9px;
     border: 1.5px solid #E2E8F0;
-    background: #fff;
+    background: var(--surface);
     font-size: .82rem;
     font-family: 'DM Mono', monospace;
     color: #111318;
@@ -344,7 +344,7 @@ const CSS = `
     padding: 8px 13px;
     border-radius: 9px;
     border: 1.5px solid #E2E8F0;
-    background: #fff;
+    background: var(--surface);
     font-size: .78rem;
     color: #374151;
     font-weight: 600;
@@ -387,7 +387,7 @@ const CSS = `
 }
 .mt-tab:hover:not(.mt-tab-active) { background: rgba(255,255,255,.7); color: #111318; }
 .mt-tab.mt-tab-active {
-    background: #fff;
+    background: var(--surface);
     color: #4F46E5;
     box-shadow: 0 1px 4px rgba(0,0,0,.12);
     font-weight: 700;
@@ -403,7 +403,7 @@ const CSS = `
 }
 
 .mt-card {
-    background: #fff;
+    background: var(--surface);
     border-radius: 14px;
     border: 1px solid #E8EBF0;
     padding: 18px 20px;
@@ -574,7 +574,7 @@ const CSS = `
     animation: mt-fadeUp .15s ease;
 }
 .mt-modal {
-    background: #fff;
+    background: var(--surface);
     border-radius: 20px;
     width: 100%;
     max-width: 560px;

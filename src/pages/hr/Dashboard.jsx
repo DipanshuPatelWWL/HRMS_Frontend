@@ -179,7 +179,7 @@ const HRDashboard = () => {
                 /* ── BASE ── */
                 .hrd-page {
                     min-height: 100vh;
-                    background: #f6f8fc;
+                    background: var(--surface-2);
                     padding: 32px;
                     font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
                     box-sizing: border-box;
@@ -215,23 +215,23 @@ const HRDashboard = () => {
                     margin: 0;
                     font-size: 22px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                     letter-spacing: -0.4px;
                 }
                 .hrd-page-sub {
                     margin: 2px 0 0;
                     font-size: 13px;
-                    color: #1e293b;
+                    color: var(--text-2);
                     font-weight: 500;
                 }
                 .hrd-today-badge {
-                    background: white;
-                    border: 1.5px solid #e2e8f0;
+                    background: var(--surface);
+                    border: 1.5px solid var(--border);
                     border-radius: 10px;
                     padding: 8px 16px;
                     font-size: 13px;
                     font-weight: 600;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
                     white-space: nowrap;
                 }
@@ -263,7 +263,7 @@ const HRDashboard = () => {
                     margin: 0 0 6px;
                     font-size: 12px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                     text-transform: uppercase;
                     letter-spacing: 0.07em;
                 }
@@ -282,11 +282,11 @@ const HRDashboard = () => {
 
                 /* ── CARDS ── */
                 .hrd-card {
-                    background: white;
+                    background: var(--surface);
                     border-radius: 20px;
                     padding: 22px 24px;
                     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-                    border: 1px solid #f1f5f9;
+                    border: 1px solid var(--border);
                 }
                 .hrd-card-header {
                     display: flex;
@@ -316,7 +316,7 @@ const HRDashboard = () => {
                     margin: 0;
                     font-size: 15px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                 }
                 .hrd-view-all {
                     font-size: 13px;
@@ -339,14 +339,14 @@ const HRDashboard = () => {
                     margin: 0;
                     font-size: 14px;
                     font-weight: 600;
-                    color: #1e293b;
+                    color: var(--text-2);
                 }
 
                 /* ── TABLE ── */
                 .hrd-table-wrap {
                     overflow-x: auto;
                     border-radius: 12px;
-                    border: 1px solid #f1f5f9;
+                    border: 1px solid var(--border);
                 }
                 .hrd-table {
                     width: 100%;
@@ -355,41 +355,41 @@ const HRDashboard = () => {
                     min-width: 520px;
                 }
                 .hrd-table thead tr {
-                    background: #f8fafc;
+                    background: var(--surface-3);
                 }
                 .hrd-table th {
                     padding: 11px 14px;
                     text-align: left;
                     font-size: 11px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                     text-transform: uppercase;
                     letter-spacing: 0.07em;
-                    border-bottom: 1px solid #f1f5f9;
+                    border-bottom: 1px solid var(--border);
                     white-space: nowrap;
                 }
                 .hrd-table td {
                     padding: 12px 14px;
-                    color: #1e293b;
+                    color: var(--text-2);
                     font-weight: 500;
-                    border-bottom: 1px solid #f8fafc;
+                    border-bottom: 1px solid var(--border);
                 }
                 .hrd-table tbody tr:last-child td {
                     border-bottom: none;
                 }
                 .hrd-table tbody tr:hover td {
-                    background: #f8fafc;
+                    background: var(--surface-3);
                 }
                 .hrd-td-name {
                     font-weight: 700 !important;
-                    color: #0a0f1e !important;
+                    color: var(--text-1) !important;
                 }
                 .hrd-td-type {
                     text-transform: capitalize;
                     font-weight: 600 !important;
                 }
                 .hrd-td-reason {
-                    color: #1e293b !important;
+                    color: var(--text-2) !important;
                     max-width: 200px;
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -424,19 +424,19 @@ const HRDashboard = () => {
                     display: inline-flex;
                     align-items: center;
                     padding: 9px 18px;
-                    background: #f1f5f9;
-                    color: #0a0f1e;
+                    background: var(--surface-3);
+                    color: var(--text-1);
                     border-radius: 10px;
                     font-size: 13px;
                     font-weight: 600;
                     text-decoration: none;
                     font-family: 'Plus Jakarta Sans', sans-serif;
-                    border: 1.5px solid #e2e8f0;
+                    border: 1.5px solid var(--border);
                     transition: background 0.12s, border-color 0.12s;
                 }
                 .hrd-btn-ghost:hover {
-                    background: #e8edf5;
-                    border-color: #cbd5e1;
+                    background: var(--surface-2);
+                    border-color: var(--border-strong);
                 }
 
                 /* ── RESPONSIVE: TABLET (≤ 900px) ── */

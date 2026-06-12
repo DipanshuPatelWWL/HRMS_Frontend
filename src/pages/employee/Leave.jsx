@@ -251,35 +251,35 @@ const Leave = () => {
                     border-radius: var(--radius-md);
                     padding: .85rem 1rem;
                     margin-bottom: 1.1rem;
-                    border: 1px solid #86efac;
-                    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+                    border: 1px solid var(--border-strong);
+                     background: var(--success-bg);
                 }
                 .lv-balance.zero {
-                    background: linear-gradient(135deg, #fff7ed, #ffedd5);
-                    border-color: #fdba74;
+                  background: var(--warn-bg);
+                  border-color: var(--border-strong);
                 }
                 .lv-balance-label {
                     font-size: .75rem;
                     font-weight: 500;
-                    color: #166534;
+                   olor: var(--success);
                     display: flex;
                     align-items: center;
                     gap: 5px;
                 }
-                .lv-balance.zero .lv-balance-label { color: #9a3412; }
+                .lv-balance.zero .lv-balance-label {  color: var(--warn); }
                 .lv-balance-num {
                     font-size: 1.5rem;
                     font-weight: 800;
                     line-height: 1;
-                    color: #166534;
+                   var(--success);
                 }
-                .lv-balance.zero .lv-balance-num { color: #9a3412; }
+                .lv-balance.zero .lv-balance-num {  color: var(--warn);  }
                 .lv-balance-sub {
                     font-size: .72rem;
-                    color: #15803d;
+                  color: var(--success);
                     margin-top: 2px;
                 }
-                .lv-balance.zero .lv-balance-sub { color: #c2410c; }
+                .lv-balance.zero .lv-balance-sub {  color: var(--warn); }
 
                 /* ── Estimate strip ────────────────────── */
                 .lv-estimate {
@@ -293,19 +293,19 @@ const Leave = () => {
                     line-height: 1.35;
                 }
                 .lv-estimate.paid {
-                    background: #f0fdf4;
-                    color: #166534;
-                    border: 1px solid #bbf7d0;
+                  background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid var(--border-strong);
                 }
                 .lv-estimate.partial {
-                    background: #fffbeb;
-                    color: #92400e;
-                    border: 1px solid #fde68a;
+                    background: var(--warn-bg);
+    color: var(--warn);
+    border: 1px solid var(--border-strong);
                 }
                 .lv-estimate.unpaid {
-                    background: #fef2f2;
-                    color: #991b1b;
-                    border: 1px solid #fecaca;
+                    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--border-strong);
                 }
 
                 /* ── Date row ──────────────────────────── */
@@ -361,14 +361,14 @@ const Leave = () => {
                     padding: 1px 7px;
                     border-radius: 20px;
                 }
-                .lv-chip.paid-chip {
-                    background: #dcfce7;
-                    color: #166534;
-                }
-                .lv-chip.unpaid-chip {
-                    background: #fee2e2;
-                    color: #991b1b;
-                }
+              .lv-chip.paid-chip {
+    background: var(--success-bg);
+    color: var(--success);
+}
+.lv-chip.unpaid-chip {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
 
                 /* ── Success banner ────────────────────── */
                 .lv-success {
@@ -423,36 +423,35 @@ const Leave = () => {
                     border-radius: var(--radius-md);
                     padding: .75rem 1rem;
                     margin-bottom: .9rem;
-                    border: 1px solid #bfdbfe;
-                    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+                border: 1px solid var(--border-strong);
+    background: var(--brand-light);
                 }
                 .lv-sl-strip.zero {
-                    background: linear-gradient(135deg, #fff7ed, #ffedd5);
-                    border-color: #fdba74;
+                    background: var(--warn-bg);
+    border-color: var(--border-strong);
                 }
                 .lv-sl-label {
                     font-size: .75rem;
                     font-weight: 600;
-                    color: #1e40af;
+                 color: var(--brand);
                     display: flex;
                     align-items: center;
                     gap: 5px;
                 }
-                .lv-sl-strip.zero .lv-sl-label { color: #9a3412; }
-                .lv-sl-strip.zero { color: #c2410c; }
+                .lv-sl-strip.zero .lv-sl-label {  color: var(--warn); }
                 .lv-sl-num {
                     font-size: 1.5rem;
                     font-weight: 800;
                     line-height: 1;
-                    color: #1e40af;
+                   color: var(--brand)
                 }
-                .lv-sl-strip.zero .lv-sl-num { color: #9a3412; }
+                .lv-sl-strip.zero .lv-sl-num { color: var(--warn); }
 
                 /* ── Short-leave status chip ───────────── */
                 .badge-short {
-                    background: #eff6ff;
-                    color: #1d4ed8;
-                    border: 1px solid #bfdbfe;
+                    background: var(--brand-light);
+    color: var(--brand);
+    border: 1px solid var(--border-strong);
                 }
             `}</style>
 
@@ -497,7 +496,11 @@ const Leave = () => {
                                             <Timer size={12} strokeWidth={2.2} />
                                             Short Leave Balance
                                         </div>
-                                        <div style={{ fontSize: ".72rem", color: isZero ? "#c2410c" : "#1e40af", marginTop: 2 }}>
+                                        <div style={{
+                                            fontSize: ".72rem",
+                                            color: isZero ? "var(--warn)" : "var(--brand)",
+                                            marginTop: 2
+                                        }}>
                                             Used: {sl.used ?? 0} this month
                                         </div>
                                     </div>
@@ -595,12 +598,12 @@ const Leave = () => {
                                     display: "flex",
                                     alignItems: "flex-start",
                                     gap: ".45rem",
-                                    background: "#fef2f2",
-                                    border: "1px solid #fecaca",
+                                    background: "var(--danger-bg)",
+                                    border: "1px solid var(--border-strong)",
+                                    color: "var(--danger)",
                                     borderRadius: 8,
                                     padding: ".65rem .85rem",
                                     fontSize: ".82rem",
-                                    color: "#991b1b",
                                     fontWeight: 500,
                                 }}>
                                     <AlertTriangle size={15} strokeWidth={2.2} style={{ marginTop: 1, flexShrink: 0 }} />
@@ -611,12 +614,12 @@ const Leave = () => {
                                     display: "flex",
                                     alignItems: "center",
                                     gap: ".45rem",
-                                    background: "#eff6ff",
-                                    border: "1px solid #bfdbfe",
+                                    background: "var(--brand-light)",
+                                    border: "1px solid var(--border-strong)",
+                                    color: "var(--brand)",
                                     borderRadius: 8,
                                     padding: ".65rem .85rem",
                                     fontSize: ".82rem",
-                                    color: "#1e40af",
                                     fontWeight: 500,
                                 }}>
                                     <Info size={15} strokeWidth={2.2} style={{ flexShrink: 0 }} />

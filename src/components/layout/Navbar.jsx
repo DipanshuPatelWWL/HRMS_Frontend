@@ -74,6 +74,9 @@ const pageTitles = {
     "/manager-view-task": "View Tasks",
     "/manager/upcoming-events": "Upcoming Events",
     "/manager-sales-reports": "Sales Reports",
+    "/manager-sales-intelligence": "Sales Intelligence",
+    "/hr/sales-intelligence": "Sales Intelligence",
+    "/sales-intelligence": "Sales Intelligence",
     "/manager-daily-report": "Daily Report",
     "/manager-policies": "Policy Management",
     "/manager-activity-monitor": "Activity Monitor",
@@ -175,16 +178,16 @@ const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
                 gap: 8px;
                 padding: 5px 12px 5px 5px;
                 border-radius: 999px;
-                background: #f5f5fb;
-                border: 1px solid #e8e8f0;
+                background: var(--surface-3);
+                border: 1px solid var(--border);
                 cursor: pointer;
                 transition: background 0.2s ease, border-color 0.2s ease,
                             box-shadow 0.2s ease, transform 0.15s ease;
             }
 
             .user-chip:hover {
-                background: #ececf8;
-                border-color: #c5c5e8;
+                background: var(--surface-2);
+                border-color: var(--border-strong);
                 box-shadow: 0 2px 8px rgba(99, 99, 200, 0.15);
                 transform: translateY(-1px);
             }
@@ -192,7 +195,7 @@ const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
             .user-chip:active {
                 transform: translateY(0px);
                 box-shadow: none;
-                background: #e0e0f5;
+                background: var(--surface-3);
             }
 
             /* ── Avatar ── */
@@ -221,7 +224,7 @@ const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
             .user-chip-name {
                 font-size: 13.5px;
                 font-weight: 500;
-                color: #2d2d4e;
+                color: var(--text-1);
                 white-space: nowrap;
                 transition: color 0.2s ease;
             }
@@ -238,18 +241,18 @@ const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    border: 1px solid var(--topnav-border, #e8e8f0);
-    background: var(--bg-2, #f8f9fa);
-    color: var(--text-3, #6b7280);
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-3);
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease,
                 box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .theme-toggle-btn:hover {
-    background: var(--brand-subtle, #e8f0fe);
-    color: var(--brand, #3b6ff5);
-    border-color: var(--brand, #3b6ff5);
+    background: var(--surface-3);
+    color: #4f46e5;
+    border-color: #4f46e5;
     box-shadow: 0 2px 8px rgba(99, 99, 200, 0.15);
     transform: translateY(-1px) rotate(12deg);
 }

@@ -193,12 +193,12 @@ const AttendanceCorrectionRequest = () => {
                     display: flex;
                     gap: 10px;
                     align-items: flex-start;
-                    background: #e0f2fe;
-                    border: 1px solid #7dd3fc;
+                    background: var(--brand-light);
+    border: 1px solid var(--border-strong);
+    color: var(--text-1);
                     border-radius: 9px;
                     padding: 11px 14px;
                     font-size: .82rem;
-                    color: #0c4a6e;
                     font-weight: 500;
                     margin-bottom: 1.1rem;
                     animation: fadeIn .5s ease both;
@@ -206,7 +206,7 @@ const AttendanceCorrectionRequest = () => {
                 .corr-info-banner svg {
                     flex-shrink: 0;
                     margin-top: 1px;
-                    color: #0284c7;
+                  color: var(--brand);
                 }
 
                 /* ── Form labels ───────────────────────────────────── */
@@ -216,11 +216,12 @@ const AttendanceCorrectionRequest = () => {
                     gap: 5px;
                     font-size: .82rem;
                     font-weight: 600;
-                    color: #1a1a1a;
+                    color: var(--text-1);
                     margin-bottom: .35rem;
                 }
-                .corr-form-label svg { color: #374151; }
-                .corr-req { color: #dc2626; margin-left: 1px; }
+                .corr-form-label svg {color: var(--text-2); }
+                .corr-req { color: var(--danger);
+                 margin-left: 1px; }
 
                 /* ── Feedback banners ──────────────────────────────── */
                 .corr-feedback {
@@ -234,14 +235,14 @@ const AttendanceCorrectionRequest = () => {
                     animation: popIn .25s ease both;
                 }
                 .corr-feedback.success {
-                    background: #f0fdf4;
-                    color: #14532d;
-                    border: 1px solid #86efac;
+                     background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid var(--border-strong);
                 }
                 .corr-feedback.err {
-                    background: #fef2f2;
-                    color: #7f1d1d;
-                    border: 1px solid #fca5a5;
+                  background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--border-strong);
                 }
 
                 /* ── Submit button ─────────────────────────────────── */
@@ -270,12 +271,12 @@ const AttendanceCorrectionRequest = () => {
                     gap: .8rem;
                     /* custom scrollbar */
                     scrollbar-width: thin;
-                    scrollbar-color: #d1d5db transparent;
+                   scrollbar-color: var(--border-strong) transparent;
                 }
                 .corr-list-scroll::-webkit-scrollbar { width: 5px; }
                 .corr-list-scroll::-webkit-scrollbar-track { background: transparent; }
                 .corr-list-scroll::-webkit-scrollbar-thumb {
-                    background: #d1d5db;
+                  background: var(--border-strong);
                     border-radius: 10px;
                 }
                 @media (max-width: 960px) {
@@ -283,16 +284,16 @@ const AttendanceCorrectionRequest = () => {
                 }
 
                 /* ── Correction item card ──────────────────────────── */
-                .corr-item {
-                    border: 1.5px solid #d1d5db;
-                    border-radius: 10px;
-                    padding: 1rem 1.1rem;
-                    background: #fff;
-                    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
-                    animation: fadeSlideUp .35s ease both;
-                }
+              .corr-item {
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    background: var(--surface);
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    animation: fadeSlideUp .35s ease both;
+}
                 .corr-item:hover {
-                    border-color: #6b7280;
+                  border-color: var(--border-strong);
                     box-shadow: 0 4px 16px rgba(0,0,0,.1);
                     transform: translateY(-2px);
                 }
@@ -315,23 +316,23 @@ const AttendanceCorrectionRequest = () => {
                 .corr-item-title {
                     font-size: .92rem;
                     font-weight: 700;
-                    color: #111827;
+                 color: var(--text-1);
                     display: flex;
                     align-items: center;
                     gap: .4rem;
                     flex-wrap: wrap;
                 }
-                .corr-item-title svg { color: #374151; flex-shrink: 0; }
+                .corr-item-title svg { color: var(--text-2); flex-shrink: 0; }
                 .corr-item-sub {
                     font-size: .78rem;
-                    color: #4b5563;
+                   color: var(--text-2);
                     font-weight: 500;
                     margin-top: .2rem;
                     display: flex;
                     align-items: center;
                     gap: .3rem;
                 }
-                .corr-item-sub svg { color: #6b7280; }
+                .corr-item-sub svg {color: var(--text-3); }
 
                 /* ── Time chips ────────────────────────────────────── */
                 .corr-times {
@@ -347,29 +348,29 @@ const AttendanceCorrectionRequest = () => {
                     font-family: ui-monospace, "Cascadia Code", monospace;
                     font-size: .79rem;
                     font-weight: 600;
-                    background: #f3f4f6;
-                    border: 1px solid #d1d5db;
+                   background: var(--surface-3);
+    border: 1px solid var(--border);
+    color: var(--text-1);
                     padding: 3px 10px;
                     border-radius: 6px;
-                    color: #111827;
                     transition: background .15s, border-color .15s;
                 }
                 .corr-item:hover .time-chip {
-                    background: #e5e7eb;
-                    border-color: #9ca3af;
+                   background: var(--surface-2);
+    border-color: var(--border-strong);
                 }
 
                 /* ── Reason text ───────────────────────────────────── */
                 .corr-reason {
                     font-size: .81rem;
-                    color: #374151;
+                    color: var(--text-2);
                     font-weight: 500;
                     display: flex;
                     align-items: flex-start;
                     gap: .35rem;
                     line-height: 1.45;
                 }
-                .corr-reason svg { flex-shrink: 0; margin-top: 2px; color: #6b7280; }
+                .corr-reason svg { flex-shrink: 0; margin-top: 2px; color: var(--text-3); }
 
                 /* ── Approved correction line ──────────────────────── */
                 .corr-approved-line {
@@ -379,31 +380,31 @@ const AttendanceCorrectionRequest = () => {
                     flex-wrap: wrap;
                     font-size: .78rem;
                     font-weight: 600;
-                    color: #14532d;
-                    background: #f0fdf4;
-                    border: 1px solid #86efac;
+                    color: var(--success);
+    background: var(--success-bg);
+    border: 1px solid var(--border-strong);
                     border-radius: 6px;
                     padding: .35rem .7rem;
                     margin-top: .5rem;
                 }
-                .corr-approved-line svg { flex-shrink: 0; color: #16a34a; }
+                .corr-approved-line svg { flex-shrink: 0; color:var(--success); }
 
                 /* ── Rejected remark ───────────────────────────────── */
                 .corr-remark {
+                    font-style: italic;
                     display: flex;
                     align-items: flex-start;
                     gap: .4rem;
                     font-size: .78rem;
                     font-weight: 500;
-                    color: #7f1d1d;
-                    background: #fef2f2;
-                    border: 1px solid #fca5a5;
                     border-radius: 6px;
+                    color: var(--danger);
+    background: var(--danger-bg);
+    border: 1px solid var(--border-strong);
                     padding: .35rem .7rem;
                     margin-top: .5rem;
-                    font-style: italic;
                 }
-                .corr-remark svg { flex-shrink: 0; margin-top: 1px; color: #dc2626; }
+                .corr-remark svg { flex-shrink: 0; margin-top: 1px; color:var(--danger);; }
 
                 /* ── Withdraw button ───────────────────────────────── */
                 .corr-withdraw-btn {
@@ -412,19 +413,19 @@ const AttendanceCorrectionRequest = () => {
                     gap: .35rem;
                     font-size: .78rem;
                     font-weight: 600;
-                    color: #374151;
-                    border: 1.5px solid #d1d5db;
+                   color: var(--text-2);
+    border: 1.5px solid var(--border);
+    background: var(--surface);
                     border-radius: 7px;
                     padding: .3rem .7rem;
-                    background: #fff;
                     cursor: pointer;
                     margin-top: .6rem;
                     transition: border-color .15s, color .15s, background .15s, transform .15s;
                 }
                 .corr-withdraw-btn:hover {
-                    border-color: #dc2626;
-                    color: #dc2626;
-                    background: #fff5f5;
+                   border-color: var(--danger);
+    color: var(--danger);
+    background: var(--danger-bg);
                     transform: translateY(-1px);
                 }
                 .corr-withdraw-btn:active { transform: translateY(0); }
@@ -443,14 +444,14 @@ const AttendanceCorrectionRequest = () => {
                     align-items: center;
                     gap: .65rem;
                     padding: 3rem 0 2rem;
-                    color: #6b7280;
+                  color: var(--text-3);
                     animation: fadeIn .4s ease;
                 }
                 .corr-empty svg { opacity: .25; }
                 .corr-empty p {
                     font-size: .9rem;
                     font-weight: 500;
-                    color: #374151;
+                 color: var(--text-2);
                     margin: 0;
                 }
 
@@ -458,13 +459,13 @@ const AttendanceCorrectionRequest = () => {
                 .corr-section-title {
                     font-size: 1rem;
                     font-weight: 700;
-                    color: #111827;
+                  color: var(--text-1);
                     display: flex;
                     align-items: center;
                     gap: .45rem;
                     margin-bottom: 1.1rem;
                 }
-                .corr-section-title svg { color: #374151; }
+                .corr-section-title svg { color: var(--text-2); }
 
                 /* ── Count badge ───────────────────────────────────── */
                 .corr-count {
@@ -473,8 +474,8 @@ const AttendanceCorrectionRequest = () => {
                     justify-content: center;
                     min-width: 22px;
                     height: 22px;
-                    background: #1f2937;
-                    color: #fff;
+                  background: var(--text-1);
+    color: var(--surface);
                     border-radius: 20px;
                     font-size: .72rem;
                     font-weight: 700;

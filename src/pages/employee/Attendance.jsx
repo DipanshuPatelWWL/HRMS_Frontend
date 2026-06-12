@@ -46,6 +46,16 @@ const MONTHS = ["January", "February", "March", "April", "May", "June",
 
 const MONTHLY_LATE_QUOTA = 3;
 
+const STATUS_COLORS = {
+    present: { solid: "#22C55E", bg: "#DCFCE7", border: "#86EFAC", text: "#14532D" },
+    late: { solid: "#F97316", bg: "#FFEDD5", border: "#FDBA74", text: "#7C2D12" },
+    halfday: { solid: "#EAB308", bg: "#FEF9C3", border: "#FDE047", text: "#713F12" },
+    absent: { solid: "#3B82F6", bg: "#DBEAFE", border: "#93C5FD", text: "#1E3A8A" },
+    holiday: { solid: "#A855F7", bg: "#F3E8FF", border: "#D8B4FE", text: "#581C87" },
+    weekend: { solid: "#818CF8", bg: "#EEF2FF", border: "#C7D2FE", text: "#3730A3" },
+    leave: { solid: "#EC4899", bg: "#FCE7F3", border: "#F9A8D4", text: "#831843" }
+};
+
 const css = `
 .att-root *, .att-root *::before, .att-root *::after { box-sizing: border-box; margin: 0; padding: 0; }
 .att-root {
@@ -66,10 +76,10 @@ const css = `
     padding: 7px 14px; border-radius: 8px; font-size: .8rem; font-weight: 600;
     cursor: pointer; transition: all .15s; border: 1.5px solid transparent; font-family: inherit;
 }
-.btn-excel { background: #F0FDF4; color: #15803D; border-color: #BBF7D0; }
-.btn-excel:hover { background: #DCFCE7; }
-.btn-pdf   { background: #FFF1F2; color: #BE123C; border-color: #FECDD3; }
-.btn-pdf:hover { background: #FFE4E6; }
+.btn-excel { background: var(--success-bg); color: var(--success); border-color: var(--success); }
+.btn-excel:hover { background: var(--surface-3); }
+.btn-pdf   { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+.btn-pdf:hover { background: var(--surface-3); }
 
 /* PUNCH CARD */
 /* PUNCH CARD */
@@ -177,18 +187,19 @@ const css = `
 /* LAYOUT */
 .bottom-grid { display:grid; grid-template-columns:1fr 1.5fr; gap:20px; margin-bottom:24px; }
 @media(max-width:860px){ .bottom-grid{ grid-template-columns:1fr; } }
-.att-card { background:var(--surface); border-radius:14px; border:1px solid var(--border); padding:22px 24px; }align-items:center; gap:8px; }
-.card-title-icon { width:28px; height:28px; border-radius:8px; background:#F4F6FA; display:flex; align-items:center; justify-content:center; color:#6B7280; flex-shrink:0; }
+.att-card { background:var(--surface); border-radius:14px; border:1px solid var(--border); padding:22px 24px; }
+.card-title { font-size:.875rem; font-weight:700; color:var(--text-1); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.card-title-icon { width:28px; height:28px; border-radius:8px; background:var(--surface-3); display:flex; align-items:center; justify-content:center; color:var(--text-3); flex-shrink:0; }
 
 /* CALENDAR NAV */
-.cal-nav { display:flex; align-items:center; gap:8px; margin-bottom:12px; padding-bottom:12px; border-top:1.5px solid #F0F1F5; }
+.cal-nav { display:flex; align-items:center; gap:8px; margin-bottom:12px; padding-bottom:12px; border-top:1.5px solid var(--border); }
 .cal-nav-arrow { width:32px; height:32px; border-radius:8px; border:1.5px solid var(--border); background:var(--surface-2); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-2); transition:all .15s; flex-shrink:0; }
 .cal-nav-arrow:hover { background:var(--surface-3); border-color:var(--border-strong); }
 .cal-nav-center { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; }
 .cal-select { -webkit-appearance:none; appearance:none; border:1.5px solid var(--border); border-radius:8px; padding:5px 10px; font-size:.82rem; font-weight:600; color:var(--text-1); background:var(--surface-2); cursor:pointer; font-family:'DM Sans',sans-serif; outline:none; transition:border-color .15s; }
 .cal-select:focus { border-color:#6366F1; background:var(--surface); }
-.cal-today-btn { padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:700; border:1.5px solid #C7D2FE; background:#EEF2FF; color:#4F46E5; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .15s; white-space:nowrap; }
-.cal-today-btn:hover { background:#E0E7FF; }
+.cal-today-btn { padding:5px 12px; border-radius:7px; font-size:.75rem; font-weight:700; border:1.5px solid var(--border-strong); background:var(--brand-light); color:var(--brand); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .15s; white-space:nowrap; }
+.cal-today-btn:hover { background:var(--surface-3); }
 
 /* CALENDAR GRID */
 .cal-day-names { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
@@ -198,42 +209,42 @@ const css = `
 .cal-cell.empty { background:transparent; border-color:transparent; pointer-events:none; }
 .cal-cell.has-record { cursor:pointer; }
 .cal-cell.has-record:hover { transform:scale(1.08); z-index:2; box-shadow:0 4px 14px rgba(0,0,0,.12); }
-.cal-cell.s-present { background:#D1FAE5; border-color:#6EE7B7; color:#065F46; font-weight:700; }
-.cal-cell.s-absent  { background:#c5d6f3; border-color:#85b2f5; color:#07316d; font-weight:600; }
-.cal-cell.s-weekend { background:#F3E8FF; border-color:#D8B4FE; color:#6B21A8; font-weight:600; }
-.cal-cell.s-late    { background:#FEE2E2; border-color:#FCA5A5; color:#7F1D1D; font-weight:700; }
-.cal-cell.s-halfday { background:#FEF3C7; border-color:#FCD34D; color:#78350F; font-weight:700; }
-.cal-cell.s-holiday { background:#FDF4FF; border-color:#D946EF; color:#701A75; font-weight:700;  }
+.cal-cell.s-present { background:${STATUS_COLORS.present.bg}; border-color:${STATUS_COLORS.present.border}; color:${STATUS_COLORS.present.text}; font-weight:700; }
+.cal-cell.s-absent  { background:${STATUS_COLORS.absent.bg}; border-color:${STATUS_COLORS.absent.border}; color:${STATUS_COLORS.absent.text}; font-weight:600; }
+.cal-cell.s-weekend { background:${STATUS_COLORS.weekend.bg}; border-color:${STATUS_COLORS.weekend.border}; color:${STATUS_COLORS.weekend.text}; font-weight:600; }
+.cal-cell.s-late    { background:${STATUS_COLORS.late.bg}; border-color:${STATUS_COLORS.late.border}; color:${STATUS_COLORS.late.text}; font-weight:700; }
+.cal-cell.s-halfday { background:${STATUS_COLORS.halfday.bg}; border-color:${STATUS_COLORS.halfday.border}; color:${STATUS_COLORS.halfday.text}; font-weight:700; }
+.cal-cell.s-holiday { background:${STATUS_COLORS.holiday.bg}; border-color:${STATUS_COLORS.holiday.border}; color:${STATUS_COLORS.holiday.text}; font-weight:700;  }
 .cal-cell.is-today  { box-shadow: 0 0 0 2.5px #6366F1, 0 2px 8px rgba(99,102,241,.2) !important; border-color:#6366F1 !important; }
 .cal-cell.is-today.no-status { background:#EEF2FF; color:#3730A3; font-weight:700; }
 .cal-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 1.5px rgba(0,0,0,.08); }
-.cal-cell.s-present  .cal-dot { background:#047857; }
-.cal-cell.s-late     .cal-dot { background:#B91C1C; }
-.cal-cell.s-halfday  .cal-dot { background:#B45309; }
-.cal-cell.s-holiday  .cal-dot { background:#D946EF; }
-.cal-cell.s-weekend  .cal-dot { background:#6D28D9; }
-.cal-cell.s-absent   .cal-dot { background:#3B6CB7; }
-.cal-cell.s-leave  { background:#FFF0F9; border-color:#F472B6; color:#9D174D; font-weight:700; }
-.cal-cell.s-leave  .cal-dot { background:#EC4899; }
-.leg-swatch.leave  { background:#FFF0F9; border-color:#F472B6; }
-.tbadge.leave      { background:#FFF0F9; color:#9D174D; border: 1px solid #F472B6; }
+.cal-cell.s-present  .cal-dot { background:${STATUS_COLORS.present.solid}; }
+.cal-cell.s-late     .cal-dot { background:${STATUS_COLORS.late.solid}; }
+.cal-cell.s-halfday  .cal-dot { background:${STATUS_COLORS.halfday.solid}; }
+.cal-cell.s-holiday  .cal-dot { background:${STATUS_COLORS.holiday.solid}; }
+.cal-cell.s-weekend  .cal-dot { background:${STATUS_COLORS.weekend.solid}; }
+.cal-cell.s-absent   .cal-dot { background:${STATUS_COLORS.absent.solid}; }
+.cal-cell.s-leave  { background:${STATUS_COLORS.leave.bg}; border-color:${STATUS_COLORS.leave.border}; color:${STATUS_COLORS.leave.text}; font-weight:700; }
+.cal-cell.s-leave  .cal-dot { background:${STATUS_COLORS.leave.solid}; }
+.leg-swatch.leave  { background:${STATUS_COLORS.leave.bg}; border-color:${STATUS_COLORS.leave.border}; }
+.tbadge.leave      { background:${STATUS_COLORS.leave.bg}; color:${STATUS_COLORS.leave.text}; border: 1px solid ${STATUS_COLORS.leave.border}; }
 .cal-cell.is-today.no-status .cal-dot { background:#4338CA; }
-.cal-legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:14px; padding-top:12px; border-top:1.5px solid #F0F1F5; }
-.leg-item { display:flex; align-items:center; gap:6px; font-size:.73rem; font-weight:600; color:#374151; }
+.cal-legend { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:14px; padding-top:12px; border-top:1.5px solid var(--border); }
+.leg-item { display:flex; align-items:center; gap:6px; font-size:.73rem; font-weight:600; color:var(--text-2); }
 .leg-swatch { width:14px; height:14px; border-radius:4px; border:1.5px solid transparent; flex-shrink:0; }
-.leg-swatch.present { background:#D1FAE5; border-color:#6EE7B7; }
-.leg-swatch.late    { background:#FEE2E2; border-color:#FCA5A5; }
-.leg-swatch.halfday { background:#FEF3C7; border-color:#FCD34D; }
-.leg-swatch.holiday { background:#FDF4FF; border-color:#D946EF; }
-.leg-swatch.weekend { background:#F3E8FF; border-color:#D8B4FE; }
-.leg-swatch.absent  { background:#c5d6f3; border-color:#85b2f5; }
+.leg-swatch.present { background:${STATUS_COLORS.present.bg}; border-color:${STATUS_COLORS.present.border}; }
+.leg-swatch.late    { background:${STATUS_COLORS.late.bg}; border-color:${STATUS_COLORS.late.border}; }
+.leg-swatch.halfday { background:${STATUS_COLORS.halfday.bg}; border-color:${STATUS_COLORS.halfday.border}; }
+.leg-swatch.holiday { background:${STATUS_COLORS.holiday.bg}; border-color:${STATUS_COLORS.holiday.border}; }
+.leg-swatch.weekend { background:${STATUS_COLORS.weekend.bg}; border-color:${STATUS_COLORS.weekend.border}; }
+.leg-swatch.absent  { background:${STATUS_COLORS.absent.bg}; border-color:${STATUS_COLORS.absent.border}; }
 .leg-swatch.today   { background:#EEF2FF; border-color:#6366F1; }
 
 /* Chart highlight pulse */
-.cal-cell.hl-present  { outline: 2.5px solid #22C55E; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(74,222,128,.25); }
-.cal-cell.hl-half-day { outline: 2.5px solid #EAB308; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(253,224,71,.25); }
-.cal-cell.hl-late     { outline: 2.5px solid #EF4444; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(248,113,113,.25); }
-.cal-cell.hl-absent   { outline: 2.5px solid #93C5FD; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(147,197,253,.25); }
+.cal-cell.hl-present  { outline: 2.5px solid ${STATUS_COLORS.present.solid}; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(74,222,128,.25); }
+.cal-cell.hl-half-day { outline: 2.5px solid ${STATUS_COLORS.halfday.solid}; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(253,224,71,.25); }
+.cal-cell.hl-late     { outline: 2.5px solid ${STATUS_COLORS.late.solid}; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(248,113,113,.25); }
+.cal-cell.hl-absent   { outline: 2.5px solid ${STATUS_COLORS.absent.solid}; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(147,197,253,.25); }
 .cal-cell.hl-dim { opacity: 0.3; transform: scale(0.96); }
 
 /* Chart type toggle */
@@ -246,14 +257,14 @@ const css = `
 .donut-wrap { display:flex; flex-direction:column; align-items:center; justify-content:center; height:220px; position:relative; }
 .donut-legend { display:flex; flex-direction:column; gap:7px; width:100%; margin-top:14px; }
 .donut-legend-row { display:flex; align-items:center; justify-content:space-between; font-size:.78rem; }
-.donut-legend-left { display:flex; align-items:center; gap:7px; font-weight:600; color:#374151; }
+.donut-legend-left { display:flex; align-items:center; gap:7px; font-weight:600; color:var(--text-2); }
+.donut-legend-val { font-weight:700; color:var(--text-1); font-family:'DM Mono',monospace; font-size:.78rem; }
 .donut-legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
-.donut-legend-val { font-weight:700; color:#111318; font-family:'DM Mono',monospace; font-size:.78rem; }
 
 /* TABLE */
 .att-table-wrap { overflow-x:auto; margin-top:4px; }
 .att-table { width:100%; border-collapse:collapse; font-size:.83rem; }
-.att-table thead tr { border-bottom:1.5px solid #E8EBF0; }
+.att-table thead tr { border-bottom:1.5px solid var(--border); }
 .att-table th { text-align:left; padding:8px 14px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-2); white-space:nowrap; }
 .att-table td { padding:13px 14px; border-bottom:1px solid var(--border); color:var(--text-2); vertical-align:middle; }
 .att-table tbody tr { cursor:pointer; transition:background .1s; }
@@ -261,13 +272,13 @@ const css = `
 .att-table tbody tr:last-child td { border-bottom:none; }
 .tbadge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:6px; font-size:.72rem; font-weight:700; }
 .tbadge.pass { background: #EDE9FE; color: #5B21B6; }
-.tbadge.present  { background:#D1FAE5; color:#065F46; }
-.tbadge.late     { background:#FEE2E2; color:#7F1D1D; }
-.tbadge.half-day { background:#FEF3C7; color:#78350F; }
-.tbadge.absent   { background:#c5d6f3; color:#1e3a8a; }
-.tbadge.holiday  { background:#DBEAFE; color:#1E3A8A; }
-.tbadge.weekend  { background:#F3E8FF; color:#6B21A8; }
-.tbadge.leave    { background:#FFF0F9; color:#9D174D; border: 1px solid #F472B6; }
+.tbadge.present  { background:${STATUS_COLORS.present.bg}; color:${STATUS_COLORS.present.text}; }
+.tbadge.late     { background:${STATUS_COLORS.late.bg}; color:${STATUS_COLORS.late.text}; }
+.tbadge.half-day { background:${STATUS_COLORS.halfday.bg}; color:${STATUS_COLORS.halfday.text}; }
+.tbadge.absent   { background:${STATUS_COLORS.absent.bg}; color:${STATUS_COLORS.absent.text}; }
+.tbadge.holiday  { background:${STATUS_COLORS.holiday.bg}; color:${STATUS_COLORS.holiday.text}; }
+.tbadge.weekend  { background:${STATUS_COLORS.weekend.bg}; color:${STATUS_COLORS.weekend.text}; }
+.tbadge.leave    { background:${STATUS_COLORS.leave.bg}; color:${STATUS_COLORS.leave.text}; border: 1px solid ${STATUS_COLORS.leave.border}; }
 .time-chip { display:inline-flex; align-items:center; gap:4px; font-family:'DM Mono',monospace; font-size:.76rem; color:var(--text-2); background:var(--surface-3); padding:3px 8px; border-radius:5px; }
 `;
 
@@ -843,30 +854,44 @@ const Attendance = () => {
         ) + "T00:00:00+05:30"
     );
 
-    // ── Stats ──
-    const presentDays = pastMonthly.filter(d => {
+    // ── Stats (Priority: Half Day > Late > Full Day > Absent) ──
+    const statsMap = pastMonthly.reduce((acc, d) => {
         const istStr = d.dateString
             ? d.dateString + "T00:00:00+05:30"
             : new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }) + "T00:00:00+05:30";
         const dt = new Date(istStr);
-        return (d.status === "present" || d.status === "half-day" || d.isHalfDay || d.isLate)
-            && (!joiningDate || dt >= joiningDate);
-    }).length;
 
-    const halfDays = pastMonthly.filter(d => {
-        return d.isHalfDay && (!joiningDate || toISTDate(d) >= joiningDate);
-    }).length;
+        // Skip records before joining
+        if (joiningDate && dt < joiningDate) return acc;
 
-    const lateDays = pastMonthly.filter(d => {
-        return d.isLate && (!joiningDate || toISTDate(d) >= joiningDate);
-    }).length;
+        const isPresent = (d.status === "present" || d.status === "half-day" || d.isHalfDay || d.isLate);
 
-    const absentDays = pastMonthly.filter(d => {
-        return d.status === "absent" && (!joiningDate || toISTDate(d) >= joiningDate);
-    }).length;
+        if (d.isHalfDay) {
+            acc.half++;
+        } else if (d.isLate) {
+            acc.late++;
+        } else if (isPresent) {
+            acc.full++;
+        } else if (d.status === "absent") {
+            acc.absent++;
+        }
+        return acc;
+    }, { full: 0, half: 0, late: 0, absent: 0 });
 
-    // ✅ FIX: Quota used this month = lateDays (isLate=true count)
-    const quotaUsed = lateDays;
+    const fullOnlyCount = statsMap.full;
+    const halfOnlyCount = statsMap.half;
+    const lateOnlyCount = statsMap.late;
+    const absentDays = statsMap.absent;
+    const presentTotal = fullOnlyCount + halfOnlyCount + lateOnlyCount;
+
+    // ✅ FIX: Quota used this month = all late-flagged days (even if they became half-days)
+    const quotaUsed = pastMonthly.filter(d => {
+        const istStr = d.dateString
+            ? d.dateString + "T00:00:00+05:30"
+            : new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }) + "T00:00:00+05:30";
+        const dt = new Date(istStr);
+        return d.isLate && (!joiningDate || dt >= joiningDate);
+    }).length;
     const quotaRemaining = Math.max(0, MONTHLY_LATE_QUOTA - quotaUsed);
     const quotaExhausted = quotaUsed >= MONTHLY_LATE_QUOTA;
 
@@ -879,39 +904,52 @@ const Attendance = () => {
 
     const workingDaysFinal = workingDays - holidays.length;
 
-    // ✅ FIX: absentDays — half days count as 0.5 present, still not absent
-
-    const eligibleWorkingDays = joiningDate
-        ? Array.from({ length: totalDaysInMonth }, (_, i) => {
-            const date = new Date(viewYear, viewMonth - 1, i + 1);
-            return !isWeekend(date) && date >= joiningDate;
-        }).filter(Boolean).length - holidays.length
-        : workingDaysFinal;
-
+    // ✅ Percentage based on total presence
     const percentage = workingDaysFinal
-        ? Math.min(100, (presentDays / workingDaysFinal) * 100).toFixed(1)
+        ? Math.min(100, (presentTotal / workingDaysFinal) * 100).toFixed(1)
         : 0;
 
-    const chartData = useMemo(() => ({
-        labels: ["Present", "Half-Day", "Late", "Absent"],
-        datasets: [{
-            label: "Days",
-            data: [presentDays, halfDays, lateDays, absentDays],
-            backgroundColor: ["#4ADE80", "#FDE047", "#F87171", "#c5d6f3"],
-            hoverBackgroundColor: ["#22C55E", "#EAB308", "#EF4444", "#60A5FA"],
-            borderRadius: 8,
-            borderSkipped: false,
-        }],
-    }), [presentDays, halfDays, lateDays, absentDays]);
+    const chartData = useMemo(() => {
+        return {
+            labels: ["Full Day", "Half Day", "Late", "Absent"],
+            datasets: [{
+                label: "Days",
+                data: [fullOnlyCount, halfOnlyCount, lateOnlyCount, absentDays],
+                backgroundColor: [
+                    STATUS_COLORS.present.solid,
+                    STATUS_COLORS.halfday.solid,
+                    STATUS_COLORS.late.solid,
+                    STATUS_COLORS.absent.solid
+                ],
+                hoverBackgroundColor: [
+                    STATUS_COLORS.present.solid,
+                    STATUS_COLORS.halfday.solid,
+                    STATUS_COLORS.late.solid,
+                    STATUS_COLORS.absent.solid
+                ],
+                borderRadius: 8,
+                borderSkipped: false,
+            }],
+        };
+    }, [fullOnlyCount, halfOnlyCount, lateOnlyCount, absentDays]);
 
     const STATUS_MAP = ["present", "half-day", "late", "absent"];
+
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    const gridColor = isDark ? "#221b1b" : "#F3F4F6";
+    const tickColor = isDark ? "#6060a0" : "#9CA3AF";
+    const xTickColor = isDark ? "#6060a0" : "#6B7280";
+    const tooltipBg = isDark ? "#e8e8f5" : "#1A1D23";
+    const tooltipText = isDark ? "#0f0f17" : "#ffffff";
 
     const chartOptions = {
         responsive: true, maintainAspectRatio: false,
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: "#1A1D23",
+                backgroundColor: tooltipBg,
+                titleColor: tooltipText,
+                bodyColor: tooltipText,
                 titleFont: { family: "'DM Sans'", size: 12, weight: "600" },
                 bodyFont: { family: "'DM Sans'", size: 12 },
                 padding: 10, cornerRadius: 8,
@@ -926,8 +964,8 @@ const Attendance = () => {
             }
         },
         scales: {
-            y: { grid: { color: "#F3F4F6", drawBorder: false }, ticks: { stepSize: 1, color: "#9CA3AF", font: { size: 11 } }, border: { display: false } },
-            x: { grid: { display: false }, ticks: { color: "var(--text-3)", font: { size: 11, weight: "600" } }, border: { display: false } },
+            y: { grid: { color: gridColor, drawBorder: false }, ticks: { stepSize: 1, color: tickColor, font: { size: 11 } }, border: { display: false } },
+            x: { grid: { display: false }, ticks: { color: xTickColor, font: { size: 11, weight: "600" } }, border: { display: false } },
         },
     };
 
@@ -1181,18 +1219,18 @@ const Attendance = () => {
                         <div className="stat-box green">
                             <div className="stat-label"><Icon d={icons.percent} size={12} color="#9CA3AF" /> Attendance Rate</div>
                             <div className="stat-value">{percentage}<span>%</span></div>
-                            <div className="stat-meta">{presentDays} of {workingDaysFinal} working days</div>
+                            <div className="stat-meta">{presentTotal} of {workingDaysFinal} working days</div>
                         </div>
                         <div className="stat-box orange">
-                            <div className="stat-label"><Icon d={icons.cal} size={12} color="#9CA3AF" /> Present Days</div>
-                            <div className="stat-value">{presentDays}<span>/{workingDaysFinal}</span></div>
+                            <div className="stat-label"><Icon d={icons.cal} size={12} color="#9CA3AF" /> Total Present</div>
+                            <div className="stat-value">{presentTotal}<span>/{workingDaysFinal}</span></div>
                             <div className="stat-meta">
-                                {halfDays} half-day{halfDays !== 1 ? "s" : ""} · {lateDays} late · {absentDays} absent
+                                {fullOnlyCount} full · {halfOnlyCount} half · {lateOnlyCount} late
                             </div>
                         </div>
                         <div className="stat-box red">
                             <div className="stat-label"><Icon d={icons.clock} size={12} color="#9CA3AF" /> Late Arrivals</div>
-                            <div className="stat-value">{lateDays}<span>/{MONTHLY_LATE_QUOTA}</span></div>
+                            <div className="stat-value">{lateOnlyCount}<span>/{MONTHLY_LATE_QUOTA}</span></div>
                             <div className="stat-meta">
                                 {quotaExhausted
                                     ? "⚠️ Quota exhausted — 10:05 AM rule active"
@@ -1226,8 +1264,8 @@ const Attendance = () => {
                             </div>
 
                             {/* Total Hours */}
-                            <div style={{ background: "#F0FDF4", borderRadius: 10, padding: "12px 14px", border: "1px solid #BBF7D0" }}>
-                                <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "#15803D", marginBottom: 6 }}>
+                            <div style={{ background: "var(--success-bg)", borderRadius: 10, padding: "12px 14px", border: "1px solid var(--success)" + "33" }}>
+                                <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "var(--success)", marginBottom: 6 }}>
                                     Total Hours
                                 </p>
                                 <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-1)", letterSpacing: "-1px", lineHeight: 1 }}>
@@ -1236,14 +1274,17 @@ const Attendance = () => {
                                         h {Math.round((monthlySummary.totalWorkHours % 1) * 60)}m
                                     </span>
                                 </p>
-                                <p style={{ fontSize: ".72rem", color: "#15803D", marginTop: 4, fontWeight: 500 }}>
+                                <p style={{ fontSize: ".72rem", color: "var(--success)", marginTop: 4, fontWeight: 500 }}>
                                     across {monthlySummary.workedDays} working days
+                                </p>
+                                <p style={{ fontSize: ".72rem", color: "var(--brand)", marginTop: 4, fontWeight: 500 }}>
+                                    average per worked day
                                 </p>
                             </div>
 
                             {/* Avg Daily Hours */}
-                            <div style={{ background: "#EFF6FF", borderRadius: 10, padding: "12px 14px", border: "1px solid #BFDBFE" }}>
-                                <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "#1D4ED8", marginBottom: 6 }}>
+                            <div style={{ background: "var(--brand-light)", borderRadius: 10, padding: "12px 14px", border: "1px solid var(--border-strong)" }}>
+                                <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "var(--brand)", marginBottom: 6 }}>
                                     Avg / Day
                                 </p>
                                 <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-1)", letterSpacing: "-1px", lineHeight: 1 }}>
@@ -1259,9 +1300,9 @@ const Attendance = () => {
 
                             {/* Total Late Minutes */}
                             <div style={{
-                                background: monthlySummary.totalLateMinutes > 0 ? "#FFF7ED" : "#F0FDF4",
+                                background: monthlySummary.totalLateMinutes > 0 ? "var(--warn-bg)" : "var(--success-bg)",
                                 borderRadius: 10, padding: "12px 14px",
-                                border: `1px solid ${monthlySummary.totalLateMinutes > 0 ? "#FED7AA" : "#BBF7D0"}`,
+                                border: `1px solid ${monthlySummary.totalLateMinutes > 0 ? "var(--warn)" : "var(--success)"}`,
                             }}>
                                 <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: monthlySummary.totalLateMinutes > 0 ? "#C2410C" : "#15803D", marginBottom: 6 }}>
                                     Total Late
@@ -1274,7 +1315,7 @@ const Attendance = () => {
                                 </p>
                                 <p style={{ fontSize: ".72rem", color: monthlySummary.totalLateMinutes > 0 ? "#C2410C" : "#15803D", marginTop: 4, fontWeight: 500 }}>
                                     {monthlySummary.totalLateMinutes > 0
-                                        ? `across ${lateDays} late day${lateDays !== 1 ? "s" : ""}`
+                                        ? `across ${lateOnlyCount} late day${lateOnlyCount !== 1 ? "s" : ""}`
                                         : "no late arrivals"}
                                 </p>
                             </div>
@@ -1291,21 +1332,36 @@ const Attendance = () => {
                                 <span className="card-title-icon"><Icon d={icons.chart} size={14} /></span>
                                 Monthly Breakdown
                             </div>
-                            <div style={{ height: 220 }} onMouseLeave={() => setHighlightStatus(null)}>
-                                <Bar data={chartData} options={chartOptions} />
-                            </div>
-                            <div style={{ display: "flex", gap: 12, marginTop: 14, flexWrap: "wrap" }}>
+
+                            {/* Summary row — count + label above chart */}
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 16 }}>
                                 {[
-                                    { color: "#4ADE80", label: "Present" },
-                                    { color: "#FDE047", label: "Half-Day" },
-                                    { color: "#F87171", label: "Late" },
-                                    { color: "#c5d6f3", label: "Absent" },
-                                ].map(l => (
-                                    <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: ".72rem", color: "var(--text-3)", fontWeight: 500 }}>
-                                        <span style={{ width: 8, height: 8, borderRadius: 2, background: l.color, display: "inline-block" }} />
-                                        {l.label}
+                                    { color: STATUS_COLORS.present.solid, label: "Total Present", value: presentTotal, bg: STATUS_COLORS.present.bg },
+                                    { color: STATUS_COLORS.present.solid, label: "Full Day", value: fullOnlyCount, bg: STATUS_COLORS.present.bg },
+                                    { color: STATUS_COLORS.halfday.solid, label: "Half-Day", value: halfOnlyCount, bg: STATUS_COLORS.halfday.bg },
+                                    { color: STATUS_COLORS.absent.solid, label: "Absent", value: absentDays, bg: STATUS_COLORS.absent.bg },
+                                ].map(s => (
+                                    <div key={s.label} style={{
+                                        background: isDark ? `${s.color}15` : s.bg,
+                                        borderRadius: 10,
+                                        padding: "10px 8px",
+                                        textAlign: "center",
+                                        border: `1.5px solid ${s.color}33`,
+                                    }}>
+                                        <div style={{ fontSize: "1.5rem", fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                                        <div style={{ fontSize: ".65rem", fontWeight: 700, color: "var(--text-2)", marginTop: 4, textTransform: "uppercase", letterSpacing: ".05em" }}>{s.label}</div>
                                     </div>
                                 ))}
+                            </div>
+
+                            <div style={{ height: 200 }} onMouseLeave={() => setHighlightStatus(null)}>
+                                <Bar data={chartData} options={{
+                                    ...chartOptions,
+                                    plugins: {
+                                        ...chartOptions.plugins,
+                                        datalabels: undefined,
+                                    },
+                                }} />
                             </div>
                         </div>
 
@@ -1470,7 +1526,7 @@ const Attendance = () => {
                                 <tbody>
                                     {pastMonthly.length === 0 && (
                                         <tr>
-                                            <td colSpan={6} style={{ textAlign: "center", color: "#9CA3AF", padding: "2.5rem" }}>
+                                            <td colSpan={6} style={{ textAlign: "center", color: "var(--text-3)", padding: "2.5rem" }}>
                                                 No records for {MONTHS[viewMonth - 1]} {viewYear}
                                             </td>
                                         </tr>
@@ -1499,26 +1555,26 @@ const Attendance = () => {
                                                                         "Absent";
                                         return (
                                             <tr key={item._id} onClick={() => setSelected(item)}>
-                                                <td style={{ fontWeight: 600, color: "#111318" }}>
+                                                <td style={{ fontWeight: 600, color: "var(--text-1)" }}>
                                                     {d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                                                 </td>
-                                                <td style={{ color: "#9CA3AF" }}>
+                                                <td style={{ color: "var(--text-3)" }}>
                                                     {d.toLocaleDateString("en-IN", { weekday: "short" })}
                                                 </td>
                                                 <td>
                                                     {item.punchIn
                                                         ? <span className="time-chip"><Icon d={icons.login} size={11} color="#059669" />{new Date(item.punchIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                                                        : <span style={{ color: "#D1D5DB" }}>—</span>}
+                                                        : <span style={{ color: "var(--border-strong)" }}>—</span>}
                                                 </td>
                                                 <td>
                                                     {item.punchOut
                                                         ? <span className="time-chip"><Icon d={icons.logout} size={11} color="#DC2626" />{new Date(item.punchOut).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                                                        : <span style={{ color: "#D1D5DB" }}>—</span>}
+                                                        : <span style={{ color: "var(--border-strong)" }}>—</span>}
                                                 </td>
 
 
 
-                                                <td style={{ fontFamily: "'DM Mono',monospace", fontSize: ".78rem", color: "#4B5563" }}>
+                                                <td style={{ fontFamily: "'DM Mono',monospace", fontSize: ".78rem", color: "var(--text-2)" }}>
                                                     {item.workHours ? formatWorkHours(item.workHours) : "—"}
                                                 </td>
 

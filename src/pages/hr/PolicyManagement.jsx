@@ -57,11 +57,12 @@ const PolicyForm = ({ initial, onSave, onClose }) => {
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: 16,
         }}>
             <div style={{
-                background: "#fff", borderRadius: 14, width: "100%", maxWidth: 660,
+                background: "var(--surface)", borderRadius: 14, width: "100%", maxWidth: 660,
                 maxHeight: "88vh", display: "flex", flexDirection: "column",
                 boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+                border: "1px solid var(--border)",
             }}>
-                <div style={{ padding: "16px 20px", borderBottom: "1px solid #eee", fontWeight: 700, fontSize: "1rem" }}>
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)", fontWeight: 700, fontSize: "1rem", color: "var(--text-1)" }}>
                     {initial ? "Edit Policy" : "Create Policy"}
                 </div>
                 <div style={{ flex: 1, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
@@ -70,20 +71,20 @@ const PolicyForm = ({ initial, onSave, onClose }) => {
                         { label: "Short description", key: "description", type: "input" },
                     ].map(({ label, key, type }) => (
                         <div key={key}>
-                            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>{label}</label>
+                            <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-2)", display: "block", marginBottom: 4 }}>{label}</label>
                             <input
                                 value={form[key]}
                                 onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                                style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: "0.875rem", boxSizing: "border-box" }}
+                                style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize: "0.875rem", boxSizing: "border-box", background: "var(--surface-3)", color: "var(--text-1)" }}
                             />
                         </div>
                     ))}
                     <div>
-                        <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Category</label>
+                        <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-2)", display: "block", marginBottom: 4 }}>Category</label>
                         <select
                             value={form.category}
                             onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
-                            style={{ padding: "9px 12px", borderRadius: 8, border: "1px solid #ddd", fontSize: "0.875rem" }}
+                            style={{ padding: "9px 12px", borderRadius: 8, border: "1px solid var(--border)", fontSize: "0.875rem", background: "var(--surface-3)", color: "var(--text-1)" }}
                         >
                             {["attendance", "leave", "wfh", "code-of-conduct", "it", "other"].map(c => (
                                 <option key={c} value={c}>{c.toUpperCase()}</option>
@@ -91,8 +92,8 @@ const PolicyForm = ({ initial, onSave, onClose }) => {
                         </select>
                     </div>
                     <div>
-                        <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Policy Content</label>
-                        <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid #ddd" }}>
+                        <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-2)", display: "block", marginBottom: 4 }}>Policy Content</label>
+                        <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--border)", background: "var(--surface)" }}>
                             <ReactQuill
                                 theme="snow"
                                 value={form.content}
@@ -114,7 +115,7 @@ const PolicyForm = ({ initial, onSave, onClose }) => {
                         </div>
                     </div>
                 </div>
-                <div style={{ padding: "14px 20px", borderTop: "1px solid #eee", display: "flex", gap: 10 }}>
+                <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)", display: "flex", gap: 10 }}>
                     <button
                         onClick={handleSave}
                         disabled={loading}
@@ -122,7 +123,7 @@ const PolicyForm = ({ initial, onSave, onClose }) => {
                     >
                         {loading ? "Saving..." : (initial ? "Update Policy" : "Create Policy")}
                     </button>
-                    <button onClick={onClose} style={{ padding: "10px 20px", borderRadius: 8, border: "1px solid #ddd", background: "#fff", cursor: "pointer" }}>Cancel</button>
+                    <button onClick={onClose} style={{ padding: "10px 20px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-1)", cursor: "pointer" }}>Cancel</button>
                 </div>
             </div>
         </div>
@@ -156,12 +157,13 @@ const ResponsesDrawer = ({ policyId, policyTitle, onClose }) => {
             display: "flex", justifyContent: "flex-end", zIndex: 9998,
         }}>
             <div style={{
-                width: "100%", maxWidth: 480, background: "#fff",
+                width: "100%", maxWidth: 480, background: "var(--surface)",
                 height: "100%", display: "flex", flexDirection: "column",
                 boxShadow: "-8px 0 32px rgba(0,0,0,0.15)",
+                borderLeft: "1px solid var(--border)",
             }}>
-                <div style={{ padding: "16px 20px", borderBottom: "1px solid #eee" }}>
-                    <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>Responses — {policyTitle}</div>
+                <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text-1)" }}>Responses — {policyTitle}</div>
                     <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
                         {["all", "acknowledged", "pending"].map(s => (
                             <button
@@ -169,9 +171,9 @@ const ResponsesDrawer = ({ policyId, policyTitle, onClose }) => {
                                 onClick={() => setStatusFilter(s)}
                                 style={{
                                     padding: "4px 12px", borderRadius: 20, fontSize: "0.75rem", fontWeight: 600,
-                                    border: statusFilter === s ? "none" : "1px solid #ddd",
-                                    background: statusFilter === s ? "#4f46e5" : "#fff",
-                                    color: statusFilter === s ? "#fff" : "#555", cursor: "pointer",
+                                    border: statusFilter === s ? "none" : "1px solid var(--border)",
+                                    background: statusFilter === s ? "#4f46e5" : "var(--surface-3)",
+                                    color: statusFilter === s ? "#fff" : "var(--text-2)", cursor: "pointer",
                                 }}
                             >
                                 {s}
@@ -181,29 +183,29 @@ const ResponsesDrawer = ({ policyId, policyTitle, onClose }) => {
                 </div>
                 <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
                     {loading ? (
-                        <div style={{ textAlign: "center", padding: 40, color: "#888" }}>Loading...</div>
+                        <div style={{ textAlign: "center", padding: 40, color: "var(--text-3)" }}>Loading...</div>
                     ) : filtered.length === 0 ? (
-                        <div style={{ textAlign: "center", padding: 40, color: "#888" }}>No responses.</div>
+                        <div style={{ textAlign: "center", padding: 40, color: "var(--text-3)" }}>No responses.</div>
                     ) : filtered.map((r, i) => (
                         <div key={i} style={{
-                            padding: "12px 14px", borderRadius: 8, background: "#f9f9f9",
+                            padding: "12px 14px", borderRadius: 8, background: "var(--surface-3)",
                             marginBottom: 8, borderLeft: `3px solid ${STATUS_COLOR[r.status]}`,
                         }}>
-                            <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>
+                            <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--text-1)" }}>
                                 {r.employee?.name ?? "Unknown"}
-                                <span style={{ fontWeight: 400, color: "#888", fontSize: "0.78rem", marginLeft: 8 }}>
+                                <span style={{ fontWeight: 400, color: "var(--text-3)", fontSize: "0.78rem", marginLeft: 8 }}>
                                     {r.employee?.employeeId}
                                 </span>
                             </div>
-                            <div style={{ fontSize: "0.78rem", color: "#666", marginTop: 2 }}>
+                            <div style={{ fontSize: "0.78rem", color: "var(--text-2)", marginTop: 2 }}>
                                 {r.employee?.department} · {r.employee?.designation}
                             </div>
                             {r.policyContent && (
                                 <div
                                     style={{
                                         marginTop: 8, padding: "8px 10px",
-                                        background: "#f0f0ff", borderRadius: 6,
-                                        fontSize: "0.78rem", color: "#333",
+                                        background: "var(--brand-light)", borderRadius: 6,
+                                        fontSize: "0.78rem", color: "var(--text-1)",
                                         maxHeight: 100, overflowY: "auto",
                                     }}
                                     dangerouslySetInnerHTML={{ __html: r.policyContent }}
@@ -214,7 +216,7 @@ const ResponsesDrawer = ({ policyId, policyTitle, onClose }) => {
                                     {r.status}
                                 </span>
                                 {r.respondedAt && (
-                                    <span style={{ color: "#aaa", fontSize: "0.72rem" }}>
+                                    <span style={{ color: "var(--text-3)", fontSize: "0.72rem" }}>
                                         · {new Date(r.respondedAt).toLocaleDateString()}
                                     </span>
                                 )}
@@ -222,8 +224,8 @@ const ResponsesDrawer = ({ policyId, policyTitle, onClose }) => {
                         </div>
                     ))}
                 </div>
-                <div style={{ padding: "14px 20px", borderTop: "1px solid #eee" }}>
-                    <button onClick={onClose} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 500 }}>
+                <div style={{ padding: "14px 20px", borderTop: "1px solid var(--border)" }}>
+                    <button onClick={onClose} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface-3)", color: "var(--text-1)", cursor: "pointer", fontWeight: 500 }}>
                         Close
                     </button>
                 </div>
@@ -373,13 +375,14 @@ const PolicyManagement = () => {
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                         {policies.map(policy => (
                             <div key={policy._id} style={{
-                                border: "1px solid #eee", borderRadius: 10, padding: "16px 18px",
-                                background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                                border: "1px solid var(--border)", borderRadius: 10, padding: "16px 18px",
+                                background: "var(--surface)",
+ boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
                             }}>
                                 <div style={{ display: "flex", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                                            <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>{policy.title}</span>
+                                            <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text-1)" }}>{policy.title}</span>
                                             <span style={{
                                                 padding: "2px 8px", borderRadius: 20, fontSize: "0.72rem", fontWeight: 700,
                                                 background: `${STATUS_COLOR[policy.status]}22`,
@@ -388,13 +391,13 @@ const PolicyManagement = () => {
                                             }}>
                                                 {policy.status}
                                             </span>
-                                            <span style={{ fontSize: "0.75rem", color: "#aaa" }}>v{policy.version}</span>
+                                            <span style={{ fontSize: "0.75rem", color: "var(--text-3)" }}>v{policy.version}</span>
                                         </div>
                                         {policy.content && (
                                             <div
                                                 className="ql-editor"
                                                 style={{
-                                                    fontSize: "0.9rem", color: "#181717", marginTop: 6,
+                                                    fontSize: "0.9rem", color: "var(--text-1)", marginTop: 6,
                                                     maxHeight: 70, overflow: "hidden", padding: 10, minHeight: "unset",
                                                     pointerEvents: "none",
                                                 }}
@@ -419,19 +422,19 @@ const PolicyManagement = () => {
                                             <>
                                                 <button
                                                     onClick={() => setViewResponses(policy)}
-                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: "0.8rem" }}
+                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--surface-3)", color: "var(--text-2)", cursor: "pointer", fontSize: "0.8rem" }}
                                                 >
                                                     <MdPeople size={14} /> Responses
                                                 </button>
                                                 <button
                                                     onClick={() => { setEditPolicy(policy); setShowForm(true); }}
-                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontSize: "0.8rem" }}
+                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--surface-3)", color: "var(--text-2)", cursor: "pointer", fontSize: "0.8rem" }}
                                                 >
                                                     <MdEdit size={14} /> Edit
                                                 </button>
                                                 <button
                                                     onClick={() => handleArchive(policy._id)}
-                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid #fecaca", background: "#fef2f2", color: "#dc2626", cursor: "pointer", fontSize: "0.8rem" }}
+                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--danger-bg)", color: "var(--text-1)", cursor: "pointer", fontSize: "0.8rem" }}
                                                 >
                                                     <MdArchive size={14} /> Archive
                                                 </button>
@@ -442,13 +445,13 @@ const PolicyManagement = () => {
                                             <>
                                                 <button
                                                     onClick={() => handleRestore(policy._id)}
-                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid #bbf7d0", background: "#f0fdf4", color: "#16a34a", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}
+                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--success-bg)", color: "var(--text-1)", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}
                                                 >
                                                     <MdUnarchive size={14} /> Restore
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(policy._id)}
-                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid #fecaca", background: "#fef2f2", color: "#dc2626", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}
+                                                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 7, border: "1px solid var(--border)", background: "var(--danger-bg)", color: "var(--text-1)", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}
                                                 >
                                                     <MdDeleteForever size={14} /> Delete
                                                 </button>

@@ -71,9 +71,9 @@ function Badge({ status }) {
             display: "inline-flex", alignItems: "center", gap: 6,
             padding: "3px 10px", borderRadius: 9999, fontSize: 12, fontWeight: 700,
             textTransform: "capitalize",
-            backgroundColor: isPending ? "#fffbeb" : "#f0fdf4",
-            color: isPending ? "#b45309" : "#15803d",
-            border: `1px solid ${isPending ? "#fde68a" : "#bbf7d0"}`,
+            backgroundColor: isPending ? "var(--warn-bg)" : "var(--success-bg)",
+            color: isPending ? "#b45309" : "var(--success)",
+            border: `1px solid ${isPending ? "#fde68a" : "var(--success-border)"}`,
         }}>
             {isPending ? (
                 <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
@@ -93,9 +93,9 @@ function Badge({ status }) {
 function StatCard({ label, value, color, active, onClick, loading }) {
     const [hovered, setHovered] = useState(false);
     const palette = {
-        blue: { border: "#3b82f6", bg: active ? "#eff6ff" : "#fff", shadow: "rgba(59,130,246,0.18)" },
-        amber: { border: "#f59e0b", bg: active ? "#fffbeb" : "#fff", shadow: "rgba(245,158,11,0.18)" },
-        green: { border: "#22c55e", bg: active ? "#f0fdf4" : "#fff", shadow: "rgba(34,197,94,0.18)" },
+        blue: { border: "#3b82f6", bg: active ? "var(--brand-light)" : "var(--surface)", shadow: "rgba(59,130,246,0.18)" },
+        amber: { border: "#f59e0b", bg: active ? "var(--warn-bg)" : "var(--surface)", shadow: "rgba(245,158,11,0.18)" },
+        green: { border: "#22c55e", bg: active ? "var(--success-bg)" : "var(--surface)", shadow: "rgba(34,197,94,0.18)" },
     };
     const p = palette[color];
     return (
@@ -107,17 +107,17 @@ function StatCard({ label, value, color, active, onClick, loading }) {
                     ? "0 8px 24px rgba(0,0,0,0.1)"
                     : "0 1px 4px rgba(0,0,0,0.07)",
             borderTop: `4px solid ${p.border}`,
-            borderRight: `1px solid ${active ? p.border : "#f3f4f6"}`,
-            borderBottom: `1px solid ${active ? p.border : "#f3f4f6"}`,
-            borderLeft: `1px solid ${active ? p.border : "#f3f4f6"}`,
+            borderRight: `1px solid ${active ? p.border : "var(--surface-3)"}`,
+            borderBottom: `1px solid ${active ? p.border : "var(--surface-3)"}`,
+            borderLeft: `1px solid ${active ? p.border : "var(--surface-3)"}`,
             padding: 24, flex: 1, minWidth: 0, cursor: "pointer",
             transform: hovered && !active ? "translateY(-3px)" : "none",
             transition: "transform 0.2s, box-shadow 0.2s",
         }} onClick={onClick} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", color: "#6b7280", margin: "0 0 8px" }}>{label}</p>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", color: "var(--text-2)", margin: "0 0 8px" }}>{label}</p>
             {loading
-                ? <div style={{ width: 64, height: 40, borderRadius: 8, backgroundColor: "#f3f4f6", animation: "pulse 1.5s ease-in-out infinite" }} />
-                : <p style={{ fontSize: 40, fontWeight: 900, color: "#0f172a", margin: 0, lineHeight: 1, animation: "countUp 0.4s ease" }}>{value}</p>
+                ? <div style={{ width: 64, height: 40, borderRadius: 8, backgroundColor: "var(--surface-3)", animation: "pulse 1.5s ease-in-out infinite" }} />
+                : <p style={{ fontSize: 40, fontWeight: 900, color: "var(--text-1)", margin: 0, lineHeight: 1, animation: "countUp 0.4s ease" }}>{value}</p>
             }
         </div>
     );
@@ -130,7 +130,7 @@ function Toast({ message, type, visible }) {
         <div style={{
             position: "fixed", bottom: 24, right: 24, zIndex: 9999,
             display: "flex", alignItems: "center", gap: 10,
-            padding: "14px 20px", borderRadius: 12, color: "#ffffff",
+            padding: "14px 20px", borderRadius: 12, color: "var(--surface)",
             fontSize: 14, fontWeight: 600, boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
             backgroundColor: type === "error" ? "#ef4444" : "#059669",
             animation: "slideUp 0.3s ease",
@@ -155,9 +155,9 @@ function DropZone({ onChange, hasFile }) {
         <div
             style={{
                 cursor: "pointer", borderRadius: 12,
-                border: `2px dashed ${drag ? "#818cf8" : hasFile ? "#86efac" : "#e5e7eb"}`,
+                border: `2px dashed ${drag ? "#818cf8" : hasFile ? "#86efac" : "var(--surface-3)"}`,
                 padding: "20px 16px", textAlign: "center", transition: "all 0.2s",
-                backgroundColor: drag ? "#eef2ff" : hasFile ? "#f0fdf4" : "transparent",
+                backgroundColor: drag ? "var(--brand-light)" : hasFile ? "#f0fdf4" : "transparent",
                 userSelect: "none",
             }}
             onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
@@ -174,13 +174,13 @@ function DropZone({ onChange, hasFile }) {
                 </div>
             ) : (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                    <svg style={{ width: 28, height: 28 }} fill="none" stroke="#d1d5db" viewBox="0 0 24 24">
+                    <svg style={{ width: 28, height: 28 }} fill="none" stroke="var(--border)" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                     <p style={{ fontSize: 14, fontWeight: 500, color: "#6b7280", margin: 0 }}>
                         Drop file here or <span style={{ color: "#4f46e5", textDecoration: "underline" }}>browse</span>
                     </p>
-                    <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>PDF, DOC, DOCX, PNG, JPG — max 5 MB</p>
+                    <p style={{ fontSize: 12, color: "var(--text-3)", margin: 0 }}>PDF, DOC, DOCX, PNG, JPG — max 5 MB</p>
                 </div>
             )}
             <input ref={inputRef} type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
@@ -204,8 +204,8 @@ function FilePreviewBlock({ previewUrl, fileName, fileUrl, onRemove }) {
                     marginTop: 12,
                     borderRadius: 14,
                     overflow: "hidden",
-                    border: "1px solid #e5e7eb",
-                    backgroundColor: "#ffffff",
+                    border: "1px solid var(--surface-3)",
+                    backgroundColor: "var(--surface)",
                 }}
             >
                 {/* PDF Preview */}
@@ -219,7 +219,7 @@ function FilePreviewBlock({ previewUrl, fileName, fileUrl, onRemove }) {
                                 height: 260,
                                 border: "none",
                                 display: "block",
-                                backgroundColor: "#f9fafb",
+                                backgroundColor: "var(--surface-2)",
                             }}
                         />
 
@@ -229,8 +229,8 @@ function FilePreviewBlock({ previewUrl, fileName, fileUrl, onRemove }) {
                                 alignItems: "center",
                                 justifyContent: "space-between",
                                 padding: "10px 14px",
-                                borderTop: "1px solid #e5e7eb",
-                                backgroundColor: "#f9fafb",
+                                borderTop: "1px solid var(--surface-3)",
+                                backgroundColor: "var(--surface-2)",
                             }}
                         >
                             <div
@@ -246,7 +246,7 @@ function FilePreviewBlock({ previewUrl, fileName, fileUrl, onRemove }) {
                                 <span
                                     style={{
                                         fontSize: 12,
-                                        color: "#374151",
+                                        color: "var(--text-2)",
                                         fontWeight: 500,
                                         overflow: "hidden",
                                         textOverflow: "ellipsis",
@@ -272,7 +272,7 @@ function FilePreviewBlock({ previewUrl, fileName, fileUrl, onRemove }) {
                                         padding: "6px 12px",
                                         borderRadius: 8,
                                         backgroundColor: "#4f46e5",
-                                        color: "#fff",
+                                        color: "var(--surface)",
                                         fontSize: 12,
                                         fontWeight: 600,
                                         textDecoration: "none",
@@ -293,7 +293,7 @@ function FilePreviewBlock({ previewUrl, fileName, fileUrl, onRemove }) {
                                             border: "none",
                                             cursor: "pointer",
                                             padding: 0,
-                                            color: "#9ca3af",
+                                            color: "var(--text-3)",
                                         }}
                                     >
                                         <svg
@@ -397,7 +397,7 @@ function FilePreviewBlock({ previewUrl, fileName, fileUrl, onRemove }) {
     }
 
     return (
-        <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, backgroundColor: "#eef2ff", border: "1px solid #e0e7ff", borderRadius: 8, padding: "10px 12px" }}>
+        <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, backgroundColor: "var(--brand-light)", border: "1px solid var(--brand-light)", borderRadius: 8, padding: "10px 12px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                 <svg style={{ width: 16, height: 16, flexShrink: 0 }} fill="none" stroke="#6366f1" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h5l5 5v11a2 2 0 01-2 2z" />
@@ -421,10 +421,10 @@ function FilePreviewBlock({ previewUrl, fileName, fileUrl, onRemove }) {
 // ── Skeleton Row ──────────────────────────────────────────────────────────────
 function SkeletonRow() {
     return (
-        <tr style={{ borderBottom: "1px solid #f9fafb" }}>
+        <tr style={{ borderBottom: "1px solid var(--surface-2)" }}>
             {[40, 160, 100, 100, 90, 120].map((w, i) => (
                 <td key={i} style={{ padding: "14px 20px" }}>
-                    <div style={{ height: 14, borderRadius: 6, backgroundColor: "#f3f4f6", animation: "pulse 1.5s ease-in-out infinite", width: w }} />
+                    <div style={{ height: 14, borderRadius: 6, backgroundColor: "var(--surface-3)", animation: "pulse 1.5s ease-in-out infinite", width: w }} />
                 </td>
             ))}
         </tr>
@@ -452,13 +452,13 @@ function DaySelector({ value, onChange, presentDays, loadingAttendance }) {
                 const isDisabled = state !== "active";
                 const isSelected = value === day;
 
-                let bg = "#eef2ff", border = "#c7d2fe", color = "#4f46e5";
-                if (state === "weekend") { bg = "#f9fafb"; border = "#e5e7eb"; color = "#d1d5db"; }
-                if (state === "absent") { bg = "#fff1f2"; border = "#fecdd3"; color = "#fca5a5"; }
-                if (state === "loading") { bg = "#f9fafb"; border = "#e5e7eb"; color = "#d1d5db"; }
-                if (isSelected) { bg = "#4f46e5"; border = "#4f46e5"; color = "#ffffff"; }
+                let bg = "var(--brand-light)", border = "#c7d2fe", color = "#4f46e5";
+                if (state === "weekend") { bg = "var(--surface-2)"; border = "var(--surface-3)"; color = "var(--border)"; }
+                if (state === "absent") { bg = "#DBEAFE"; border = "#93C5FD"; color = "#1E3A8A"; }
+                if (state === "loading") { bg = "var(--surface-2)"; border = "var(--surface-3)"; color = "var(--border)"; }
+                if (isSelected) { bg = "#4f46e5"; border = "#4f46e5"; color = "var(--surface)"; }
 
-                const dotColor = state === "absent" ? "#f87171" : state === "weekend" ? "#d1d5db" : null;
+                const dotColor = state === "absent" ? "#3B82F6" : state === "weekend" ? "var(--border)" : null;
 
                 return (
                     <button
@@ -482,7 +482,7 @@ function DaySelector({ value, onChange, presentDays, loadingAttendance }) {
                         {dotColor && (
                             <span style={{
                                 position: "absolute", top: -3, right: -3, width: 8, height: 8,
-                                borderRadius: "50%", backgroundColor: dotColor, border: "1.5px solid #fff",
+                                borderRadius: "50%", backgroundColor: dotColor, border: "1.5px solid var(--surface)",
                             }} />
                         )}
                     </button>
@@ -582,25 +582,25 @@ function ReportModal({ open, onClose, onSave, editData, saving, presentDays, loa
         : (editData?.fileUrl || null);
 
     const inputStyle = {
-        width: "100%", border: "1px solid #e5e7eb", borderRadius: 8,
+        width: "100%", border: "1px solid var(--surface-3)", borderRadius: 8,
         padding: "10px 12px", fontSize: 14, outline: "none",
         boxSizing: "border-box", fontFamily: "inherit",
     };
-    const labelStyle = { display: "block", fontSize: 12, fontWeight: 600, color: "#4b5563", marginBottom: 4 };
+    const labelStyle = { display: "block", fontSize: 12, fontWeight: 600, color: "var(--text-2)", marginBottom: 4 };
 
     return (
         <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", padding: 16 }}>
-            <div style={{ backgroundColor: "#ffffff", borderRadius: 16, boxShadow: "0 25px 60px rgba(0,0,0,0.15)", width: "100%", maxWidth: 512, maxHeight: "90vh", display: "flex", flexDirection: "column", animation: "fadeInScale 0.2s ease" }}>
+            <div style={{ backgroundColor: "var(--surface)", borderRadius: 16, boxShadow: "0 25px 60px rgba(0,0,0,0.15)", width: "100%", maxWidth: 512, maxHeight: "90vh", display: "flex", flexDirection: "column", animation: "fadeInScale 0.2s ease" }}>
 
                 {/* Header */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #f3f4f6", flexShrink: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid var(--surface-3)", flexShrink: 0 }}>
                     <div>
-                        <h2 style={{ fontSize: 15, fontWeight: 700, color: "#1f2937", margin: 0 }}>{editData ? "Edit Report" : "Add Daily Report"}</h2>
-                        <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 2, marginBottom: 0 }}>
+                        <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-1)", margin: 0 }}>{editData ? "Edit Report" : "Add Daily Report"}</h2>
+                        <p style={{ fontSize: 12, color: "var(--text-3)", marginTop: 2, marginBottom: 0 }}>
                             {editData ? "Update your report details" : "Fill in your task details for today"}
                         </p>
                     </div>
-                    <button onClick={onClose} disabled={saving} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", padding: 4, opacity: saving ? 0.4 : 1 }}>
+                    <button onClick={onClose} disabled={saving} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-3)", padding: 4, opacity: saving ? 0.4 : 1 }}>
                         <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -610,7 +610,7 @@ function ReportModal({ open, onClose, onSave, editData, saving, presentDays, loa
                 {/* Body */}
                 <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16, overflowY: "auto" }}>
                     {formError && (
-                        <p style={{ fontSize: 12, color: "#ef4444", backgroundColor: "#fef2f2", border: "1px solid #fee2e2", borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
+                        <p style={{ fontSize: 12, color: "#ef4444", backgroundColor: "var(--danger-bg)", border: "1px solid var(--danger-bg)", borderRadius: 8, padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
                             <svg style={{ width: 14, height: 14, flexShrink: 0 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M12 3a9 9 0 110 18A9 9 0 0112 3z" />
                             </svg>
@@ -636,7 +636,7 @@ function ReportModal({ open, onClose, onSave, editData, saving, presentDays, loa
                     <div>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                             <label style={{ ...labelStyle, marginBottom: 0 }}>Day <span style={{ color: "#f87171" }}>*</span></label>
-                            <span style={{ fontSize: 11, color: "#9ca3af" }}>
+                            <span style={{ fontSize: 11, color: "var(--text-3)" }}>
                                 {loadingAttendance ? "⏳ Loading attendance..." : presentDays.size > 0 ? "Only present days are selectable" : "Select a day"}
                             </span>
                         </div>
@@ -646,7 +646,7 @@ function ReportModal({ open, onClose, onSave, editData, saving, presentDays, loa
                             {[
                                 { dot: "#4f46e5", label: "Present" },
                                 { dot: "#fca5a5", label: "Absent" },
-                                { dot: "#d1d5db", label: "Weekend" },
+                                { dot: "var(--border)", label: "Weekend" },
                             ].map(({ dot, label }) => (
                                 <div key={label} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6b7280" }}>
                                     <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: dot, display: "inline-block" }} />
@@ -661,7 +661,7 @@ function ReportModal({ open, onClose, onSave, editData, saving, presentDays, loa
                     {/* Status */}
                     <div>
                         <label style={labelStyle}>Status</label>
-                        <select value={form.status} onChange={(e) => setForm(f => ({ ...f, status: e.target.value }))} style={{ ...inputStyle, backgroundColor: "#ffffff" }}>
+                        <select value={form.status} onChange={(e) => setForm(f => ({ ...f, status: e.target.value }))} style={{ ...inputStyle, backgroundColor: "var(--surface)" }}>
                             <option value="pending">Pending</option>
                             <option value="completed">Completed</option>
                         </select>
@@ -679,7 +679,7 @@ function ReportModal({ open, onClose, onSave, editData, saving, presentDays, loa
                     <div>
                         <label style={{ ...labelStyle, marginBottom: 6 }}>
                             Attach File <span style={{ color: "#f87171" }}>*</span>
-                            <span style={{ color: "#9ca3af", fontWeight: 400, marginLeft: 4 }}>(PDF, DOC, Image · max 5MB)</span>
+                            <span style={{ color: "var(--text-3)", fontWeight: 400, marginLeft: 4 }}>(PDF, DOC, Image · max 5MB)</span>
                         </label>
                         <DropZone onChange={handleFileChange} hasFile={hasFile} />
                         <FilePreviewBlock previewUrl={displayPreview} fileName={displayFileName} fileUrl={displayFileUrl} onRemove={form.file ? clearFile : null} />
@@ -694,7 +694,7 @@ function ReportModal({ open, onClose, onSave, editData, saving, presentDays, loa
                                 margin: "0 24px 16px",
                                 padding: "10px 12px",
                                 borderRadius: 8,
-                                background: "#FEF2F2",
+                                background: "var(--danger-bg)",
                                 border: "1px solid #FECACA",
                                 color: "#DC2626",
                                 fontSize: 13,
@@ -707,14 +707,14 @@ function ReportModal({ open, onClose, onSave, editData, saving, presentDays, loa
                 }
 
                 {/* Footer */}
-                <div style={{ padding: "16px 24px", borderTop: "1px solid #f3f4f6", display: "flex", justifyContent: "flex-end", gap: 8, flexShrink: 0 }}>
+                <div style={{ padding: "16px 24px", borderTop: "1px solid var(--surface-3)", display: "flex", justifyContent: "flex-end", gap: 8, flexShrink: 0 }}>
                     <button onClick={onClose} disabled={saving}
-                        style={{ padding: "8px 16px", fontSize: 14, fontWeight: 500, color: "#4b5563", backgroundColor: "#f3f4f6", border: "none", borderRadius: 8, cursor: "pointer", opacity: saving ? 0.4 : 1 }}>
+                        style={{ padding: "8px 16px", fontSize: 14, fontWeight: 500, color: "var(--text-2)", backgroundColor: "var(--surface-3)", border: "none", borderRadius: 8, cursor: "pointer", opacity: saving ? 0.4 : 1 }}>
                         Cancel
                     </button>
                     <button onClick={handleSubmit} disabled={saving || attendanceCheckLoading || !hasPunchedIn}
-                        style={{ padding: "8px 20px", fontSize: 14, fontWeight: 600, color: "#ffffff", backgroundColor: "#4f46e5", border: "none", borderRadius: 8, cursor: "pointer", opacity: saving ? 0.6 : 1, display: "flex", alignItems: "center", gap: 8 }}>
-                        {saving && <span style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#ffffff", animation: "spin 0.7s linear infinite", display: "inline-block" }} />}
+                        style={{ padding: "8px 20px", fontSize: 14, fontWeight: 600, color: "var(--surface)", backgroundColor: "#4f46e5", border: "none", borderRadius: 8, cursor: "pointer", opacity: saving ? 0.6 : 1, display: "flex", alignItems: "center", gap: 8 }}>
+                        {saving && <span style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "var(--surface)", animation: "spin 0.7s linear infinite", display: "inline-block" }} />}
                         {saving ? "Saving..." : editData ? "Save Changes" : "Submit Report"}
                     </button>
                 </div>
@@ -737,7 +737,7 @@ function DetailModal({ report, onClose }) {
         justifyContent: "space-between",
         alignItems: "center",
         padding: "10px 0",
-        borderBottom: "1px solid #f9fafb",
+        borderBottom: "1px solid var(--surface-2)",
     };
 
     return (
@@ -759,7 +759,7 @@ function DetailModal({ report, onClose }) {
             >
                 <div
                     style={{
-                        backgroundColor: "#ffffff",
+                        backgroundColor: "var(--surface)",
                         borderRadius: 16,
                         boxShadow: "0 25px 60px rgba(0,0,0,0.15)",
                         width: "100%",
@@ -775,7 +775,7 @@ function DetailModal({ report, onClose }) {
                     <div
                         style={{
                             padding: "16px 24px",
-                            borderBottom: "1px solid #f3f4f6",
+                            borderBottom: "1px solid var(--surface-3)",
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
@@ -787,7 +787,7 @@ function DetailModal({ report, onClose }) {
                                     fontSize: 16,
                                     fontWeight: 700,
                                     margin: 0,
-                                    color: "#111827",
+                                    color: "var(--text-1)",
                                 }}
                             >
                                 {report.task_name}
@@ -797,7 +797,7 @@ function DetailModal({ report, onClose }) {
                                 style={{
                                     margin: "4px 0 0",
                                     fontSize: 12,
-                                    color: "#9ca3af",
+                                    color: "var(--text-3)",
                                 }}
                             >
                                 Report Details
@@ -811,7 +811,7 @@ function DetailModal({ report, onClose }) {
                                 background: "none",
                                 cursor: "pointer",
                                 fontSize: 20,
-                                color: "#9ca3af",
+                                color: "var(--text-3)",
                             }}
                         >
                             ×
@@ -835,9 +835,9 @@ function DetailModal({ report, onClose }) {
                                 style={{
                                     borderRadius: 14,
                                     overflow: "hidden",
-                                    border: "1px solid #e5e7eb",
+                                    border: "1px solid var(--surface-3)",
                                     cursor: "pointer",
-                                    backgroundColor: "#f9fafb",
+                                    backgroundColor: "var(--surface-2)",
                                 }}
                             >
                                 <img
@@ -854,9 +854,9 @@ function DetailModal({ report, onClose }) {
                                 <div
                                     style={{
                                         padding: "10px 14px",
-                                        borderTop: "1px solid #e5e7eb",
+                                        borderTop: "1px solid var(--surface-3)",
                                         fontSize: 13,
-                                        color: "#4b5563",
+                                        color: "var(--text-2)",
                                         fontWeight: 500,
                                     }}
                                 >
@@ -870,22 +870,22 @@ function DetailModal({ report, onClose }) {
                         {!report.filePreview && isPdf && report.fileUrl && (
                             <div
                                 style={{
-                                    border: "1px solid #e5e7eb",
+                                    border: "1px solid var(--surface-3)",
                                     borderRadius: 14,
                                     overflow: "hidden",
-                                    background: "#fff",
+                                    background: "var(--surface)",
                                 }}
                             >
                                 {/* Header */}
                                 <div
                                     style={{
                                         padding: "10px 14px",
-                                        borderBottom: "1px solid #e5e7eb",
+                                        borderBottom: "1px solid var(--surface-3)",
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "space-between",
                                         gap: 12,
-                                        backgroundColor: "#f9fafb",
+                                        backgroundColor: "var(--surface-2)",
                                     }}
                                 >
                                     <div
@@ -903,7 +903,7 @@ function DetailModal({ report, onClose }) {
                                             style={{
                                                 fontSize: 13,
                                                 fontWeight: 600,
-                                                color: "#374151",
+                                                color: "var(--text-2)",
                                                 overflow: "hidden",
                                                 textOverflow: "ellipsis",
                                                 whiteSpace: "nowrap",
@@ -924,7 +924,7 @@ function DetailModal({ report, onClose }) {
                                             padding: "7px 14px",
                                             borderRadius: 8,
                                             backgroundColor: "#4f46e5",
-                                            color: "#fff",
+                                            color: "var(--surface)",
                                             fontSize: 12,
                                             fontWeight: 600,
                                             textDecoration: "none",
@@ -956,9 +956,9 @@ function DetailModal({ report, onClose }) {
                                     alignItems: "center",
                                     gap: 10,
                                     padding: "12px 14px",
-                                    border: "1px solid #e5e7eb",
+                                    border: "1px solid var(--surface-3)",
                                     borderRadius: 12,
-                                    backgroundColor: "#f9fafb",
+                                    backgroundColor: "var(--surface-2)",
                                 }}
                             >
                                 <span style={{ fontSize: 20 }}>📁</span>
@@ -973,7 +973,7 @@ function DetailModal({ report, onClose }) {
                                         style={{
                                             margin: 0,
                                             fontSize: 13,
-                                            color: "#374151",
+                                            color: "var(--text-2)",
                                             fontWeight: 500,
                                             whiteSpace: "nowrap",
                                             overflow: "hidden",
@@ -996,7 +996,7 @@ function DetailModal({ report, onClose }) {
                                     style={{
                                         fontSize: 11,
                                         fontWeight: 600,
-                                        color: "#9ca3af",
+                                        color: "var(--text-3)",
                                         textTransform: "uppercase",
                                     }}
                                 >
@@ -1006,7 +1006,7 @@ function DetailModal({ report, onClose }) {
                                 <span
                                     style={{
                                         fontSize: 14,
-                                        color: "#374151",
+                                        color: "var(--text-2)",
                                         fontWeight: 500,
                                     }}
                                 >
@@ -1020,7 +1020,7 @@ function DetailModal({ report, onClose }) {
                                 style={{
                                     fontSize: 11,
                                     fontWeight: 600,
-                                    color: "#9ca3af",
+                                    color: "var(--text-3)",
                                     textTransform: "uppercase",
                                 }}
                             >
@@ -1036,7 +1036,7 @@ function DetailModal({ report, onClose }) {
                                     style={{
                                         fontSize: 11,
                                         fontWeight: 600,
-                                        color: "#9ca3af",
+                                        color: "var(--text-3)",
                                         textTransform: "uppercase",
                                         marginBottom: 8,
                                     }}
@@ -1046,12 +1046,12 @@ function DetailModal({ report, onClose }) {
 
                                 <div
                                     style={{
-                                        backgroundColor: "#f9fafb",
+                                        backgroundColor: "var(--surface-2)",
                                         borderRadius: 10,
                                         padding: 14,
                                         fontSize: 14,
                                         lineHeight: 1.6,
-                                        color: "#4b5563",
+                                        color: "var(--text-2)",
                                     }}
                                 >
                                     {report.message}
@@ -1088,7 +1088,7 @@ function DetailModal({ report, onClose }) {
                             borderRadius: "50%",
                             border: "none",
                             backgroundColor: "rgba(255,255,255,0.2)",
-                            color: "#fff",
+                            color: "var(--surface)",
                             fontSize: 24,
                             cursor: "pointer",
                         }}
@@ -1118,16 +1118,16 @@ function PaginationBar({ safePage, totalPages, filteredLen, goPage }) {
     if (filteredLen === 0) return null;
     const start = (safePage - 1) * PER_PAGE + 1;
     const end = Math.min(safePage * PER_PAGE, filteredLen);
-    const btnBase = { width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12, cursor: "pointer" };
+    const btnBase = { width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, border: "1px solid var(--surface-3)", fontSize: 12, cursor: "pointer" };
 
     return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderTop: "1px solid #f3f4f6" }}>
-            <span style={{ fontSize: 12, color: "#9ca3af" }}>Showing {start}–{end} of {filteredLen}</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderTop: "1px solid var(--surface-3)" }}>
+            <span style={{ fontSize: 12, color: "var(--text-3)" }}>Showing {start}–{end} of {filteredLen}</span>
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                 <button onClick={() => goPage(safePage - 1)} disabled={safePage === 1} style={{ ...btnBase, backgroundColor: "transparent", color: "#6b7280", opacity: safePage === 1 ? 0.3 : 1 }}>‹</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                     <button key={p} onClick={() => goPage(p)}
-                        style={{ ...btnBase, backgroundColor: p === safePage ? "#4f46e5" : "transparent", color: p === safePage ? "#ffffff" : "#4b5563", borderColor: p === safePage ? "#4f46e5" : "#e5e7eb", fontWeight: 500 }}>{p}</button>
+                        style={{ ...btnBase, backgroundColor: p === safePage ? "#4f46e5" : "transparent", color: p === safePage ? "var(--surface)" : "var(--text-2)", borderColor: p === safePage ? "#4f46e5" : "var(--surface-3)", fontWeight: 500 }}>{p}</button>
                 ))}
                 <button onClick={() => goPage(safePage + 1)} disabled={safePage === totalPages} style={{ ...btnBase, backgroundColor: "transparent", color: "#6b7280", opacity: safePage === totalPages ? 0.3 : 1 }}>›</button>
             </div>
@@ -1335,7 +1335,7 @@ export default function DailyReports() {
         }
     };
 
-    const thStyle = { padding: "12px 20px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#9ca3af", textAlign: "left" };
+    const thStyle = { padding: "12px 20px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-3)", textAlign: "left" };
     const thCenterStyle = { ...thStyle, textAlign: "center" };
 
     useEffect(() => {
@@ -1350,18 +1350,18 @@ export default function DailyReports() {
     return (
         <DashboardLayout>
 
-            <div style={{ minHeight: "100vh", backgroundColor: "#f1f5f9", padding: 24, fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
+            <div style={{ minHeight: "100vh", backgroundColor: "var(--surface-2)", padding: 24, fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
                 {/* Header */}
                 <div style={{ marginBottom: 24 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "#0f172a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <svg width="18" height="18" fill="none" stroke="#ffffff" viewBox="0 0 24 24">
+                        <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: "var(--text-1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <svg width="18" height="18" fill="none" stroke="var(--surface)" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h5l5 5v11a2 2 0 01-2 2z" />
                             </svg>
                         </div>
-                        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", margin: 0, letterSpacing: "-0.02em" }}>Daily Reports</h1>
+                        <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-1)", margin: 0, letterSpacing: "-0.02em" }}>Daily Reports</h1>
                     </div>
-                    <p style={{ fontSize: 13, color: "#64748b", marginTop: 0, marginBottom: 0, paddingLeft: 46 }}>Submit and track your daily task reports</p>
+                    <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0, marginBottom: 0, paddingLeft: 46 }}>Submit and track your daily task reports</p>
                 </div>
 
                 {/* Stat Cards */}
@@ -1372,27 +1372,27 @@ export default function DailyReports() {
                 </div>
 
                 {/* Table Card */}
-                <div style={{ backgroundColor: "#ffffff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid #f3f4f6" }}>
+                <div style={{ backgroundColor: "var(--surface)", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", border: "1px solid var(--surface-3)" }}>
 
                     {/* Toolbar */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid #f3f4f6" }}>
-                        <h2 style={{ fontSize: 14, fontWeight: 600, color: "#374151", margin: 0 }}>All Reports</h2>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--surface-3)" }}>
+                        <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-2)", margin: 0 }}>All Reports</h2>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <button onClick={fetchReports} disabled={loading}
-                                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, border: "1px solid #e5e7eb", color: "#6b7280", fontSize: 14, backgroundColor: "transparent", cursor: "pointer", opacity: loading ? 0.4 : 1 }}>
+                                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--surface-3)", color: "#6b7280", fontSize: 14, backgroundColor: "transparent", cursor: "pointer", opacity: loading ? 0.4 : 1 }}>
                                 <svg style={{ width: 16, height: 16, animation: loading ? "spin 1s linear infinite" : "none" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
                                 Refresh
                             </button>
                             <select value={statusFilter} onChange={(e) => handleDropdownFilter(e.target.value)}
-                                style={{ fontSize: 14, border: "1px solid #e5e7eb", borderRadius: 8, padding: "8px 12px", backgroundColor: "#ffffff", color: "#4b5563", outline: "none", cursor: "pointer" }}>
+                                style={{ fontSize: 14, border: "1px solid var(--surface-3)", borderRadius: 8, padding: "8px 12px", backgroundColor: "var(--surface)", color: "var(--text-2)", outline: "none", cursor: "pointer" }}>
                                 <option value="">All Status</option>
                                 <option value="pending">Pending</option>
                                 <option value="completed">Completed</option>
                             </select>
                             <button onClick={openAdd}
-                                style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: "#4f46e5", color: "#ffffff", fontSize: 14, fontWeight: 500, padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer" }}>
+                                style={{ display: "flex", alignItems: "center", gap: 6, backgroundColor: "#4f46e5", color: "var(--surface)", fontSize: 14, fontWeight: 500, padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer" }}>
                                 <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>Add Report
                             </button>
                         </div>
@@ -1403,7 +1403,7 @@ export default function DailyReports() {
                         <div style={{ overflowX: "auto" }}>
                             <table style={{ width: "100%", fontSize: 14, borderCollapse: "collapse" }}>
                                 <thead>
-                                    <tr style={{ backgroundColor: "#f9fafb" }}>
+                                    <tr style={{ backgroundColor: "var(--surface-2)" }}>
                                         {["#", "Task Name", "Day", "Date", "Status", "Actions"].map((h) => (
                                             <th key={h} style={h === "Actions" ? thCenterStyle : thStyle}>{h}</th>
                                         ))}
@@ -1413,7 +1413,7 @@ export default function DailyReports() {
                             </table>
                         </div>
                     ) : filtered.length === 0 ? (
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", color: "#9ca3af" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", color: "var(--text-3)" }}>
                             <svg style={{ width: 48, height: 48, marginBottom: 12, opacity: 0.3 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V6a2 2 0 012-2h5l5 5v11a2 2 0 01-2 2z" />
                             </svg>
@@ -1427,7 +1427,7 @@ export default function DailyReports() {
                             <div style={{ overflowX: "auto" }}>
                                 <table style={{ width: "100%", fontSize: 14, borderCollapse: "collapse" }}>
                                     <thead>
-                                        <tr style={{ backgroundColor: "#f9fafb" }}>
+                                        <tr style={{ backgroundColor: "var(--surface-2)" }}>
                                             {["#", "Task Name", "Day", "Date", "Status", "Actions"].map((h) => (
                                                 <th key={h} style={h === "Actions" ? thCenterStyle : thStyle}>{h}</th>
                                             ))}
@@ -1437,14 +1437,14 @@ export default function DailyReports() {
                                         {pageSlice.map((r, i) => (
                                             <tr key={r._id} onClick={() => setDetailRow(r)}
                                                 className="emp-row"
-                                                style={{ borderBottom: "1px solid #f1f5f9", cursor: "pointer", animation: `rowSlideIn 0.25s ease ${i * 0.04}s both` }}
+                                                style={{ borderBottom: "1px solid var(--surface-2)", cursor: "pointer", animation: `rowSlideIn 0.25s ease ${i * 0.04}s both` }}
                                             >
                                                 <td style={{ padding: "14px 20px" }}>
-                                                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 7, backgroundColor: "#f1f5f9", fontSize: 11, fontWeight: 800, color: "#475569" }}>
+                                                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 7, backgroundColor: "var(--surface-2)", fontSize: 11, fontWeight: 800, color: "var(--text-2)" }}>
                                                         {String((safePage - 1) * PER_PAGE + i + 1).padStart(2, "0")}
                                                     </span>
                                                 </td>
-                                                <td style={{ padding: "14px 20px", fontWeight: 700, color: "#0f172a" }}>{r.task_name}</td>
+                                                <td style={{ padding: "14px 20px", fontWeight: 700, color: "var(--text-1)" }}>{r.task_name}</td>
                                                 <td style={{ padding: "14px 20px", color: "#334155", fontWeight: 500 }}>{r.day}</td>
                                                 <td style={{ padding: "14px 20px", color: "#334155", fontWeight: 500 }}>{fmt(r.date)}</td>
                                                 <td style={{ padding: "14px 20px" }}><Badge status={r.status} /></td>
@@ -1455,9 +1455,9 @@ export default function DailyReports() {
                                                             title={r.sent ? "Cannot edit a sent report" : "Edit report"}
                                                             style={{
                                                                 display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, border: "1px solid", cursor: r.sent ? "not-allowed" : "pointer",
-                                                                borderColor: r.sent ? "#e2e8f0" : "#c7d2fe",
+                                                                borderColor: r.sent ? "var(--border)" : "#c7d2fe",
                                                                 color: r.sent ? "#cbd5e1" : "#4f46e5",
-                                                                backgroundColor: r.sent ? "#f8fafc" : "#eef2ff",
+                                                                backgroundColor: r.sent ? "var(--surface-2)" : "var(--brand-light)",
                                                             }}>
                                                             <svg style={{ width: 12, height: 12 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -1466,7 +1466,7 @@ export default function DailyReports() {
                                                         </button>
 
                                                         {r.sent ? (
-                                                            <span style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700, border: "1px solid #bbf7d0", color: "#15803d", backgroundColor: "#f0fdf4" }}>
+                                                            <span style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 700, border: "1px solid var(--success-border)", color: "var(--success)", backgroundColor: "var(--success-bg)" }}>
                                                                 <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                                                 </svg>
@@ -1475,7 +1475,7 @@ export default function DailyReports() {
                                                         ) : (
                                                             <button onClick={(e) => handleSend(e, r._id)} disabled={sendingId === r._id}
                                                                 className="emp-action-btn"
-                                                                style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, border: "1px solid #bfdbfe", color: "#1d4ed8", backgroundColor: "#eff6ff", cursor: "pointer", opacity: sendingId === r._id ? 0.5 : 1 }}>
+                                                                style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600, border: "1px solid var(--brand-border)", color: "var(--brand)", backgroundColor: "var(--brand-light)", cursor: "pointer", opacity: sendingId === r._id ? 0.5 : 1 }}>
                                                                 {sendingId === r._id
                                                                     ? <span style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid #93c5fd", borderTopColor: "#2563eb", animation: "spin 0.7s linear infinite", display: "inline-block" }} />
                                                                     : <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">

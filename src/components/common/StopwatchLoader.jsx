@@ -113,7 +113,7 @@ const StopwatchLoader = () => {
                     width: 190px;
                     height: 190px;
                     border-radius: 50%;
-                    background: #ffffff;
+                    background: var(--surface);
                     border: 2px solid #cbd5e1;
                     box-shadow: inset 0 2px 10px rgba(0,0,0,0.07), 0 4px 20px rgba(90,127,240,0.1);
                     overflow: visible;

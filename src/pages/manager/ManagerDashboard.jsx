@@ -361,9 +361,8 @@ const ManagerDashboard = () => {
                 ?? stats?.todayPresent
                 ?? teamAttendance.filter(
                     (a) =>
-                        a.attendanceStatus === "punched_in" ||
-                        a.status === "present" ||
-                        a.status === "punched_in"
+                        ["present", "punched_in", "punched_out", "late", "half_day"].includes(a.attendanceStatus) ||
+                        ["present", "punched_in", "punched_out"].includes(a.status)
                 ).length,
             accent: "green",
             sub: "Checked in",
@@ -454,13 +453,13 @@ const ManagerDashboard = () => {
                 .mgr-header h1 {
                     font-size: 1.5rem;
                     font-weight: 800;
-                    color: #111318;
+                    color: var(--text-1);
                     letter-spacing: -0.4px;
                     margin-bottom: 3px;
                 }
                 .mgr-header p {
                     font-size: .83rem;
-                    color: #374151;
+                    color: var(--text-2);
                     font-weight: 500;
                 }
                 .mgr-btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
@@ -487,8 +486,8 @@ const ManagerDashboard = () => {
                 .mgr-btn:active { transform: translateY(0) scale(0.97); box-shadow: none; }
                 .mgr-btn-primary { background: #5B4CF5; color: #fff; border-color: #5B4CF5; }
                 .mgr-btn-primary:hover { background: #4a3de0; border-color: #4a3de0; }
-                .mgr-btn-ghost { background: #fff; color: #111318; border-color: #E2E8F0; }
-                .mgr-btn-ghost:hover { background: #F8FAFC; border-color: #C7D2FE; color: #5B4CF5; }
+                .mgr-btn-ghost { background: var(--surface); color: var(--text-1); border-color: var(--border); }
+                .mgr-btn-ghost:hover { background: var(--surface-2); border-color: var(--border-strong); color: #5B4CF5; }
 
                 /* ── Stat cards grid ── */
                 .mgr-stats-grid {
@@ -501,9 +500,9 @@ const ManagerDashboard = () => {
                 @media(max-width:560px){ .mgr-stats-grid{ grid-template-columns: 1fr; } }
 
                 .stat-card {
-                    background: #fff;
+                    background: var(--surface);
                     border-radius: 16px;
-                    border: 1px solid #E8EBF0;
+                    border: 1px solid var(--border);
                     padding: 18px 20px 16px;
                     position: relative;
                     overflow: hidden;
@@ -547,20 +546,20 @@ const ManagerDashboard = () => {
                     font-weight: 700;
                     text-transform: uppercase;
                     letter-spacing: .7px;
-                    color: #374151;
+                    color: var(--text-2);
                     margin-bottom: 8px;
                 }
                 .stat-value {
                     font-size: 2.1rem;
                     font-weight: 800;
-                    color: #111318;
+                    color: var(--text-1);
                     line-height: 1;
                     letter-spacing: -1.5px;
                     font-variant-numeric: tabular-nums;
                 }
                 .stat-sub {
                     font-size: .72rem;
-                    color: #374151;
+                    color: var(--text-3);
                     margin-top: 5px;
                     font-weight: 500;
                 }
@@ -581,7 +580,7 @@ const ManagerDashboard = () => {
                 /* Payroll progress bar */
                 .payroll-bar {
                     height: 5px;
-                    background: #F1F5F9;
+                    background: var(--surface-3);
                     border-radius: 3px;
                     margin-top: 10px;
                     overflow: hidden;
@@ -616,15 +615,15 @@ const ManagerDashboard = () => {
                 @media(max-width:700px){ .mgr-row{ grid-template-columns: 1fr; } }
 
                 .mgr-card {
-                    background: #fff;
+                    background: var(--surface);
                     border-radius: 16px;
-                    border: 1px solid #E8EBF0;
+                    border: 1px solid var(--border);
                     padding: 18px 20px;
                     transition: box-shadow 0.2s ease, border-color 0.2s ease;
                 }
                 .mgr-card:hover {
                     box-shadow: 0 6px 24px rgba(0,0,0,0.07);
-                    border-color: #E0E7FF;
+                    border-color: var(--border-strong);
                 }
                 .mgr-card-header {
                     display: flex;
@@ -635,7 +634,7 @@ const ManagerDashboard = () => {
                 .mgr-card-title {
                     font-size: .88rem;
                     font-weight: 700;
-                    color: #111318;
+                    color: var(--text-1);
                 }
                 .mgr-view-btn {
                     font-size: .76rem;
@@ -651,7 +650,7 @@ const ManagerDashboard = () => {
                 }
                 .mgr-view-btn:hover {
                     opacity: 0.75;
-                    background: #EDE9FE;
+                    background: var(--surface-3);
                     letter-spacing: 0.2px;
                 }
 
@@ -661,14 +660,14 @@ const ManagerDashboard = () => {
                     align-items: center;
                     gap: 10px;
                     padding: 9px 6px;
-                    border-bottom: 1px solid #F8FAFC;
+                    border-bottom: 1px solid var(--surface-2);
                     border-radius: 8px;
                     transition: background 0.15s ease, padding-left 0.15s ease, transform 0.15s ease;
                     cursor: pointer;
                 }
                 .list-row:last-child { border-bottom: none; }
                 .list-row:hover {
-                    background: #F8FAFC;
+                    background: var(--surface-2);
                     padding-left: 10px;
                     transform: translateX(2px);
                 }
@@ -676,14 +675,14 @@ const ManagerDashboard = () => {
                 .row-name {
                     font-size: .84rem;
                     font-weight: 600;
-                    color: #111318;
+                    color: var(--text-1);
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
                 .row-sub {
                     font-size: .72rem;
-                    color: #374151;
+                    color: var(--text-2);
                     margin-top: 1px;
                     white-space: nowrap;
                     overflow: hidden;
@@ -691,7 +690,7 @@ const ManagerDashboard = () => {
                 }
                 .row-time {
                     font-size: .72rem;
-                    color: #374151;
+                    color: var(--text-2);
                     font-family: 'DM Mono', monospace;
                     min-width: 72px;
                     text-align: right;
@@ -785,14 +784,14 @@ const ManagerDashboard = () => {
                 .empty-state {
                     text-align: center;
                     padding: 2.5rem 1rem;
-                    color: #374151;
+                    color: var(--text-2);
                 }
                 .empty-icon { font-size: 1.8rem; opacity: 0.25; margin-bottom: 8px; }
                 .empty-text { font-size: .84rem; font-weight: 500; }
 
                 /* ── Loading skeleton ── */
                 .skeleton {
-                    background: linear-gradient(90deg, #F1F5F9 25%, #E8EBF0 50%, #F1F5F9 75%);
+                    background: linear-gradient(90deg, var(--surface-3) 25%, var(--surface-2) 50%, var(--surface-3) 75%);
                     background-size: 200% 100%;
                     animation: shimmer 1.5s infinite;
                     border-radius: 6px;

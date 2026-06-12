@@ -152,11 +152,11 @@ const ROLE_ICON = {
 const RoleBadge = ({ role }) => {
     const r = role?.toLowerCase();
     const styles = {
-        hr: { bg: "#f0e7ff", color: "#5b21b6", border: "#c4b5fd" },
-        manager: { bg: "#fff7e0", color: "#92400e", border: "#fcd34d" },
-        tl: { bg: "#e0f0ff", color: "#1e40af", border: "#93c5fd" },
-        superadmin: { bg: "#ffe4e4", color: "#991b1b", border: "#fca5a5" },
-        employee: { bg: "#e8faf0", color: "#065f46", border: "#6ee7b7" },
+        hr: { bg: "var(--brand-light)", color: "var(--brand)", border: "var(--border)" },
+        manager: { bg: "var(--surface-3)", color: "var(--text-1)", border: "var(--border)" },
+        tl: { bg: "var(--surface-3)", color: "var(--brand)", border: "var(--border)" },
+        superadmin: { bg: "var(--danger-bg)", color: "var(--danger)", border: "var(--border)" },
+        employee: { bg: "var(--surface-2)", color: "var(--text-2)", border: "var(--border)" },
     };
     const s = styles[r] || styles.employee;
     return (
@@ -183,9 +183,9 @@ const STATUS_ICON = {
 
 const StatusBadge = ({ status }) => {
     const styles = {
-        active: { bg: "#dcfce7", color: "#15803d", border: "#86efac" },
+        active: { bg: "var(--success-bg)", color: "#15803d", border: "#86efac" },
         inactive: { bg: "#fef9c3", color: "#a16207", border: "#fde047" },
-        terminated: { bg: "#fee2e2", color: "#b91c1c", border: "#fca5a5" },
+        terminated: { bg: "var(--danger-bg)", color: "#b91c1c", border: "#fca5a5" },
     };
     const s = styles[status] || styles.active;
     return (
@@ -211,17 +211,17 @@ const ConfirmDialog = ({ title, message, confirmText, confirmStyle = {}, icon, o
         <div className="modal" style={{ maxWidth: 430, width: "calc(100% - 2rem)", margin: "0 auto" }}>
             <div style={{
                 width: 56, height: 56, borderRadius: "50%",
-                background: "linear-gradient(135deg, #fee2e2, #fecaca)",
+                background: "linear-gradient(135deg, var(--danger-bg), #fecaca)",
                 display: "grid", placeItems: "center", margin: "0 auto 1rem"
             }}>
                 {icon}
             </div>
-            <p style={{ textAlign: "center", fontSize: "1.1rem", fontWeight: 700, marginBottom: ".5rem", color: "#0f172a" }}>{title}</p>
-            <p style={{ textAlign: "center", color: "#1e293b", fontSize: ".875rem", marginBottom: "1.5rem", lineHeight: 1.6 }}>{message}</p>
+            <p style={{ textAlign: "center", fontSize: "1.1rem", fontWeight: 700, marginBottom: ".5rem", color: "var(--text-1)" }}>{title}</p>
+            <p style={{ textAlign: "center", color: "var(--text-1)", fontSize: ".875rem", marginBottom: "1.5rem", lineHeight: 1.6 }}>{message}</p>
             <div style={{ display: "flex", gap: ".65rem" }}>
                 <button className="btn btn-ghost" style={{ flex: 1, justifyContent: "center" }} onClick={onCancel} disabled={loading}>Cancel</button>
-                <button className="btn" style={{ flex: 1, justifyContent: "center", color: "#fff", border: "none", ...confirmStyle }} onClick={onConfirm} disabled={loading}>
-                    {loading ? <><span className="spinner" style={{ borderTopColor: "#fff" }} />Processing...</> : confirmText}
+                <button className="btn" style={{ flex: 1, justifyContent: "center", color: "var(--surface)", border: "none", ...confirmStyle }} onClick={onConfirm} disabled={loading}>
+                    {loading ? <><span className="spinner" style={{ borderTopColor: "var(--surface)" }} />Processing...</> : confirmText}
                 </button>
             </div>
         </div>
@@ -273,7 +273,7 @@ const PasswordInput = ({ name, placeholder, value, onChange }) => {
                     padding: 4,
                     display: "flex",
                     alignItems: "center",
-                    color: "#64748b",
+                    color: "var(--text-2)",
                 }}
                 tabIndex={-1}
                 title={show ? "Hide password" : "Show password"}
@@ -316,7 +316,7 @@ const FormFields = ({ form, onChange }) => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                     Full name <span style={{ color: "var(--danger)" }}>*</span>
                 </label>
                 <input
@@ -333,7 +333,7 @@ const FormFields = ({ form, onChange }) => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                     Email <span style={{ color: "var(--danger)" }}>*</span>
                 </label>
                 <input
@@ -352,7 +352,7 @@ const FormFields = ({ form, onChange }) => {
 
             {form._isAdd && (
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                         Password <span style={{ color: "var(--danger)" }}>*</span>
                     </label>
                     <PasswordInput name="password" placeholder="Minimum 8 characters" value={form.password} onChange={onChange} />
@@ -361,17 +361,17 @@ const FormFields = ({ form, onChange }) => {
 
             {form._isAdd && (
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
                         </svg>
                         Phone Number
                     </label>
-                    <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: "8px", overflow: "hidden", background: "#fff" }}>
+                    <div style={{ display: "flex", alignItems: "center", border: "1px solid var(--border)", borderRadius: "8px", overflow: "hidden", background: "var(--surface)" }}>
                         <div style={{
                             padding: "0 12px", height: "42px", display: "flex", alignItems: "center", gap: "6px",
-                            background: "#f1f5f9", borderRight: "1px solid var(--border)",
-                            fontSize: ".85rem", fontWeight: 700, color: "#0f172a", flexShrink: 0,
+                            background: "var(--surface-2)", borderRight: "1px solid var(--border)",
+                            fontSize: ".85rem", fontWeight: 700, color: "var(--text-1)", flexShrink: 0,
                         }}>
                             🇮🇳 +91
                         </div>
@@ -388,7 +388,7 @@ const FormFields = ({ form, onChange }) => {
                             style={{
                                 flex: 1, border: "none", outline: "none", padding: "0 12px",
                                 height: "42px", fontFamily: "monospace", letterSpacing: "1px",
-                                fontSize: ".9rem", background: "transparent", color: "#0f172a",
+                                fontSize: ".9rem", background: "transparent", color: "var(--text-1)",
                             }}
                         />
                         {form.phone && (
@@ -421,11 +421,11 @@ const FormFields = ({ form, onChange }) => {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }} className="resp-grid-2">
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Date Of Birth</label>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Date Of Birth</label>
                     <input name="dob" className="input" type="date" value={form.dob} onChange={onChange} />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                         Joining Date <span style={{ color: "var(--danger)" }}>*</span>
                     </label>
                     <input name="joiningDate" className="input" type="date" value={form.joiningDate} onChange={onChange} required />
@@ -434,7 +434,7 @@ const FormFields = ({ form, onChange }) => {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }} className="resp-grid-2">
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                         Role <span style={{ color: "var(--danger)" }}>*</span>
                     </label>
                     <select name="role" className="input select" value={form.role} onChange={onChange}>
@@ -449,7 +449,7 @@ const FormFields = ({ form, onChange }) => {
                     </select>
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Department</label>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Department</label>
                     <select name="department" className="input select" value={form.department} onChange={handleFieldChange}>
                         <option value="">Select department</option>
                         <option value="SEO">SEO</option>
@@ -462,7 +462,7 @@ const FormFields = ({ form, onChange }) => {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }} className="resp-grid-2">
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Designation</label>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Designation</label>
                     <select
                         name="designation" className="input select" value={form.designation} onChange={onChange}
                         disabled={!form.department}
@@ -474,7 +474,7 @@ const FormFields = ({ form, onChange }) => {
                 </div>
                 {(["employee", "tl", "hr"].includes(form.role?.toLowerCase?.())) && (
                     <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                        <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                             Monthly Salary <span style={{ color: "var(--danger)" }}>*</span>
                         </label>
                         <input name="monthlySalary" type="number" className="input" placeholder="₹ 50,000" value={form.monthlySalary} onChange={onChange} min="0" />
@@ -599,18 +599,18 @@ const GovernmentIdTab = ({ employeeId }) => {
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div className="form-group">
-                <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>PAN Number</label>
+                <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>PAN Number</label>
                 <input name="pan" className="input" placeholder="ABCDE1234F" value={data.pan} onChange={handleChange} style={getInputStyle("pan")} />
                 <FieldError error={fieldErrors.pan} touched={touched.pan} />
             </div>
             <div className="form-group">
-                <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Aadhaar Number</label>
+                <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Aadhaar Number</label>
                 <input name="aadhaar" className="input" placeholder="12 digits" value={data.aadhaar} onChange={handleChange} style={getInputStyle("aadhaar")} />
                 <FieldError error={fieldErrors.aadhaar} touched={touched.aadhaar} />
             </div>
             {result && (
                 <div style={{
-                    background: result.success ? "#dcfce7" : "#fee2e2",
+                    background: result.success ? "var(--success-bg)" : "var(--danger-bg)",
                     border: `1px solid ${result.success ? "#86efac" : "#fca5a5"}`,
                     borderRadius: "8px", padding: "10px 14px", fontSize: ".82rem",
                     color: result.success ? "#052e16" : "#450a0a",
@@ -624,7 +624,7 @@ const GovernmentIdTab = ({ employeeId }) => {
             {empDocs && (
                 <div
                     style={{
-                        borderTop: "1px dashed #e5e7eb",
+                        borderTop: "1px dashed var(--surface-3)",
                         paddingTop: 16,
                         marginTop: 4,
                     }}
@@ -648,7 +648,7 @@ const GovernmentIdTab = ({ employeeId }) => {
                                     key={key}
                                     style={{
                                         fontSize: 12,
-                                        color: "#9ca3af",
+                                        color: "var(--text-3)",
                                         marginBottom: 10,
                                     }}
                                 >
@@ -666,8 +666,8 @@ const GovernmentIdTab = ({ employeeId }) => {
                                     padding: "10px 14px",
                                     borderRadius: 10,
                                     background: d.verified
-                                        ? "#ecfdf5"
-                                        : "#fffbeb",
+                                        ? "var(--success-bg)"
+                                        : "var(--warn-bg)",
                                     border: `1px solid ${d.verified
                                         ? "#a7f3d0"
                                         : "#fde68a"
@@ -722,7 +722,7 @@ const GovernmentIdTab = ({ employeeId }) => {
                                                 fontSize: 12,
                                                 fontWeight: 700,
                                                 color: "#059669",
-                                                background: "#ecfdf5",
+                                                background: "var(--success-bg)",
                                                 border:
                                                     "1px solid #6ee7b7",
                                                 borderRadius: 6,
@@ -751,8 +751,8 @@ const GovernmentIdTab = ({ employeeId }) => {
                                 padding: "10px 14px",
                                 borderRadius: 10,
                                 background: od.verified
-                                    ? "#ecfdf5"
-                                    : "#fffbeb",
+                                    ? "var(--success-bg)"
+                                    : "var(--warn-bg)",
                                 border: `1px solid ${od.verified
                                     ? "#a7f3d0"
                                     : "#fde68a"
@@ -805,7 +805,7 @@ const GovernmentIdTab = ({ employeeId }) => {
                                             fontSize: 12,
                                             fontWeight: 700,
                                             color: "#059669",
-                                            background: "#ecfdf5",
+                                            background: "var(--success-bg)",
                                             border:
                                                 "1px solid #6ee7b7",
                                             borderRadius: 6,
@@ -957,7 +957,7 @@ const BankDetailsTab = ({ employeeId }) => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                     Account Holder Name <span style={{ color: "var(--danger)" }}>*</span>
                 </label>
                 <input name="accountHolderName" className="input" placeholder="As per bank records"
@@ -967,7 +967,7 @@ const BankDetailsTab = ({ employeeId }) => {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }} className="resp-grid-2">
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                         Account Number <span style={{ color: "var(--danger)" }}>*</span>
                     </label>
                     <input name="accountNumber" className="input" placeholder="9–18 digits"
@@ -975,7 +975,7 @@ const BankDetailsTab = ({ employeeId }) => {
                     <FieldError error={fieldErrors.accountNumber} touched={touched.accountNumber} />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Account Type</label>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Account Type</label>
                     <select name="accountType" className="input select" value={data.accountType} onChange={handleChange}>
                         {ACCOUNT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                     </select>
@@ -984,7 +984,7 @@ const BankDetailsTab = ({ employeeId }) => {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }} className="resp-grid-2">
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                         IFSC Code <span style={{ color: "var(--danger)" }}>*</span>
                     </label>
                     <input name="ifscCode" className="input" placeholder="e.g., SBIN0001234"
@@ -994,7 +994,7 @@ const BankDetailsTab = ({ employeeId }) => {
                     <FieldError error={fieldErrors.ifscCode} touched={touched.ifscCode} />
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
                         Bank Name
                         {ifscLooking && (
                             <span style={{ fontSize: ".68rem", color: "#1d4ed8", display: "flex", alignItems: "center", gap: "3px" }}>
@@ -1010,10 +1010,10 @@ const BankDetailsTab = ({ employeeId }) => {
             </div>
 
             <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Branch Name</label>
+                <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Branch Name</label>
                 <input name="branchName" className="input" placeholder="Auto-filled from IFSC"
                     value={data.branchName} onChange={handleChange}
-                    style={{ background: data.branchName ? "#f0fdf4" : undefined, color: data.branchName ? "#0f172a" : undefined }} />
+                    style={{ background: data.branchName ? "#f0fdf4" : undefined, color: data.branchName ? "var(--text-1)" : undefined }} />
             </div>
 
             {verification && (
@@ -1024,9 +1024,9 @@ const BankDetailsTab = ({ employeeId }) => {
                         <span>🏢 {verification.branch}</span>
                         <span>📍 {verification.city}, {verification.state}</span>
                         <span style={{ display: "flex", gap: "6px" }}>
-                            {verification.rtgs && <span style={{ background: "#dcfce7", padding: "1px 6px", borderRadius: "4px" }}>RTGS</span>}
-                            {verification.neft && <span style={{ background: "#dcfce7", padding: "1px 6px", borderRadius: "4px" }}>NEFT</span>}
-                            {verification.imps && <span style={{ background: "#dcfce7", padding: "1px 6px", borderRadius: "4px" }}>IMPS</span>}
+                            {verification.rtgs && <span style={{ background: "var(--success-bg)", padding: "1px 6px", borderRadius: "4px" }}>RTGS</span>}
+                            {verification.neft && <span style={{ background: "var(--success-bg)", padding: "1px 6px", borderRadius: "4px" }}>NEFT</span>}
+                            {verification.imps && <span style={{ background: "var(--success-bg)", padding: "1px 6px", borderRadius: "4px" }}>IMPS</span>}
                         </span>
                     </div>
                     {verification.warning && <p style={{ color: "#451a03", marginTop: ".4rem", fontSize: ".75rem", fontWeight: 600 }}>⚠️ {verification.warning}</p>}
@@ -1035,7 +1035,7 @@ const BankDetailsTab = ({ employeeId }) => {
 
             {result && (
                 <div style={{
-                    background: result.success ? "#dcfce7" : "#fee2e2",
+                    background: result.success ? "var(--success-bg)" : "var(--danger-bg)",
                     border: `1px solid ${result.success ? "#86efac" : "#fca5a5"}`,
                     borderRadius: "8px", padding: "10px 14px", fontSize: ".82rem",
                     color: result.success ? "#052e16" : "#450a0a",
@@ -1090,25 +1090,25 @@ const Icons = {
 const CONFIRM_CONFIG = {
     delete: {
         title: "Delete employee?",
-        getMessage: (name) => <><strong style={{ color: "#0f172a" }}>{name}</strong> will be permanently removed. This action cannot be undone.</>,
+        getMessage: (name) => <><strong style={{ color: "var(--text-1)" }}>{name}</strong> will be permanently removed. This action cannot be undone.</>,
         confirmText: "Yes, delete",
         confirmStyle: { background: "#dc2626" },
     },
     terminate: {
         title: "Terminate employee?",
-        getMessage: (name) => <><strong style={{ color: "#0f172a" }}>{name}</strong> will be marked as terminated and lose system access.</>,
+        getMessage: (name) => <><strong style={{ color: "var(--text-1)" }}>{name}</strong> will be marked as terminated and lose system access.</>,
         confirmText: "Yes, terminate",
         confirmStyle: { background: "#b91c1c" },
     },
     deactivate: {
         title: "Deactivate employee?",
-        getMessage: (name) => <><strong style={{ color: "#0f172a" }}>{name}</strong> will be set to inactive. You can reactivate them later.</>,
+        getMessage: (name) => <><strong style={{ color: "var(--text-1)" }}>{name}</strong> will be set to inactive. You can reactivate them later.</>,
         confirmText: "Yes, deactivate",
         confirmStyle: { background: "#d97706" },
     },
     activate: {
         title: "Activate employee?",
-        getMessage: (name) => <>Set <strong style={{ color: "#0f172a" }}>{name}</strong> back to active status.</>,
+        getMessage: (name) => <>Set <strong style={{ color: "var(--text-1)" }}>{name}</strong> back to active status.</>,
         confirmText: "Yes, activate",
         confirmStyle: { background: "#16a34a" },
     },
@@ -1132,7 +1132,7 @@ const TLEmployeeCard = ({ employee }) => (
     <div style={{
         display: "flex", alignItems: "center", gap: ".75rem",
         padding: ".75rem 1rem", borderRadius: "10px",
-        background: "#fff", border: "1px solid #e5e7eb",
+        background: "var(--surface)", border: "1px solid var(--surface-3)",
         transition: "box-shadow .15s ease",
         flexWrap: "wrap",
     }}
@@ -1148,8 +1148,8 @@ const TLEmployeeCard = ({ employee }) => (
             {initials(employee.name)}
         </div>
         <div style={{ flex: 1, minWidth: 120 }}>
-            <p style={{ fontWeight: 700, color: "#0f172a", lineHeight: 1.3, marginBottom: ".15rem" }}>{employee.name}</p>
-            <p style={{ fontSize: ".75rem", color: "#1e293b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
+            <p style={{ fontWeight: 700, color: "var(--text-1)", lineHeight: 1.3, marginBottom: ".15rem" }}>{employee.name}</p>
+            <p style={{ fontSize: ".75rem", color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
                 {employee.designation || employee.department || employee.email || "—"}
             </p>
         </div>
@@ -1297,7 +1297,7 @@ const SalaryStructureTab = ({ employeeId }) => {
 
             {/* ── Salary Components ── */}
             <div>
-                <p style={{ fontWeight: 700, fontSize: ".8rem", color: "#374151", marginBottom: ".5rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
+                <p style={{ fontWeight: 700, fontSize: ".8rem", color: "var(--text-2)", marginBottom: ".5rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
                     Salary Components
                     <span style={{ marginLeft: ".5rem", color: Math.round(totalPercent) === 100 ? "#16a34a" : "#dc2626", fontWeight: 800 }}>
                         ({totalPercent}% / 100%)
@@ -1305,7 +1305,7 @@ const SalaryStructureTab = ({ employeeId }) => {
                 </p>
                 {Math.round(totalPercent) !== 100 && (
                     <div style={{
-                        background: "#fef2f2", border: "1px solid #fecaca", borderRadius: "8px",
+                        background: "var(--danger-bg)", border: "1px solid #fecaca", borderRadius: "8px",
                         padding: "8px 12px", fontSize: ".78rem", color: "#991b1b",
                         fontWeight: 600, marginBottom: ".5rem", display: "flex", alignItems: "center", gap: 6,
                     }}>
@@ -1319,13 +1319,13 @@ const SalaryStructureTab = ({ employeeId }) => {
                     <div key={key} style={{
                         display: "flex", alignItems: "center", gap: ".75rem",
                         padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
-                        background: structure[key].enabled ? "#f0fdf4" : "#f9fafb",
-                        border: `1px solid ${structure[key].enabled ? "#bbf7d0" : "#e5e7eb"}`,
+                        background: structure[key].enabled ? "#f0fdf4" : "var(--surface-2)",
+                        border: `1px solid ${structure[key].enabled ? "#bbf7d0" : "var(--surface-3)"}`,
                     }}>
                         <input type="checkbox" checked={structure[key].enabled}
                             onChange={() => handleStructureToggle(key)}
                             style={{ accentColor: "#16a34a", width: 15, height: 15, cursor: "pointer" }} />
-                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: structure[key].enabled ? "#0f172a" : "#9ca3af" }}>
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: structure[key].enabled ? "var(--text-1)" : "var(--text-3)" }}>
                             {COMPONENT_LABELS[key]}
                         </span>
                         <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
@@ -1336,14 +1336,14 @@ const SalaryStructureTab = ({ employeeId }) => {
                                 disabled={!structure[key].enabled}
                                 style={{
                                     width: 58, padding: "4px 8px", borderRadius: "6px",
-                                    border: "1px solid #d1d5db", fontSize: ".82rem", fontWeight: 700,
-                                    color: "#0f172a", background: structure[key].enabled ? "#fff" : "#f3f4f6",
+                                    border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700,
+                                    color: "var(--text-1)", background: structure[key].enabled ? "var(--surface)" : "var(--surface-3)",
                                     textAlign: "right",
                                 }}
                             />
-                            <span style={{ fontSize: ".75rem", color: "#64748b" }}>%</span>
+                            <span style={{ fontSize: ".75rem", color: "var(--text-2)" }}>%</span>
                         </div>
-                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#0f172a", minWidth: 72, textAlign: "right" }}>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "var(--text-1)", minWidth: 72, textAlign: "right" }}>
                             {structure[key].enabled
                                 ? `₹${round2((structure[key].percent / 100) * grossEarnings).toLocaleString("en-IN")}`
                                 : "—"}
@@ -1352,7 +1352,7 @@ const SalaryStructureTab = ({ employeeId }) => {
                 ))}
 
                 {/* Gross total row */}
-                <div style={{ display: "flex", justifyContent: "space-between", padding: ".65rem .85rem", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", fontWeight: 800, fontSize: ".88rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: ".65rem .85rem", background: "var(--surface-2)", borderRadius: "8px", border: "1px solid var(--border)", fontWeight: 800, fontSize: ".88rem" }}>
                     <span>Gross Salary</span>
                     <span>₹{grossEarnings.toLocaleString("en-IN")}</span>
                 </div>
@@ -1360,21 +1360,21 @@ const SalaryStructureTab = ({ employeeId }) => {
 
             {/* ── Deductions ── */}
             <div>
-                <p style={{ fontWeight: 700, fontSize: ".8rem", color: "#374151", marginBottom: ".5rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
+                <p style={{ fontWeight: 700, fontSize: ".8rem", color: "var(--text-2)", marginBottom: ".5rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
                     Statutory Deductions
                 </p>
 
                 {/* PF */}
                 <div style={{
                     padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
-                    background: deductions.pf.enabled ? "#fef2f2" : "#f9fafb",
-                    border: `1px solid ${deductions.pf.enabled ? "#fecaca" : "#e5e7eb"}`,
+                    background: deductions.pf.enabled ? "var(--danger-bg)" : "var(--surface-2)",
+                    border: `1px solid ${deductions.pf.enabled ? "#fecaca" : "var(--surface-3)"}`,
                 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
                         <input type="checkbox" checked={deductions.pf.enabled}
                             onChange={() => handleDeductionToggle("pf")}
                             style={{ accentColor: "#dc2626", width: 15, height: 15, cursor: "pointer" }} />
-                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.pf.enabled ? "#0f172a" : "#9ca3af" }}>
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.pf.enabled ? "var(--text-1)" : "var(--text-3)" }}>
                             Provident Fund (PF) — 12% of Basic
                         </span>
                         <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
@@ -1382,9 +1382,9 @@ const SalaryStructureTab = ({ employeeId }) => {
                                 value={deductions.pf.percent}
                                 onChange={e => handleDeductionValue("pf", "percent", e.target.value)}
                                 disabled={!deductions.pf.enabled}
-                                style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: ".82rem", fontWeight: 700, color: "#0f172a", background: deductions.pf.enabled ? "#fff" : "#f3f4f6", textAlign: "right" }}
+                                style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700, color: "var(--text-1)", background: deductions.pf.enabled ? "var(--surface)" : "var(--surface-3)", textAlign: "right" }}
                             />
-                            <span style={{ fontSize: ".75rem", color: "#64748b" }}>%</span>
+                            <span style={{ fontSize: ".75rem", color: "var(--text-2)" }}>%</span>
                         </div>
                         <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>
                             {deductions.pf.enabled ? `− ₹${pfAmt.toLocaleString("en-IN")}` : "—"}
@@ -1396,8 +1396,8 @@ const SalaryStructureTab = ({ employeeId }) => {
                                 Basic: ₹{basicAmt.toLocaleString("en-IN")} × {deductions.pf.percent}% = ₹{pfAmt.toLocaleString("en-IN")}
                             </p>
                             <div style={{ marginTop: ".55rem", marginLeft: "1.75rem" }}>
-                                <label style={{ fontSize: ".72rem", fontWeight: 700, color: "#374151", display: "block", marginBottom: ".25rem" }}>
-                                    PF / UAN Number <span style={{ color: "#9ca3af", fontWeight: 500 }}>(optional)</span>
+                                <label style={{ fontSize: ".72rem", fontWeight: 700, color: "var(--text-2)", display: "block", marginBottom: ".25rem" }}>
+                                    PF / UAN Number <span style={{ color: "var(--text-3)", fontWeight: 500 }}>(optional)</span>
                                 </label>
                                 <input
                                     type="text"
@@ -1408,7 +1408,7 @@ const SalaryStructureTab = ({ employeeId }) => {
                                         width: "100%", padding: "5px 10px", borderRadius: "6px",
                                         border: "1px solid #fca5a5", fontSize: ".8rem",
                                         fontFamily: "monospace", letterSpacing: ".5px",
-                                        color: "#0f172a", background: "#fff", outline: "none",
+                                        color: "var(--text-1)", background: "var(--surface)", outline: "none",
                                     }}
                                 />
                             </div>
@@ -1419,14 +1419,14 @@ const SalaryStructureTab = ({ employeeId }) => {
                 {/* ESI */}
                 <div style={{
                     padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
-                    background: deductions.esi.enabled ? "#fef2f2" : "#f9fafb",
-                    border: `1px solid ${deductions.esi.enabled ? "#fecaca" : "#e5e7eb"}`,
+                    background: deductions.esi.enabled ? "var(--danger-bg)" : "var(--surface-2)",
+                    border: `1px solid ${deductions.esi.enabled ? "#fecaca" : "var(--surface-3)"}`,
                 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
                         <input type="checkbox" checked={deductions.esi.enabled}
                             onChange={() => handleDeductionToggle("esi")}
                             style={{ accentColor: "#dc2626", width: 15, height: 15, cursor: "pointer" }} />
-                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.esi.enabled ? "#0f172a" : "#9ca3af" }}>
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.esi.enabled ? "var(--text-1)" : "var(--text-3)" }}>
                             ESI — % of Gross
                         </span>
                         <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
@@ -1434,9 +1434,9 @@ const SalaryStructureTab = ({ employeeId }) => {
                                 value={deductions.esi.percent}
                                 onChange={e => handleDeductionValue("esi", "percent", e.target.value)}
                                 disabled={!deductions.esi.enabled}
-                                style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: ".82rem", fontWeight: 700, color: "#0f172a", background: deductions.esi.enabled ? "#fff" : "#f3f4f6", textAlign: "right" }}
+                                style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700, color: "var(--text-1)", background: deductions.esi.enabled ? "var(--surface)" : "var(--surface-3)", textAlign: "right" }}
                             />
-                            <span style={{ fontSize: ".75rem", color: "#64748b" }}>%</span>
+                            <span style={{ fontSize: ".75rem", color: "var(--text-2)" }}>%</span>
                         </div>
                         <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>
                             {deductions.esi.enabled ? `− ₹${esiAmt.toLocaleString("en-IN")}` : "—"}
@@ -1444,8 +1444,8 @@ const SalaryStructureTab = ({ employeeId }) => {
                     </div>
                     {deductions.esi.enabled && (
                         <div style={{ marginTop: ".55rem", marginLeft: "1.75rem" }}>
-                            <label style={{ fontSize: ".72rem", fontWeight: 700, color: "#374151", display: "block", marginBottom: ".25rem" }}>
-                                ESI Number <span style={{ color: "#9ca3af", fontWeight: 500 }}>(optional — 17 digits)</span>
+                            <label style={{ fontSize: ".72rem", fontWeight: 700, color: "var(--text-2)", display: "block", marginBottom: ".25rem" }}>
+                                ESI Number <span style={{ color: "var(--text-3)", fontWeight: 500 }}>(optional — 17 digits)</span>
                             </label>
                             <input
                                 type="text"
@@ -1457,7 +1457,7 @@ const SalaryStructureTab = ({ employeeId }) => {
                                     width: "100%", padding: "5px 10px", borderRadius: "6px",
                                     border: `1px solid ${deductions.esi.esiNumber && deductions.esi.esiNumber.length !== 17 ? "#fbbf24" : "#fca5a5"}`,
                                     fontSize: ".8rem", fontFamily: "monospace", letterSpacing: ".5px",
-                                    color: "#0f172a", background: "#fff", outline: "none",
+                                    color: "var(--text-1)", background: "var(--surface)", outline: "none",
                                 }}
                             />
                             {deductions.esi.esiNumber && deductions.esi.esiNumber.length !== 17 && (
@@ -1477,23 +1477,23 @@ const SalaryStructureTab = ({ employeeId }) => {
                 {/* Professional Tax */}
                 <div style={{
                     padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
-                    background: deductions.professionalTax.enabled ? "#fef2f2" : "#f9fafb",
-                    border: `1px solid ${deductions.professionalTax.enabled ? "#fecaca" : "#e5e7eb"}`,
+                    background: deductions.professionalTax.enabled ? "var(--danger-bg)" : "var(--surface-2)",
+                    border: `1px solid ${deductions.professionalTax.enabled ? "#fecaca" : "var(--surface-3)"}`,
                 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
                         <input type="checkbox" checked={deductions.professionalTax.enabled}
                             onChange={() => handleDeductionToggle("professionalTax")}
                             style={{ accentColor: "#dc2626", width: 15, height: 15, cursor: "pointer" }} />
-                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.professionalTax.enabled ? "#0f172a" : "#9ca3af" }}>
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.professionalTax.enabled ? "var(--text-1)" : "var(--text-3)" }}>
                             Professional Tax — Fixed Amount
                         </span>
                         <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
-                            <span style={{ fontSize: ".75rem", color: "#64748b" }}>₹</span>
+                            <span style={{ fontSize: ".75rem", color: "var(--text-2)" }}>₹</span>
                             <input type="number" min="0"
                                 value={deductions.professionalTax.fixedAmount}
                                 onChange={e => handleDeductionValue("professionalTax", "fixedAmount", e.target.value)}
                                 disabled={!deductions.professionalTax.enabled}
-                                style={{ width: 72, padding: "4px 8px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: ".82rem", fontWeight: 700, color: "#0f172a", background: deductions.professionalTax.enabled ? "#fff" : "#f3f4f6", textAlign: "right" }}
+                                style={{ width: 72, padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700, color: "var(--text-1)", background: deductions.professionalTax.enabled ? "var(--surface)" : "var(--surface-3)", textAlign: "right" }}
                             />
                         </div>
                         <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>
@@ -1503,14 +1503,14 @@ const SalaryStructureTab = ({ employeeId }) => {
                 </div>
 
                 {/* Total statutory deduction */}
-                <div style={{ display: "flex", justifyContent: "space-between", padding: ".65rem .85rem", background: "#fef2f2", borderRadius: "8px", border: "1px solid #fecaca", fontWeight: 800, fontSize: ".88rem", color: "#991b1b" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: ".65rem .85rem", background: "var(--danger-bg)", borderRadius: "8px", border: "1px solid #fecaca", fontWeight: 800, fontSize: ".88rem", color: "#991b1b" }}>
                     <span>Total Statutory Deductions</span>
                     <span>− ₹{totalStatutory.toLocaleString("en-IN")}</span>
                 </div>
             </div>
 
             {/* ── Net Preview ── */}
-            <div style={{ background: "linear-gradient(135deg, #dcfce7, #bbf7d0)", border: "2px solid #86efac", borderRadius: "10px", padding: "1rem", textAlign: "center" }}>
+            <div style={{ background: "linear-gradient(135deg, var(--success-bg), #bbf7d0)", border: "2px solid #86efac", borderRadius: "10px", padding: "1rem", textAlign: "center" }}>
                 <p style={{ fontSize: ".75rem", fontWeight: 700, color: "#052e16", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: ".35rem" }}>
                     Estimated Net In-Hand (before attendance deductions)
                 </p>
@@ -1521,7 +1521,7 @@ const SalaryStructureTab = ({ employeeId }) => {
 
             {result && (
                 <div style={{
-                    background: result.success ? "#dcfce7" : "#fee2e2",
+                    background: result.success ? "var(--success-bg)" : "var(--danger-bg)",
                     border: `1px solid ${result.success ? "#86efac" : "#fca5a5"}`,
                     borderRadius: "8px", padding: "10px 14px", fontSize: ".82rem",
                     color: result.success ? "#052e16" : "#450a0a",
@@ -1671,13 +1671,13 @@ const ShiftTab = ({ employeeId }) => {
 
             {/* Presets */}
             <div>
-                <p style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "#374151", marginBottom: ".4rem" }}>Quick Presets</p>
+                <p style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "var(--text-2)", marginBottom: ".4rem" }}>Quick Presets</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: ".4rem" }}>
                     {SHIFT_PRESETS.map(p => (
                         <button key={p.label} onClick={() => applyPreset(p)}
-                            style={{ fontSize: ".75rem", fontWeight: 600, padding: "5px 12px", borderRadius: 8, cursor: "pointer", border: "1.5px solid #e2e8f0", background: "#f8fafc", color: "#374151", transition: "all .15s" }}
+                            style={{ fontSize: ".75rem", fontWeight: 600, padding: "5px 12px", borderRadius: 8, cursor: "pointer", border: "1.5px solid var(--border)", background: "var(--surface-2)", color: "var(--text-2)", transition: "all .15s" }}
                             onMouseEnter={e => { e.currentTarget.style.background = "#eff6ff"; e.currentTarget.style.borderColor = "#bfdbfe"; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = "#f8fafc"; e.currentTarget.style.borderColor = "#e2e8f0"; }}>
+                            onMouseLeave={e => { e.currentTarget.style.background = "var(--surface-2)"; e.currentTarget.style.borderColor = "var(--border)"; }}>
                             {p.label}
                         </button>
                     ))}
@@ -1687,7 +1687,7 @@ const ShiftTab = ({ employeeId }) => {
             {/* Start / End time */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }}>
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Shift Start</label>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Shift Start</label>
                     <div style={{ display: "flex", gap: 6 }}>
                         <select className="input select" value={shift.startHour} onChange={e => handleChange("startHour", Number(e.target.value))} style={{ flex: 1 }}>
                             {HOURS.map(h => <option key={h} value={h}>{pad2(h)}:00 ({to12h(h, 0)})</option>)}
@@ -1698,7 +1698,7 @@ const ShiftTab = ({ employeeId }) => {
                     </div>
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Shift End</label>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Shift End</label>
                     <div style={{ display: "flex", gap: 6 }}>
                         <select className="input select" value={shift.endHour} onChange={e => handleChange("endHour", Number(e.target.value))} style={{ flex: 1 }}>
                             {HOURS.map(h => <option key={h} value={h}>{pad2(h)}:00 ({to12h(h, 0)})</option>)}
@@ -1713,18 +1713,18 @@ const ShiftTab = ({ employeeId }) => {
             {/* Grace & Half-day windows */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }}>
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Late Grace Window (minutes)</label>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Late Grace Window (minutes)</label>
                     <input type="number" min="0" max="120" className="input" value={shift.graceMinutes}
                         onChange={e => handleChange("graceMinutes", Number(e.target.value))} />
-                    <span style={{ fontSize: ".72rem", color: "#64748b", marginTop: 3, display: "block" }}>
+                    <span style={{ fontSize: ".72rem", color: "var(--text-2)", marginTop: 3, display: "block" }}>
                         Arrivals within this window after shift start are marked <strong>Late</strong>
                     </span>
                 </div>
                 <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Half-Day Threshold (minutes)</label>
+                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Half-Day Threshold (minutes)</label>
                     <input type="number" min="1" max="240" className="input" value={shift.halfDayAfterMinutes}
                         onChange={e => handleChange("halfDayAfterMinutes", Number(e.target.value))} />
-                    <span style={{ fontSize: ".72rem", color: "#64748b", marginTop: 3, display: "block" }}>
+                    <span style={{ fontSize: ".72rem", color: "var(--text-2)", marginTop: 3, display: "block" }}>
                         Arrivals beyond this window are marked <strong>Half-Day</strong>
                     </span>
                 </div>
@@ -1732,13 +1732,13 @@ const ShiftTab = ({ employeeId }) => {
 
             {/* Optional label */}
             <div className="form-group" style={{ margin: 0 }}>
-                <label className="form-label" style={{ color: "#0f172a", fontWeight: 600 }}>Shift Label <span style={{ fontWeight: 400, color: "#94a3b8" }}>(optional)</span></label>
+                <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Shift Label <span style={{ fontWeight: 400, color: "var(--text-3)" }}>(optional)</span></label>
                 <input className="input" placeholder="e.g. Morning Shift, US Shift…" value={shift.label}
                     onChange={e => handleChange("label", e.target.value)} />
             </div>
 
             {result && (
-                <div style={{ background: result.success ? "#dcfce7" : "#fee2e2", border: `1px solid ${result.success ? "#86efac" : "#fca5a5"}`, borderRadius: 8, padding: "10px 14px", fontSize: ".82rem", color: result.success ? "#052e16" : "#450a0a", display: "flex", gap: 8, alignItems: "center", fontWeight: 600 }}>
+                <div style={{ background: result.success ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${result.success ? "#86efac" : "#fca5a5"}`, borderRadius: 8, padding: "10px 14px", fontSize: ".82rem", color: result.success ? "#052e16" : "#450a0a", display: "flex", gap: 8, alignItems: "center", fontWeight: 600 }}>
                     {result.success ? "✅" : "❌"} {result.message}
                 </div>
             )}
@@ -2237,18 +2237,18 @@ const Employees = () => {
         marginBottom: "6px",
         fontSize: "13px",
         fontWeight: 600,
-        color: "#0f172a",
+        color: "var(--text-1)",
     };
 
     const inputStyle = {
         width: "100%",
         padding: "10px 12px",
         borderRadius: "8px",
-        border: "1px solid #d1d5db",
+        border: "1px solid var(--border)",
         outline: "none",
         fontSize: "14px",
-        background: "#fff",
-        color: "#111827",
+        background: "var(--surface)",
+        color: "var(--text-1)",
     };
 
     const primaryBtnStyle = {
@@ -2256,7 +2256,7 @@ const Employees = () => {
         borderRadius: "8px",
         border: "none",
         background: "#4f46e5",
-        color: "#fff",
+        color: "var(--surface)",
         fontWeight: 600,
         cursor: "pointer",
     };
@@ -2292,7 +2292,7 @@ const Employees = () => {
 .modal {
     position: relative !important;
     z-index: 100000 !important;
-    background: #ffffff !important;
+    background: var(--surface) !important;
     border-radius: 16px !important;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25), 0 8px 20px rgba(0, 0, 0, 0.15) !important;
     padding: 1.5rem !important;
@@ -2370,18 +2370,18 @@ const Employees = () => {
                 }
                 .stat-item { text-align: center; padding: .75rem; }
                 .stat-value { font-size: 1.75rem; font-weight: 800; color: #0c4a6e; line-height: 1; }
-                .stat-label { font-size: .75rem; color: #0f172a; margin-top: .35rem; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+                .stat-label { font-size: .75rem; color: var(--text-1); margin-top: .35rem; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
 
                 /* ── Salary ── */
                 .salary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .75rem; }
                 .salary-item {
-                    background: #f8fafc; padding: .75rem 1rem;
-                    border-radius: 8px; border: 1px solid #e2e8f0;
+                    background: var(--surface-2); padding: .75rem 1rem;
+                    border-radius: 8px; border: 1px solid var(--border);
                 }
-                .salary-item-label { font-size: .72rem; color: #1e293b; margin-bottom: .25rem; font-weight: 600; }
-                .salary-item-value { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+                .salary-item-label { font-size: .72rem; color: var(--text-1); margin-bottom: .25rem; font-weight: 600; }
+                .salary-item-value { font-size: 1.1rem; font-weight: 800; color: var(--text-1); }
                 .salary-total {
-                    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+                    background: linear-gradient(135deg, var(--success-bg), #bbf7d0);
                     border: 2px solid #86efac;
                     padding: 1.25rem; border-radius: 12px;
                     text-align: center; margin-top: 1rem;
@@ -2393,31 +2393,31 @@ const Employees = () => {
                 .empty-state { text-align: center; padding: 3rem 1rem; }
                 .empty-state-icon {
                     width: 64px; height: 64px; margin: 0 auto 1rem;
-                    background: #f1f5f9; border-radius: 50%;
+                    background: var(--surface-2); border-radius: 50%;
                     display: flex; align-items: center; justify-content: center; color: #334155;
                 }
 
                 /* ── Quick Actions ── */
                 .quick-actions-label {
-                    font-size: .72rem; color: "#0f172a"; font-weight: 700;
+                    font-size: .72rem; color: "var(--text-1)"; font-weight: 700;
                     text-transform: uppercase; letter-spacing: .5px; margin-bottom: .4rem;
                 }
                 .quick-actions-bar {
                     display: flex; gap: .5rem; flex-wrap: wrap;
                     padding: .75rem 1rem;
-                    background: #f8fafc;
-                    border-radius: 10px; border: 1px solid #e2e8f0;
+                    background: var(--surface-2);
+                    border-radius: 10px; border: 1px solid var(--border);
                 }
 
                 /* ── Input ── */
-                .input { transition: border-color .15s ease, background .15s ease; color: #0f172a; }
-                .input::placeholder { color: #64748b; }
+                .input { transition: border-color .15s ease, background .15s ease; color: var(--text-1); }
+                .input::placeholder { color: var(--text-2); }
                 .input:focus { outline: none; }
 
                 /* ── Edit Tabs ── */
                 .edit-tabs {
                     display: flex;
-                    border-bottom: 2px solid #e5e7eb;
+                    border-bottom: 2px solid var(--surface-3);
                     margin-bottom: 1.25rem;
                     gap: 0;
                     overflow-x: auto;
@@ -2429,7 +2429,7 @@ const Employees = () => {
                     padding: .65rem 1rem;
                     border: none; background: none; cursor: pointer;
                     font-size: .82rem; font-weight: 600;
-                    color: #374151;
+                    color: var(--text-2);
                     border-bottom: 2px solid transparent;
                     margin-bottom: -2px;
                     transition: all .15s ease;
@@ -2437,17 +2437,17 @@ const Employees = () => {
                     border-radius: 6px 6px 0 0;
                     white-space: nowrap;
                 }
-                .edit-tab-btn:hover { color: #0f172a; background: #f8fafc; }
-                .edit-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: #f0f9ff; }
+                .edit-tab-btn:hover { color: var(--text-1); background: var(--surface-2); }
+                .edit-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--surface); }
                 .tab-content { min-height: 260px; }
 
                 /* ── TL Banner ── */
                 .tl-readonly-banner {
                     display: flex; align-items: center; gap: 10px;
                     padding: 10px 14px;
-                    background: #eff6ff; border: 1px solid #bfdbfe;
+                    background: var(--brand-light); border: 1px solid var(--border);
                     border-radius: 8px; margin-bottom: 1rem;
-                    font-size: .8rem; color: #1e3a8a; font-weight: 600;
+                    font-size: .8rem; color: var(--text-1); font-weight: 600;
                 }
                 .tl-team-grid { display: flex; flex-direction: column; gap: .6rem; }
 
@@ -2457,29 +2457,29 @@ const Employees = () => {
                 .emp-table th {
                     padding: .75rem 1rem; text-align: left;
                     font-size: .75rem; font-weight: 700;
-                    color: #0f172a; text-transform: uppercase;
-                    letter-spacing: .5px; border-bottom: 2px solid #e5e7eb;
-                    background: #f8fafc;
+                    color: var(--text-1); text-transform: uppercase;
+                    letter-spacing: .5px; border-bottom: 2px solid var(--surface-3);
+                    background: var(--surface-2);
                 }
                 .emp-table td {
                     padding: .85rem 1rem;
-                    border-bottom: 1px solid #f1f5f9;
-                    color: #0f172a;
+                    border-bottom: 1px solid var(--surface-2);
+                    color: var(--text-1);
                     font-size: .875rem;
                 }
                 .emp-table tr:last-child td { border-bottom: none; }
-                .emp-table tr:hover td { background: #f8fafc; }
+                .emp-table tr:hover td { background: var(--surface-2); }
 
                 /* ── Count badge ── */
                 .emp-count-badge {
-                    color: #1e293b;
+                    color: var(--text-1);
                     font-size: .8rem;
                     font-weight: 600;
                     white-space: nowrap;
-                    background: #f1f5f9;
+                    background: var(--surface-2);
                     padding: 4px 10px;
                     border-radius: 20px;
-                    border: 1px solid #e2e8f0;
+                    border: 1px solid var(--border);
                 }
 
                 /* ── Responsive ── */
@@ -2513,8 +2513,8 @@ const Employees = () => {
 
             <div className="emp-root">
                 <div className="page-header">
-                    <h1 style={{ color: "#0f172a" }}>{isTL ? "My Team" : "Employees"}</h1>
-                    <p style={{ color: "#1e293b", fontWeight: 500 }}>
+                    <h1 style={{ color: "var(--text-1)" }}>{isTL ? "My Team" : "Employees"}</h1>
+                    <p style={{ color: "var(--text-1)", fontWeight: 500 }}>
                         {isTL ? "View your team members" : "Manage your team members and their information"}
                     </p>
                 </div>
@@ -2554,13 +2554,13 @@ const Employees = () => {
                             label: "Inactive",
                             value: (isTL ? tlTeamMembers : employees).filter(e => e.status === "inactive").length,
                             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><line x1="10" y1="15" x2="10" y2="9" /><line x1="14" y1="15" x2="14" y2="9" /></svg>,
-                            accent: "#d97706", bg: "#fffbeb", border: "#fde68a",
+                            accent: "#d97706", bg: "var(--warn-bg)", border: "#fde68a",
                         },
                         {
                             label: "Terminated",
                             value: (isTL ? tlTeamMembers : employees).filter(e => e.status === "terminated").length,
                             icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>,
-                            accent: "#dc2626", bg: "#fff1f2", border: "#fecdd3",
+                            accent: "#dc2626", bg: "var(--danger-bg)", border: "#fecdd3",
                         },
                     ].map(stat => (
                         <div key={stat.label} style={{
@@ -2572,7 +2572,7 @@ const Employees = () => {
                         }}>
                             <div style={{
                                 width: 40, height: 40, borderRadius: "10px",
-                                background: "#fff",
+                                background: "var(--surface)",
                                 border: `1px solid ${stat.border}`,
                                 display: "grid", placeItems: "center",
                                 color: stat.accent, flexShrink: 0,
@@ -2584,7 +2584,7 @@ const Employees = () => {
                                 <div style={{ fontSize: "1.55rem", fontWeight: 800, color: stat.accent, lineHeight: 1 }}>
                                     {stat.value}
                                 </div>
-                                <div style={{ fontSize: ".72rem", color: "#374151", fontWeight: 600, marginTop: ".2rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
+                                <div style={{ fontSize: ".72rem", color: "var(--text-2)", fontWeight: 600, marginTop: ".2rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
                                     {stat.label}
                                 </div>
                             </div>
@@ -2608,7 +2608,7 @@ const Employees = () => {
                         <div style={{ position: "relative", flex: 1, minWidth: 180, maxWidth: 360 }}>
                             <span style={{
                                 position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)",
-                                color: "#94a3b8", pointerEvents: "none", display: "flex",
+                                color: "var(--text-3)", pointerEvents: "none", display: "flex",
                             }}>
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                                     <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -2624,14 +2624,14 @@ const Employees = () => {
                                 id="emp-list-search"
                                 readOnly
                                 onFocus={e => e.target.removeAttribute("readOnly")}
-                                style={{ color: "#0f172a", paddingLeft: "34px", width: "100%" }}
+                                style={{ color: "var(--text-1)", paddingLeft: "34px", width: "100%" }}
                             />
                             {search && (
                                 <button onClick={() => setSearch("")} style={{
                                     position: "absolute", right: 9, top: "50%", transform: "translateY(-50%)",
-                                    background: "#e2e8f0", border: "none", borderRadius: "50%",
+                                    background: "var(--border)", border: "none", borderRadius: "50%",
                                     width: 18, height: 18, cursor: "pointer", display: "grid", placeItems: "center",
-                                    color: "#64748b", padding: 0,
+                                    color: "var(--text-2)", padding: 0,
                                 }}>
                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                                         <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -2658,7 +2658,7 @@ const Employees = () => {
                                         Add User
                                     </button>
                                     <button className="btn btn-ghost" onClick={openAssignModal} style={{
-                                        border: "1px solid #e2e8f0", color: "#374151", fontWeight: 600, gap: "6px"
+                                        border: "1px solid var(--border)", color: "var(--text-2)", fontWeight: 600, gap: "6px"
                                     }}>
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -2681,24 +2681,24 @@ const Employees = () => {
                         <div style={{ textAlign: "center", padding: "3.5rem 1rem" }}>
                             <div style={{
                                 width: 72, height: 72, margin: "0 auto 1.25rem",
-                                background: "linear-gradient(135deg, #f1f5f9, #e2e8f0)",
+                                background: "linear-gradient(135deg, var(--surface-2), var(--border))",
                                 borderRadius: "20px",
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 boxShadow: "0 4px 12px rgba(0,0,0,.06)",
                             }}>
-                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                     <circle cx="9" cy="7" r="4" />
                                     <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                 </svg>
                             </div>
-                            <p style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a", marginBottom: ".4rem" }}>
+                            <p style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-1)", marginBottom: ".4rem" }}>
                                 {isTL ? "No team members found" : "No employees found"}
                             </p>
-                            <p style={{ fontSize: ".85rem", color: "#64748b", fontWeight: 500, maxWidth: 280, margin: "0 auto" }}>
+                            <p style={{ fontSize: ".85rem", color: "var(--text-2)", fontWeight: 500, maxWidth: 280, margin: "0 auto" }}>
                                 {search
-                                    ? <>No results for <strong style={{ color: "#0f172a" }}>"{search}"</strong> — try a different term</>
+                                    ? <>No results for <strong style={{ color: "var(--text-1)" }}>"{search}"</strong> — try a different term</>
                                     : isTL
                                         ? "No team members are currently assigned to you"
                                         : "Get started by adding your first employee"
@@ -2750,8 +2750,8 @@ const Employees = () => {
                                                         {initials(e.name)}
                                                     </div>
                                                     <div>
-                                                        <p style={{ fontWeight: 700, color: "#0f172a", lineHeight: 1.3 }}>{e.name}</p>
-                                                        <p className="emp-col-hide" style={{ fontSize: ".75rem", color: "#1e293b", fontWeight: 500 }}>
+                                                        <p style={{ fontWeight: 700, color: "var(--text-1)", lineHeight: 1.3 }}>{e.name}</p>
+                                                        <p className="emp-col-hide" style={{ fontSize: ".75rem", color: "var(--text-1)", fontWeight: 500 }}>
                                                             {e.designation || e.department || "—"}
                                                         </p>
                                                     </div>
@@ -2760,7 +2760,7 @@ const Employees = () => {
                                             <td className="emp-col-hide" style={{ fontSize: ".8rem", color: "#302e2e", fontWeight: 600 }}>
                                                 {e.employeeId || "—"}
                                             </td>
-                                            <td className="emp-col-hide" style={{ color: "#0f172a", fontWeight: 500 }}>{e.email}</td>
+                                            <td className="emp-col-hide" style={{ color: "var(--text-1)", fontWeight: 500 }}>{e.email}</td>
                                             <td style={{ whiteSpace: "nowrap" }}><RoleBadge role={e.role} /></td>
                                             <td style={{ whiteSpace: "nowrap" }}><StatusBadge status={e.status} /></td>
                                             <td>
@@ -2770,12 +2770,12 @@ const Employees = () => {
                                                         onClick={() => openEdit(e)}
                                                         style={{
                                                             display: "inline-flex", alignItems: "center", gap: "5px",
-                                                            padding: "5px 11px", borderRadius: "8px", border: "1px solid #e2e8f0",
-                                                            background: "#fff", color: "#374151", fontWeight: 600,
+                                                            padding: "5px 11px", borderRadius: "8px", border: "1px solid var(--border)",
+                                                            background: "var(--surface)", color: "var(--text-2)", fontWeight: 600,
                                                             fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
                                                         }}
-                                                        onMouseEnter={ev => { ev.currentTarget.style.background = "#f8fafc"; ev.currentTarget.style.borderColor = "#cbd5e1"; }}
-                                                        onMouseLeave={ev => { ev.currentTarget.style.background = "#fff"; ev.currentTarget.style.borderColor = "#e2e8f0"; }}
+                                                        onMouseEnter={ev => { ev.currentTarget.style.background = "var(--surface-2)"; ev.currentTarget.style.borderColor = "#cbd5e1"; }}
+                                                        onMouseLeave={ev => { ev.currentTarget.style.background = "var(--surface)"; ev.currentTarget.style.borderColor = "var(--border)"; }}
                                                     >
                                                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                                                             <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
@@ -2788,11 +2788,11 @@ const Employees = () => {
                                                         style={{
                                                             display: "inline-flex", alignItems: "center", gap: "5px",
                                                             padding: "5px 11px", borderRadius: "8px", border: "1px solid #fecaca",
-                                                            background: "#fff1f2", color: "#dc2626", fontWeight: 600,
+                                                            background: "var(--danger-bg)", color: "#dc2626", fontWeight: 600,
                                                             fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
                                                         }}
-                                                        onMouseEnter={ev => { ev.currentTarget.style.background = "#fee2e2"; }}
-                                                        onMouseLeave={ev => { ev.currentTarget.style.background = "#fff1f2"; }}
+                                                        onMouseEnter={ev => { ev.currentTarget.style.background = "var(--danger-bg)"; }}
+                                                        onMouseLeave={ev => { ev.currentTarget.style.background = "var(--danger-bg)"; }}
                                                     >
                                                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                                                             <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" />
@@ -2818,13 +2818,13 @@ const Employees = () => {
                     <div className="modal enhanced-modal" key={form._key}>
                         <div className="modal-header">
                             <div>
-                                <span className="modal-title" style={{ color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
+                                <span className="modal-title" style={{ color: "var(--text-1)", display: "flex", alignItems: "center", gap: "8px" }}>
                                     <span style={{
                                         width: 28, height: 28, borderRadius: "8px",
                                         background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
                                         display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                                     }}>
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--surface)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                                             <circle cx="12" cy="7" r="4" />
                                             <line x1="12" y1="1" x2="12" y2="4" />
@@ -2834,7 +2834,7 @@ const Employees = () => {
                                     </span>
                                     Add New User
                                 </span>
-                                <p style={{ fontSize: ".8rem", color: "#1e293b", marginTop: "0px", fontWeight: 500, paddingLeft: "36px" }}>
+                                <p style={{ fontSize: ".8rem", color: "var(--text-1)", marginTop: "0px", fontWeight: 500, paddingLeft: "36px" }}>
                                     Fill in the details below
                                 </p>
                             </div>
@@ -2848,7 +2848,7 @@ const Employees = () => {
                             <FormFields form={form} onChange={handleChange} />
                         </div>
                         <div style={{ display: "flex", gap: ".65rem", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
-                            <button className="btn btn-ghost" onClick={() => setAddModal(false)} style={{ flex: 1, color: "#0f172a" }}>Cancel</button>
+                            <button className="btn btn-ghost" onClick={() => setAddModal(false)} style={{ flex: 1, color: "var(--text-1)" }}>Cancel</button>
                             <button className="btn btn-primary" onClick={handleCreate} disabled={submitting} style={{ flex: 2, justifyContent: "center" }}>
                                 {submitting ? <><span className="spinner" />Processing...</> : "Add User"}
                             </button>
@@ -2863,8 +2863,8 @@ const Employees = () => {
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
                             <div>
-                                <span className="modal-title" style={{ color: "#0f172a" }}>✏️ Edit Employee</span>
-                                <p style={{ fontSize: ".8rem", color: "#1e293b", marginTop: "4px", display: "flex", alignItems: "center", gap: ".5rem", fontWeight: 500 }}>
+                                <span className="modal-title" style={{ color: "var(--text-1)" }}>✏️ Edit Employee</span>
+                                <p style={{ fontSize: ".8rem", color: "var(--text-1)", marginTop: "4px", display: "flex", alignItems: "center", gap: ".5rem", fontWeight: 500 }}>
                                     {editEmp.name} &nbsp;·&nbsp; <StatusBadge status={editEmp.status} />
                                 </p>
                             </div>
@@ -2877,7 +2877,7 @@ const Employees = () => {
 
                         <div style={{
                             display: "flex", gap: ".35rem",
-                            borderBottom: "2px solid #f1f5f9",
+                            borderBottom: "2px solid var(--surface-2)",
                             marginBottom: "1.25rem",
                             paddingBottom: "2px",
                             overflowX: "auto",
@@ -2895,7 +2895,7 @@ const Employees = () => {
                                         borderBottom: editTab === tab.key ? "2px solid var(--primary)" : "2px solid transparent",
                                         marginBottom: "-2px",
                                         background: editTab === tab.key ? "#eff6ff" : "transparent",
-                                        color: editTab === tab.key ? "var(--primary)" : "#64748b",
+                                        color: editTab === tab.key ? "var(--primary)" : "var(--text-2)",
                                     }}
                                 >
                                     <span style={{ opacity: editTab === tab.key ? 1 : 0.7 }}>{tab.icon}</span>
@@ -2910,13 +2910,13 @@ const Employees = () => {
 
                                 {/* ── uploaded docs ── */}
                                 {empDocs && (
-                                    <div style={{ borderTop: "1px dashed #e5e7eb", paddingTop: 16, marginTop: 4 }}>
+                                    <div style={{ borderTop: "1px dashed var(--surface-3)", paddingTop: 16, marginTop: 4 }}>
                                         <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 12 }}>Uploaded Documents</p>
 
                                         {["aadhaar", "pan", "passbook"].map(key => {
                                             const d = empDocs?.[key];
                                             if (!d?.url) return (
-                                                <div key={key} style={{ fontSize: 12, color: "#9ca3af", marginBottom: 10 }}>
+                                                <div key={key} style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 10 }}>
                                                     {key.toUpperCase()}: No document uploaded
                                                 </div>
                                             );
@@ -2924,7 +2924,7 @@ const Employees = () => {
                                                 <div key={key} style={{
                                                     display: "flex", alignItems: "center", justifyContent: "space-between",
                                                     padding: "10px 14px", borderRadius: 10,
-                                                    background: d.verified ? "#ecfdf5" : "#fffbeb",
+                                                    background: d.verified ? "var(--success-bg)" : "var(--warn-bg)",
                                                     border: `1px solid ${d.verified ? "#a7f3d0" : "#fde68a"}`,
                                                     marginBottom: 10,
                                                 }}>
@@ -2944,7 +2944,7 @@ const Employees = () => {
                                                         </a>
                                                         {!d.verified && (
                                                             <button
-                                                                style={{ fontSize: 12, fontWeight: 700, color: "#059669", background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}
+                                                                style={{ fontSize: 12, fontWeight: 700, color: "#059669", background: "var(--success-bg)", border: "1px solid #6ee7b7", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}
                                                                 onClick={() => handleVerifyDoc(employeeId, key)}
                                                             >
                                                                 Verify
@@ -2960,7 +2960,7 @@ const Employees = () => {
                                             <div key={od._id} style={{
                                                 display: "flex", alignItems: "center", justifyContent: "space-between",
                                                 padding: "10px 14px", borderRadius: 10,
-                                                background: od.verified ? "#ecfdf5" : "#fffbeb",
+                                                background: od.verified ? "var(--success-bg)" : "var(--warn-bg)",
                                                 border: `1px solid ${od.verified ? "#a7f3d0" : "#fde68a"}`,
                                                 marginBottom: 10,
                                             }}>
@@ -2977,7 +2977,7 @@ const Employees = () => {
                                                     </a>
                                                     {!od.verified && (
                                                         <button
-                                                            style={{ fontSize: 12, fontWeight: 700, color: "#059669", background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}
+                                                            style={{ fontSize: 12, fontWeight: 700, color: "#059669", background: "var(--success-bg)", border: "1px solid #6ee7b7", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}
                                                             onClick={() => handleVerifyOtherDoc(employeeId, od._id)}
                                                         >
                                                             Verify
@@ -2996,7 +2996,7 @@ const Employees = () => {
                                 <div style={{ display: "flex", flexDirection: "column", gap: ".85rem" }}>
                                     <FormFields form={form} onChange={handleChange} />
                                     <div>
-                                        <p style={{ fontSize: ".7rem", color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".6px", marginBottom: ".5rem" }}>
+                                        <p style={{ fontSize: ".7rem", color: "var(--text-2)", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".6px", marginBottom: ".5rem" }}>
                                             Quick Actions
                                         </p>
                                         <div style={{
@@ -3004,9 +3004,9 @@ const Employees = () => {
                                             gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
                                             gap: ".45rem",
                                             padding: ".75rem",
-                                            background: "#f8fafc",
+                                            background: "var(--surface-2)",
                                             borderRadius: "10px",
-                                            border: "1px solid #e2e8f0",
+                                            border: "1px solid var(--border)",
                                         }}>
                                             {(["employee", "tl", "hr"].includes(editEmp.role?.toLowerCase?.())) && (
                                                 <button
@@ -3018,7 +3018,7 @@ const Employees = () => {
                                                         border: "1px solid #ddd6fe", fontWeight: 600,
                                                         fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
                                                     }}
-                                                    onMouseEnter={ev => ev.currentTarget.style.background = "#ede9fe"}
+                                                    onMouseEnter={ev => ev.currentTarget.style.background = "var(--surface-3)"}
                                                     onMouseLeave={ev => ev.currentTarget.style.background = "#f5f0ff"}
                                                 >
                                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -3033,7 +3033,7 @@ const Employees = () => {
                                                     style={{
                                                         display: "flex", alignItems: "center", gap: "6px",
                                                         padding: "7px 11px", borderRadius: "8px",
-                                                        background: editEmp.status === "active" ? "#fffbeb" : "#f0fdf4",
+                                                        background: editEmp.status === "active" ? "var(--warn-bg)" : "#f0fdf4",
                                                         color: editEmp.status === "active" ? "#92400e" : "#065f46",
                                                         border: `1px solid ${editEmp.status === "active" ? "#fde68a" : "#bbf7d0"}`,
                                                         fontWeight: 600, fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
@@ -3052,7 +3052,7 @@ const Employees = () => {
                                                 style={{
                                                     display: "flex", alignItems: "center", gap: "6px",
                                                     padding: "7px 11px", borderRadius: "8px",
-                                                    background: "#fff1f2", color: "#be123c",
+                                                    background: "var(--danger-bg)", color: "#be123c",
                                                     border: "1px solid #fecdd3", fontWeight: 600,
                                                     fontSize: ".78rem", cursor: editEmp.status === "terminated" ? "not-allowed" : "pointer",
                                                     opacity: editEmp.status === "terminated" ? 0.5 : 1, transition: "all .15s",
@@ -3068,7 +3068,7 @@ const Employees = () => {
                                                 style={{
                                                     display: "flex", alignItems: "center", gap: "6px",
                                                     padding: "7px 11px", borderRadius: "8px",
-                                                    background: "#dc2626", color: "#fff",
+                                                    background: "#dc2626", color: "var(--surface)",
                                                     border: "none", fontWeight: 600,
                                                     fontSize: ".78rem", cursor: "pointer", transition: "all .15s",
                                                 }}
@@ -3094,7 +3094,7 @@ const Employees = () => {
 
                         {editTab === "basic" && (
                             <div style={{ display: "flex", gap: ".65rem", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
-                                <button className="btn btn-ghost" onClick={() => setEditTarget(null)} style={{ flex: 1, color: "#0f172a" }}>Cancel</button>
+                                <button className="btn btn-ghost" onClick={() => setEditTarget(null)} style={{ flex: 1, color: "var(--text-1)" }}>Cancel</button>
                                 <button className="btn btn-primary" onClick={handleUpdate} disabled={submitting} style={{ flex: 2, justifyContent: "center" }}>
                                     {submitting ? <><span className="spinner" />Processing...</> : "Update Employee"}
                                 </button>
@@ -3102,7 +3102,7 @@ const Employees = () => {
                         )}
                         {editTab !== "basic" && (
                             <div style={{ marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
-                                <button className="btn btn-ghost" onClick={() => setEditTarget(null)} style={{ width: "100%", justifyContent: "center", color: "#0f172a" }}>
+                                <button className="btn btn-ghost" onClick={() => setEditTarget(null)} style={{ width: "100%", justifyContent: "center", color: "var(--text-1)" }}>
                                     Close
                                 </button>
                             </div>
@@ -3116,7 +3116,7 @@ const Employees = () => {
                 <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setSalaryModal(false)}>
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
-                            <span className="modal-title" style={{ color: "#0f172a" }}>💰 Salary Details — {selectedEmployee?.name}</span>
+                            <span className="modal-title" style={{ color: "var(--text-1)" }}>💰 Salary Details — {selectedEmployee?.name}</span>
                             <button className="btn btn-ghost btn-icon" onClick={() => setSalaryModal(false)}>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M18 6L6 18M6 6l12 12" />
@@ -3125,7 +3125,7 @@ const Employees = () => {
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: ".85rem", padding: "0 4px" }}>
                             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                                <select className="input" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ flex: 1, minWidth: 140, color: "#0f172a" }}>
+                                <select className="input" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ flex: 1, minWidth: 140, color: "var(--text-1)" }}>
                                     <option value="">Select Month</option>
                                     {[...Array(12)].map((_, i) => (
                                         <option key={i + 1} value={i + 1}>
@@ -3137,27 +3137,27 @@ const Employees = () => {
                                     type="number" className="input" placeholder="Year"
                                     value={selectedYear} onChange={e => setSelectedYear(e.target.value)}
                                     min="2020" max="2030"
-                                    style={{ flex: 1, minWidth: 100, color: "#0f172a" }}
+                                    style={{ flex: 1, minWidth: 100, color: "var(--text-1)" }}
                                 />
                             </div>
 
                             {salaryLoading && (
                                 <div style={{ textAlign: "center", padding: "2rem 0" }}>
                                     <div className="spinner" style={{ width: 24, height: 24, borderWidth: 3, borderTopColor: "var(--primary)" }} />
-                                    <p style={{ marginTop: "1rem", color: "#1e293b", fontSize: ".875rem", fontWeight: 500 }}>Calculating salary...</p>
+                                    <p style={{ marginTop: "1rem", color: "var(--text-1)", fontSize: ".875rem", fontWeight: 500 }}>Calculating salary...</p>
                                 </div>
                             )}
 
 
 
                             {!salaryLoading && !salaryData && selectedMonth && selectedYear && (
-                                <div style={{ textAlign: "center", padding: "2rem 0", color: "#1e293b", fontWeight: 500 }}>
+                                <div style={{ textAlign: "center", padding: "2rem 0", color: "var(--text-1)", fontWeight: 500 }}>
                                     No salary data available for the selected period
                                 </div>
                             )}
                         </div>
                         <div style={{ marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
-                            <button className="btn btn-ghost" onClick={() => setSalaryModal(false)} style={{ width: "100%", justifyContent: "center", color: "#0f172a" }}>
+                            <button className="btn btn-ghost" onClick={() => setSalaryModal(false)} style={{ width: "100%", justifyContent: "center", color: "var(--text-1)" }}>
                                 Close
                             </button>
                         </div>
@@ -3171,8 +3171,8 @@ const Employees = () => {
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
                             <div>
-                                <span className="modal-title" style={{ color: "#0f172a" }}> Assign Team to TL</span>
-                                <p style={{ fontSize: ".8rem", color: "#1e293b", marginTop: "4px", fontWeight: 500 }}>
+                                <span className="modal-title" style={{ color: "var(--text-1)" }}> Assign Team to TL</span>
+                                <p style={{ fontSize: ".8rem", color: "var(--text-1)", marginTop: "4px", fontWeight: 500 }}>
                                     Select a Team Leader and employees to assign
                                 </p>
                             </div>
@@ -3185,14 +3185,14 @@ const Employees = () => {
 
                         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", padding: "0 4px" }}>
                             <div className="form-group" style={{ margin: 0 }}>
-                                <label className="form-label" style={{ color: "#0f172a", fontWeight: 700 }}>
+                                <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 700 }}>
                                     Select Team Leader <span style={{ color: "var(--danger)" }}>*</span>
                                 </label>
                                 <select className="input select" value={selectedTL} onChange={e => {
                                     setSelectedTL(e.target.value);
                                     setSelectedEmployeeIds([]);
                                     fetchTLEmployees(e.target.value);
-                                }} style={{ color: "#0f172a" }}>
+                                }} style={{ color: "var(--text-1)" }}>
                                     <option value="">-- Choose a TL --</option>
                                     {tlList.map(tl => (
                                         <option key={tl._id} value={tl._id}>
@@ -3211,14 +3211,14 @@ const Employees = () => {
                                 {/* ── Current Team Members (unassign) ── */}
                                 {selectedTL && (
                                     <div style={{ marginBottom: "1rem" }}>
-                                        <label className="form-label" style={{ color: "#0f172a", fontWeight: 700, marginBottom: ".5rem", display: "block" }}>
+                                        <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 700, marginBottom: ".5rem", display: "block" }}>
                                             Current Team Members
                                             {tlEmployeesLoading && (
                                                 <span style={{ fontSize: ".7rem", color: "#6366f1", marginLeft: 8, fontWeight: 500 }}>Loading…</span>
                                             )}
                                         </label>
                                         {!tlEmployeesLoading && tlEmployees.length === 0 && (
-                                            <p style={{ fontSize: ".8rem", color: "#9ca3af", fontStyle: "italic", padding: ".5rem 0" }}>
+                                            <p style={{ fontSize: ".8rem", color: "var(--text-3)", fontStyle: "italic", padding: ".5rem 0" }}>
                                                 No employees currently assigned to this TL
                                             </p>
                                         )}
@@ -3226,7 +3226,7 @@ const Employees = () => {
                                             <div style={{
                                                 display: "flex", flexDirection: "column", gap: ".3rem",
                                                 maxHeight: 180, overflowY: "auto",
-                                                border: "1px solid #e5e7eb", borderRadius: "8px", padding: ".4rem",
+                                                border: "1px solid var(--surface-3)", borderRadius: "8px", padding: ".4rem",
                                             }}>
                                                 {tlEmployees.map(emp => (
                                                     <div key={emp._id} style={{
@@ -3243,8 +3243,8 @@ const Employees = () => {
                                                             {initials(emp.name)}
                                                         </div>
                                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                                            <p style={{ fontWeight: 700, fontSize: ".8rem", color: "#0f172a", lineHeight: 1.3 }}>{emp.name}</p>
-                                                            <p style={{ fontSize: ".7rem", color: "#1e293b", fontWeight: 500 }}>
+                                                            <p style={{ fontWeight: 700, fontSize: ".8rem", color: "var(--text-1)", lineHeight: 1.3 }}>{emp.name}</p>
+                                                            <p style={{ fontSize: ".7rem", color: "var(--text-1)", fontWeight: 500 }}>
                                                                 {emp.employeeId} · {emp.designation || emp.department || "—"}
                                                             </p>
                                                         </div>
@@ -3252,7 +3252,7 @@ const Employees = () => {
                                                             onClick={() => handleUnassignEmployee(emp._id, emp.name)}
                                                             style={{
                                                                 fontSize: ".72rem", fontWeight: 700,
-                                                                color: "#dc2626", background: "#fff1f2",
+                                                                color: "#dc2626", background: "var(--danger-bg)",
                                                                 border: "1px solid #fecaca", borderRadius: "6px",
                                                                 padding: "3px 10px", cursor: "pointer", flexShrink: 0,
                                                             }}
@@ -3267,15 +3267,15 @@ const Employees = () => {
                                 )}
 
                                 {/* ── Assign New Employees ── */}
-                                <label className="form-label" style={{ color: "#0f172a", fontWeight: 700 }}>
+                                <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 700 }}>
                                     {selectedTL ? "Assign More Employees" : "Select Employees"} <span style={{ color: "var(--danger)" }}>*</span>
-                                    <span style={{ fontSize: ".72rem", color: "#1e293b", fontWeight: 600, marginLeft: 6 }}>
+                                    <span style={{ fontSize: ".72rem", color: "var(--text-1)", fontWeight: 600, marginLeft: 6 }}>
                                         ({selectedEmployeeIds.length} selected)
                                     </span>
                                 </label>
 
                                 {!selectedTL && (
-                                    <p style={{ fontSize: ".8rem", color: "#9ca3af", fontStyle: "italic", marginBottom: ".5rem" }}>
+                                    <p style={{ fontSize: ".8rem", color: "var(--text-3)", fontStyle: "italic", marginBottom: ".5rem" }}>
                                         Select a Team Leader first to see available employees
                                     </p>
                                 )}
@@ -3284,7 +3284,7 @@ const Employees = () => {
                                     <>
                                         <div style={{
                                             maxHeight: 220, overflowY: "auto",
-                                            border: "1px solid #e5e7eb", borderRadius: "8px",
+                                            border: "1px solid var(--surface-3)", borderRadius: "8px",
                                             padding: ".5rem", display: "flex", flexDirection: "column", gap: ".35rem"
                                         }}>
                                             {/* Only show employees NOT already assigned to this TL */}
@@ -3314,14 +3314,14 @@ const Employees = () => {
                                                             {initials(emp.name)}
                                                         </div>
                                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                                            <p style={{ fontWeight: 700, fontSize: ".82rem", color: "#0f172a", lineHeight: 1.3 }}>{emp.name}</p>
-                                                            <p style={{ fontSize: ".72rem", color: "#1e293b", fontWeight: 500 }}>
+                                                            <p style={{ fontWeight: 700, fontSize: ".82rem", color: "var(--text-1)", lineHeight: 1.3 }}>{emp.name}</p>
+                                                            <p style={{ fontSize: ".72rem", color: "var(--text-1)", fontWeight: 500 }}>
                                                                 {emp.employeeId} · {emp.designation || emp.department || emp.email}
                                                             </p>
                                                         </div>
                                                         {emp.reportingTo && (
                                                             <span style={{
-                                                                fontSize: ".68rem", background: "#fef3c7",
+                                                                fontSize: ".68rem", background: "var(--warn-bg)",
                                                                 color: "#451a03", padding: "2px 6px",
                                                                 borderRadius: "4px", flexShrink: 0, fontWeight: 700
                                                             }}>
@@ -3331,7 +3331,7 @@ const Employees = () => {
                                                     </label>
                                                 ))}
                                             {employees.filter(e => e.role === "employee").filter(e => !tlEmployees.some(te => te._id === e._id)).length === 0 && (
-                                                <p style={{ textAlign: "center", color: "#1e293b", fontSize: ".82rem", padding: "1rem", fontWeight: 500 }}>
+                                                <p style={{ textAlign: "center", color: "var(--text-1)", fontSize: ".82rem", padding: "1rem", fontWeight: 500 }}>
                                                     All employees are already assigned to this TL
                                                 </p>
                                             )}
@@ -3339,7 +3339,7 @@ const Employees = () => {
                                         <div style={{ display: "flex", gap: ".5rem", marginTop: ".5rem" }}>
                                             <button
                                                 className="btn btn-ghost btn-sm"
-                                                style={{ color: "#0f172a", fontWeight: 600 }}
+                                                style={{ color: "var(--text-1)", fontWeight: 600 }}
                                                 onClick={() => setSelectedEmployeeIds(
                                                     employees
                                                         .filter(e => e.role === "employee")
@@ -3351,7 +3351,7 @@ const Employees = () => {
                                             </button>
                                             <button
                                                 className="btn btn-ghost btn-sm"
-                                                style={{ color: "#0f172a", fontWeight: 600 }}
+                                                style={{ color: "var(--text-1)", fontWeight: 600 }}
                                                 onClick={() => setSelectedEmployeeIds([])}
                                             >
                                                 Deselect All
@@ -3363,7 +3363,7 @@ const Employees = () => {
                         </div>
 
                         <div style={{ display: "flex", gap: ".65rem", marginTop: "1.5rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
-                            <button className="btn btn-ghost" onClick={() => setAssignModal(false)} style={{ flex: 1, color: "#0f172a" }}>
+                            <button className="btn btn-ghost" onClick={() => setAssignModal(false)} style={{ flex: 1, color: "var(--text-1)" }}>
                                 Cancel
                             </button>
                             <button

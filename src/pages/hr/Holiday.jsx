@@ -297,7 +297,7 @@ const HRHoliday = () => {
                 /* ───────── BASE ───────── */
                 .hr-holiday-page {
                     min-height: 100vh;
-                    background: #f6f8fc;
+                    background: var(--surface-2);
                     padding: 32px;
                     font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
                     box-sizing: border-box;
@@ -333,21 +333,21 @@ const HRHoliday = () => {
                     margin: 0;
                     font-size: 22px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                     letter-spacing: -0.4px;
                 }
                 .hr-subtitle {
                     margin: 2px 0 0;
                     font-size: 13px;
-                    color: #1e293b;
+                    color: var(--text-2);
                     font-weight: 500;
                 }
                 .hr-stat-pill {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    background: white;
-                    border: 1px solid #e2e8f0;
+                    background: var(--surface);
+                    border: 1px solid var(--border);
                     border-radius: 14px;
                     padding: 12px 20px;
                     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
@@ -360,7 +360,7 @@ const HRHoliday = () => {
                 }
                 .hr-stat-label {
                     font-size: 11px;
-                    color: #1e293b;
+                    color: var(--text-2);
                     font-weight: 600;
                     margin-top: 2px;
                     text-transform: uppercase;
@@ -394,11 +394,11 @@ const HRHoliday = () => {
 
                 /* ───────── CALENDAR CARD ───────── */
                 .hr-calendar-card {
-                    background: white;
+                    background: var(--surface);
                     border-radius: 20px;
                     padding: 20px;
                     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-                    border: 1px solid #f1f5f9;
+                    border: 1px solid var(--border);
                 }
                 .hr-calendar-header {
                     display: flex;
@@ -409,7 +409,7 @@ const HRHoliday = () => {
                 .hr-cal-month {
                     font-size: 16px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                 }
                 .hr-cal-legend {
                     display: flex;
@@ -425,7 +425,7 @@ const HRHoliday = () => {
                 }
                 .hr-legend-text {
                     font-size: 12px;
-                    color: #1e293b;
+                    color: var(--text-2);
                     font-weight: 600;
                 }
                 .hr-tile-tooltip {
@@ -476,11 +476,11 @@ const HRHoliday = () => {
 
                 /* ───────── FORM CARD ───────── */
                 .hr-form-card {
-                    background: white;
+                    background: var(--surface);
                     border-radius: 20px;
                     padding: 24px;
                     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-                    border: 1px solid #f1f5f9;
+                    border: 1px solid var(--border);
                 }
                 .hr-form-header {
                     margin-bottom: 20px;
@@ -489,12 +489,12 @@ const HRHoliday = () => {
                     margin: 0 0 4px;
                     font-size: 17px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                 }
                 .hr-form-sub {
                     margin: 0;
                     font-size: 13px;
-                    color: #1e293b;
+                    color: var(--text-2);
                     font-weight: 500;
                 }
                 .hr-input-group {
@@ -504,7 +504,7 @@ const HRHoliday = () => {
                     display: block;
                     font-size: 12px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                     margin-bottom: 8px;
                     text-transform: uppercase;
                     letter-spacing: 0.06em;
@@ -513,12 +513,12 @@ const HRHoliday = () => {
                     width: 100%;
                     padding: 11px 14px;
                     border-radius: 10px;
-                    border: 1.5px solid #e2e8f0;
+                    border: 1.5px solid var(--border);
                     font-size: 14px;
                     font-family: 'Plus Jakarta Sans', sans-serif;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                     outline: none;
-                    background: #f8fafc;
+                    background: var(--surface-3);
                     box-sizing: border-box;
                     transition: border-color 0.15s ease, box-shadow 0.15s ease;
                     font-weight: 500;
@@ -526,10 +526,10 @@ const HRHoliday = () => {
                 .hr-input:focus {
                     border-color: #3b5bdb;
                     box-shadow: 0 0 0 3px rgba(59,91,219,0.12);
-                    background: white;
+                    background: var(--surface);
                 }
                 .hr-input::placeholder {
-                    color: #64748b;
+                    color: var(--text-3);
                 }
                 .hr-btn-row {
                     display: flex;
@@ -555,8 +555,8 @@ const HRHoliday = () => {
                 }
                 .hr-cancel-btn {
                     padding: 11px 18px;
-                    background: #f1f5f9;
-                    color: #0a0f1e;
+                    background: var(--surface-3);
+                    color: var(--text-1);
                     border: none;
                     border-radius: 10px;
                     font-size: 14px;
@@ -566,7 +566,7 @@ const HRHoliday = () => {
                     transition: background 0.12s;
                 }
                 .hr-cancel-btn:hover {
-                    background: #e2e8f0;
+                    background: var(--border);
                 }
 
                 /* ───────── MESSAGES ───────── */
@@ -577,18 +577,18 @@ const HRHoliday = () => {
                     font-weight: 600;
                     margin-bottom: 14px;
                 }
-                .hr-msg-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-                .hr-msg-error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-                .hr-msg-warning { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-                .hr-msg-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+                .hr-msg-success { background: var(--success-bg); color: var(--text-1); border: 1px solid var(--border); }
+                .hr-msg-error   { background: var(--danger-bg); color: var(--text-1); border: 1px solid var(--border); }
+                .hr-msg-warning { background: var(--warn-bg); color: var(--text-1); border: 1px solid var(--border); }
+                .hr-msg-info    { background: var(--brand-light); color: var(--text-1); border: 1px solid var(--border); }
 
                 /* ───────── LIST CARD ───────── */
                 .hr-list-card {
-                    background: white;
+                    background: var(--surface);
                     border-radius: 20px;
                     padding: 24px;
                     box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-                    border: 1px solid #f1f5f9;
+                    border: 1px solid var(--border);
                 }
                 .hr-list-header {
                     display: flex;
@@ -600,11 +600,11 @@ const HRHoliday = () => {
                     margin: 0;
                     font-size: 17px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                 }
                 .hr-count-badge {
-                    background: #eef2ff;
-                    color: #3b5bdb;
+                    background: var(--brand-light);
+                    color: var(--brand-dark);
                     font-size: 12px;
                     font-weight: 700;
                     padding: 3px 10px;
@@ -624,12 +624,12 @@ const HRHoliday = () => {
                     margin: 0;
                     font-size: 14px;
                     font-weight: 600;
-                    color: #1e293b;
+                    color: var(--text-2);
                 }
                 .hr-empty-subtext {
                     margin: 0;
                     font-size: 12px;
-                    color: #475569;
+                    color: var(--text-3);
                     font-weight: 500;
                 }
 
@@ -645,13 +645,13 @@ const HRHoliday = () => {
                     gap: 12px;
                     padding: 12px;
                     border-radius: 12px;
-                    background: #f8fafc;
-                    border: 1px solid #f1f5f9;
+                    background: var(--surface-3);
+                    border: 1px solid var(--border);
                     transition: background 0.15s ease;
                 }
                 .hr-list-item:hover {
-                    background: #f0f4ff;
-                    border-color: #dde4ff;
+                    background: var(--surface-2);
+                    border-color: var(--border-strong);
                 }
                 .hr-date-chip {
                     display: flex;
@@ -686,7 +686,7 @@ const HRHoliday = () => {
                     margin: 0 0 2px;
                     font-size: 14px;
                     font-weight: 700;
-                    color: #0a0f1e;
+                    color: var(--text-1);
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
@@ -694,7 +694,7 @@ const HRHoliday = () => {
                 .hr-holiday-full-date {
                     margin: 0;
                     font-size: 12px;
-                    color: #1e293b;
+                    color: var(--text-2);
                     font-weight: 500;
                 }
                 .hr-item-actions {
@@ -708,15 +708,15 @@ const HRHoliday = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: #fffbeb;
-                    border: 1px solid #fde68a;
+                    background: var(--warn-bg);
+                    border: 1px solid var(--border);
                     border-radius: 8px;
                     cursor: pointer;
-                    color: #b45309;
+                    color: var(--text-1);
                     transition: background 0.12s, transform 0.12s;
                 }
                 .hr-edit-btn:hover {
-                    background: #fef3c7;
+                    background: var(--surface-2);
                     transform: scale(1.08);
                 }
                 .hr-delete-btn {
@@ -725,15 +725,15 @@ const HRHoliday = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: #fef2f2;
-                    border: 1px solid #fecaca;
+                    background: var(--danger-bg);
+                    border: 1px solid var(--border);
                     border-radius: 8px;
                     cursor: pointer;
-                    color: #b91c1c;
+                    color: var(--text-1);
                     transition: background 0.12s, transform 0.12s;
                 }
                 .hr-delete-btn:hover {
-                    background: #fee2e2;
+                    background: var(--surface-2);
                     transform: scale(1.08);
                 }
 
@@ -756,7 +756,7 @@ const HRHoliday = () => {
     border: none;
     border-radius: 8px;
     background: transparent;
-    color: #0a0f1e;
+    color: var(--text-1);
     font-size: 14px;
     font-weight: 600;
     font-family: 'Plus Jakarta Sans', sans-serif;
@@ -767,7 +767,7 @@ const HRHoliday = () => {
     transition: background 0.15s ease;
 }
 .react-calendar__navigation button:hover:not(:disabled) {
-    background: #eef2ff;
+    background: var(--surface-3);
     color: #3b5bdb;
 }
 .react-calendar__navigation button:disabled {
@@ -778,7 +778,7 @@ const HRHoliday = () => {
     flex: 1 !important;
     font-size: 14px !important;
     font-weight: 700 !important;
-    color: #0a0f1e !important;
+    color: var(--text-1) !important;
     pointer-events: none !important;
 }
                 .react-calendar__month-view__weekdays {
@@ -792,7 +792,7 @@ const HRHoliday = () => {
                     text-decoration: none !important;
                     font-size: 11px !important;
                     font-weight: 700 !important;
-                    color: #1e293b !important;
+                    color: var(--text-2) !important;
                     text-transform: uppercase;
                     letter-spacing: 0.08em;
                 }
@@ -802,16 +802,16 @@ const HRHoliday = () => {
                     border-radius: 10px !important;
                     font-size: 13px !important;
                     font-weight: 500 !important;
-                    color: #0a0f1e !important;
+                    color: var(--text-1) !important;
                     transition: all 0.15s ease !important;
                     background: transparent !important;
                 }
                 .react-calendar__tile:hover {
-                    background: #f0f5ff !important;
+                    background: var(--surface-3) !important;
                     color: #3b5bdb !important;
                 }
                 .react-calendar__tile--now {
-                    background: #eef2ff !important;
+                    background: var(--surface-2) !important;
                     color: #3b5bdb !important;
                     font-weight: 700 !important;
                 }
@@ -847,15 +847,15 @@ const HRHoliday = () => {
                     background: white;
                 }
                 .react-calendar__month-view__days__day--neighboringMonth {
-                    color: #94a3b8 !important;
+                    color: var(--text-3) !important;
                     opacity: 0.6;
                 }
                 .react-calendar__month-view__days__day--weekend {
-                    background: #fff5f5 !important;
+                    background: var(--danger-bg) !important;
                     color: #b91c1c !important;
                 }
                 .react-calendar__month-view__days__day--weekend:hover {
-                    background: #ffe3e3 !important;
+                    background: var(--border) !important;
                     color: #991b1b !important;
                 }
                 .react-calendar__month-view__days__day--weekend.react-calendar__tile--active,
@@ -864,11 +864,11 @@ const HRHoliday = () => {
                     color: white !important;
                 }
                 .react-calendar__month-view__days__day--weekend.react-calendar__tile--now {
-                    background: #ffe3e3 !important;
+                    background: var(--danger-bg) !important;
                     color: #991b1b !important;
                 }
                 .react-calendar__month-view__days__day--weekend.hr-holiday-tile {
-                    background: linear-gradient(135deg, #fd7e1422, #fff5f5) !important;
+                    background: linear-gradient(135deg, #fd7e1422, var(--danger-bg)) !important;
                     color: #c2410c !important;
                 }
                 .react-calendar__month-view__weekdays__weekday:nth-child(6) abbr,

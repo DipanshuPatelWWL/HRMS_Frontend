@@ -13,17 +13,17 @@ import autoTable from 'jspdf-autotable'
 import Swal from 'sweetalert2'
 
 const C = {
-    indigo: '#4f46e5', indigoDark: '#3730a3', indigoLight: '#eef2ff', indigoBorder: '#a5b4fc',
+    indigo: '#4f46e5', indigoDark: '#3730a3', indigoLight: 'var(--surface-3)', indigoBorder: '#a5b4fc',
     red: '#dc2626', redDark: '#b91c1c', redLight: '#fef2f2', redBorder: '#fca5a5',
     emerald: '#047857', emeraldLight: '#ecfdf5', emeraldBorder: '#6ee7b7',
     blue: '#1d4ed8', blueLight: '#eff6ff', blueBorder: '#93c5fd', amber: '#b45309',
     amberLight: '#fffbeb', amberBorder: '#fcd34d',
-    slate50: '#f8fafc', slate100: '#f1f5f9', slate200: '#e2e8f0', slate300: '#cbd5e1',
-    slate400: '#64748b', slate500: '#475569', slate600: '#334155', slate700: '#1e293b',
-    slate800: '#0f172a', slate900: '#020617', white: '#ffffff', pageBg: '#f1f3f9',
-    text: '#0f172a',
-    textSub: '#334155',
-    textMuted: '#64748b',
+    slate50: 'var(--surface-2)', slate100: 'var(--surface-3)', slate200: 'var(--border)', slate300: 'var(--border-strong)',
+    slate400: 'var(--text-3)', slate500: 'var(--text-2)', slate600: 'var(--text-2)', slate700: 'var(--text-1)',
+    slate800: 'var(--text-1)', slate900: 'var(--text-1)', white: 'var(--surface)', pageBg: 'var(--surface-2)',
+    text: 'var(--text-1)',
+    textSub: 'var(--text-2)',
+    textMuted: 'var(--text-3)',
 }
 
 const STATUS = {
@@ -73,7 +73,7 @@ const AVATAR_COLORS = ['#7c3aed', '#4f46e5', '#2563eb', '#db2777', '#d97706', '#
 const getAvatarColor = (name = '') => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length]
 const getInitials = (name = '') => name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
-const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '—'
 
 /* ─── Global Styles ── */
 const globalStyles = `
@@ -363,7 +363,7 @@ const DetailModal = ({ open, report, onClose, showToast }) => {
 
                             {/* Details Grid */}
                             <div className="modal-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 22px' }}>
-                                <Detail label="Lead Date" value={fmtDate(report.date || report.createdAt)} />
+                                <Detail label="Date & Time" value={fmtDateTime(report.date || report.createdAt)} />
                                 <Detail label="Marketer" value={report.marketer} />
                                 <Detail label="Service" value={report.services} />
                                 <Detail label="Country" value={report.country} />
@@ -803,7 +803,7 @@ const DownloadModal = ({ open, onClose, reports, salesUsers }) => {
 
     const buildRows = (data) => data.map((r, i) => ({
         'SR.': i + 1,
-        'Date': fmtDate(r.date || r.createdAt),
+        'Date & Time': fmtDateTime(r.date || r.createdAt),
         'Client Name': r.client_name || '—',
         'Client Email': r.client_email || '—',
         'Phone': r.client_phone || '—',
@@ -873,7 +873,7 @@ const DownloadModal = ({ open, onClose, reports, salesUsers }) => {
 
                 // Columns to show in PDF (keep it readable in landscape A4)
                 const pdfCols = [
-                    'SR.', 'Date', 'Client Name', 'Service', 'Country',
+                    'SR.', 'Date & Time', 'Client Name', 'Service', 'Country',
                     'Priority', 'Review Status', 'Lead Stage', 'Created By', 'Assigned To',
                 ]
                 const head = [pdfCols]
@@ -1304,8 +1304,8 @@ const ManagerSalesReports = () => {
                             <thead>
                                 <tr style={{ borderBottom: `1px solid ${C.slate100}`, background: C.slate50 }}>
                                     {(activeView === 'deleted'
-                                        ? ['SR.', 'Date', 'Client Name', 'Service', 'Country', 'Priority', 'Status', 'Deleted At', 'Actions']
-                                        : ['SR.', 'Date', 'Client Name', 'Service', 'Country', 'Priority', 'Status', 'Lead Stage', 'Actions']
+                                        ? ['SR.', 'Date & Time', 'Client Name', 'Service', 'Country', 'Priority', 'Status', 'Deleted At', 'Actions']
+                                        : ['SR.', 'Date & Time', 'Client Name', 'Service', 'Country', 'Priority', 'Status', 'Lead Stage', 'Actions']
                                     ).map(h => (
                                         <th key={h} style={{
                                             padding: '11px 20px', textAlign: 'center',
@@ -1349,8 +1349,17 @@ const ManagerSalesReports = () => {
                                                         background: C.slate100, fontSize: 11, fontWeight: 800, color: C.textSub,
                                                     }}>{String(srNo).padStart(2, '0')}</span>
                                                 </td>
-                                                <td style={{ padding: '14px 20px', color: C.textSub, fontWeight: 600, whiteSpace: 'nowrap', fontSize: 13 }}>
-                                                    {fmtDate(report.date || report.createdAt)}
+                                                <td style={{ padding: '14px 20px', whiteSpace: 'nowrap' }}>
+                                                    {report.date || report.createdAt ? (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2 }}>
+                                                            <span style={{ fontSize: 12, fontWeight: 700, color: C.textSub }}>
+                                                                {new Date(report.date || report.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                            </span>
+                                                            <span style={{ fontSize: 10, color: C.textMuted, fontWeight: 600 }}>
+                                                                {new Date(report.date || report.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                            </span>
+                                                        </div>
+                                                    ) : '--'}
                                                 </td>
                                                 <td style={{ padding: '14px 20px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

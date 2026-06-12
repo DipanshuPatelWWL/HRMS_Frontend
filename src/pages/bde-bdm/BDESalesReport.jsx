@@ -38,7 +38,7 @@ const AVATAR_COLORS = ['#7c3aed', '#4f46e5', '#2563eb', '#db2777', '#d97706', '#
 const getAvatarColor = (name = '') => AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length]
 const getInitials = (name = '') => name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?'
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
-const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
+const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '—'
 
 const getStage = (val) => STAGES.find(s => s.value === val) || STAGES[0]
 
@@ -489,7 +489,7 @@ const DetailModal = ({ open, lead, onClose, onLeadUpdated, showToast }) => {
                                 <StageBadge stage={lead.lead_stage} />
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 22px' }}>
-                                <Detail label="Lead Date" value={fmtDate(lead.date || lead.createdAt)} />
+                                <Detail label="Date & Time" value={fmtDateTime(lead.date || lead.createdAt)} />
                                 <Detail label="Service" value={lead.services} />
                                 <Detail label="Country" value={lead.country} />
                                 <Detail label="Client Phone" value={lead.client_phone} />
@@ -855,7 +855,7 @@ const BDESalesReport = () => {
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                             <thead>
                                 <tr style={{ borderBottom: `1px solid ${C.slate100}`, background: C.slate50 }}>
-                                    {['SR.', 'Date', 'Client Name', 'Service', 'Country', 'Priority', 'Stage', 'Actions'].map(h => (
+                                    {['SR.', 'DATE & TIME', 'Client Name', 'Service', 'Country', 'Priority', 'Stage', 'Actions'].map(h => (
                                         <th key={h} style={{
                                             padding: '11px 20px', textAlign: 'center',
                                             fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
@@ -896,8 +896,17 @@ const BDESalesReport = () => {
                                                         background: C.slate100, fontSize: 11, fontWeight: 800, color: C.textSub,
                                                     }}>{String(srNo).padStart(2, '0')}</span>
                                                 </td>
-                                                <td style={{ padding: '14px 20px', color: C.textSub, fontWeight: 600, whiteSpace: 'nowrap', fontSize: 13 }}>
-                                                    {fmtDate(lead.date || lead.createdAt)}
+                                                <td style={{ padding: '14px 20px', whiteSpace: 'nowrap' }}>
+                                                    {lead.date || lead.createdAt ? (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.2 }}>
+                                                            <span style={{ fontSize: 12, fontWeight: 700, color: C.textSub }}>
+                                                                {new Date(lead.date || lead.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                            </span>
+                                                            <span style={{ fontSize: 10, color: C.textMuted, fontWeight: 600 }}>
+                                                                {new Date(lead.date || lead.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                            </span>
+                                                        </div>
+                                                    ) : '--'}
                                                 </td>
                                                 <td style={{ padding: '14px 20px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

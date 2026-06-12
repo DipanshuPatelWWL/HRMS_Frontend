@@ -87,7 +87,7 @@ const Policies = () => {
                 {/* Header */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
                     <div>
-                        <h2 style={{ margin: 0, fontSize: "1.25rem", color: "#0a0a0a" }}>Company Policies</h2>
+                        <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--text-1)" }}>Company Policies</h2>
                         {pendingPolicies.length > 0 && (
                             <p style={{ margin: "4px 0 0", fontSize: "0.8rem", color: "#d97706" }}>
                                 {pendingPolicies.length} policy(s) require your acknowledgement
@@ -100,7 +100,7 @@ const Policies = () => {
                             onClick={() => handleBulkAcknowledge(pendingPolicies.map(p => p._id))}
                             style={{
                                 display: "flex", alignItems: "center", gap: 8,
-                                background: "#4f46e5", color: "#fff", border: "none",
+                                background: "#4f46e5", color: "var(--surface)", border: "none",
                                 padding: "9px 16px", borderRadius: 8, cursor: "pointer",
                                 fontWeight: 600, fontSize: "0.85rem",
                             }}
@@ -116,12 +116,15 @@ const Policies = () => {
                         <button
                             key={f.value}
                             onClick={() => setFilter(f.value)}
+                            onMouseOver={e => filter !== f.value && (e.currentTarget.style.background = 'var(--surface-2)')}
+                            onMouseOut={e => filter !== f.value && (e.currentTarget.style.background = 'var(--surface)')}
                             style={{
                                 padding: "6px 14px", borderRadius: 20, fontSize: "0.8rem", fontWeight: 600,
-                                border: filter === f.value ? "none" : "1px solid #ddd",
-                                background: filter === f.value ? "#4f46e5" : "#fff",
-                                color: filter === f.value ? "#fff" : "#555",
+                                border: filter === f.value ? "none" : "1px solid var(--border)",
+                                background: filter === f.value ? "var(--brand)" : "var(--surface)",
+                                color: filter === f.value ? "#ffffff" : "var(--text-1)",
                                 cursor: "pointer",
+                                transition: "all 0.15s ease",
                             }}
                         >
                             {f.label}
@@ -133,7 +136,7 @@ const Policies = () => {
                 {selected.length > 0 && (
                     <div style={{
                         display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
-                        background: "#eef2ff", borderRadius: 8, marginBottom: 14, flexWrap: "wrap",
+                        background: "var(--brand-light)", borderRadius: 8, marginBottom: 14, flexWrap: "wrap",
                     }}>
                         <span style={{ fontSize: "0.85rem", color: "#4f46e5", fontWeight: 600 }}>
                             {selected.length} selected
@@ -142,7 +145,7 @@ const Policies = () => {
                             onClick={() => handleBulkAcknowledge(selected)}
                             style={{
                                 display: "flex", alignItems: "center", gap: 6,
-                                background: "#4f46e5", color: "#fff", border: "none",
+                                background: "#4f46e5", color: "var(--surface)", border: "none",
                                 padding: "6px 14px", borderRadius: 6, cursor: "pointer", fontWeight: 600, fontSize: "0.8rem",
                             }}
                         >
@@ -152,7 +155,7 @@ const Policies = () => {
                             onClick={() => setSelected([])}
                             style={{
                                 display: "flex", alignItems: "center", gap: 6,
-                                background: "#fff", color: "#555", border: "1px solid #ddd",
+                                background: "var(--surface)", color: "var(--text-2)", border: "1px solid var(--border)",
                                 padding: "6px 14px", borderRadius: 6, cursor: "pointer", fontWeight: 500, fontSize: "0.8rem",
                             }}
                         >

@@ -147,7 +147,7 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
 
         const map = {
             present: "badge-success",
-            absent: "badge-danger",
+            absent: "badge-absent",
         };
 
         return map[data.status] || "badge-neutral";
@@ -160,6 +160,16 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
         if (data.isLate) return "Late";
 
         return data.status || "Absent";
+    };
+
+    const STATUS_COLORS = {
+        present: { solid: "#22C55E", bg: "#DCFCE7", border: "#86EFAC", text: "#14532D" },
+        late: { solid: "#F97316", bg: "#FFEDD5", border: "#FDBA74", text: "#7C2D12" },
+        halfday: { solid: "#EAB308", bg: "#FEF9C3", border: "#FDE047", text: "#713F12" },
+        absent: { solid: "#3B82F6", bg: "#DBEAFE", border: "#93C5FD", text: "#1E3A8A" },
+        holiday: { solid: "#A855F7", bg: "#F3E8FF", border: "#D8B4FE", text: "#581C87" },
+        weekend: { solid: "#818CF8", bg: "#EEF2FF", border: "#C7D2FE", text: "#3730A3" },
+        leave: { solid: "#EC4899", bg: "#FCE7F3", border: "#F9A8D4", text: "#831843" }
     };
 
     return (
@@ -184,12 +194,13 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                 style={{
                     width: "100%",
                     maxWidth: "560px",
-                    background: "#fff",
+                    background: "var(--surface)",
                     borderRadius: window.innerWidth < 640 ? "18px" : "24px",
                     padding: window.innerWidth < 640 ? "18px" : "28px",
                     maxHeight: "90vh",
                     overflowY: "auto",
-                    boxShadow: "0 25px 50px rgba(0,0,0,.18)",
+                    boxShadow: "0 10px 30px rgba(0,0,0,.3)",
+                    border: "1px solid var(--border)",
                     animation: "modalPop .18s ease",
                 }}
             >
@@ -206,17 +217,19 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                     }
 
                     .badge-success{
-                        background:#DCFCE7;
-                        color:#166534;
+                        background:${STATUS_COLORS.present.bg};
+                        color:${STATUS_COLORS.present.text};
+                        border: 1px solid ${STATUS_COLORS.present.border};
                         padding:4px 12px;
                         border-radius:999px;
                         font-size:.72rem;
                         font-weight:700;
                     }
 
-                    .badge-danger{
-                        background:#FEE2E2;
-                        color:#991B1B;
+                    .badge-absent{
+                        background:${STATUS_COLORS.absent.bg};
+                        color:${STATUS_COLORS.absent.text};
+                        border: 1px solid ${STATUS_COLORS.absent.border};
                         padding:4px 12px;
                         border-radius:999px;
                         font-size:.72rem;
@@ -224,8 +237,9 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                     }
 
                     .badge-warn{
-                        background:#FEF3C7;
-                        color:#92400E;
+                        background:${STATUS_COLORS.halfday.bg};
+                        color:${STATUS_COLORS.halfday.text};
+                        border: 1px solid ${STATUS_COLORS.halfday.border};
                         padding:4px 12px;
                         border-radius:999px;
                         font-size:.72rem;
@@ -233,8 +247,9 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                     }
 
                     .badge-late{
-                        background:#FEE2E2;
-                        color:#B91C1C;
+                        background:${STATUS_COLORS.late.bg};
+                        color:${STATUS_COLORS.late.text};
+                        border: 1px solid ${STATUS_COLORS.late.border};
                         padding:4px 12px;
                         border-radius:999px;
                         font-size:.72rem;
@@ -242,8 +257,9 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                     }
 
                     .badge-holiday{
-                        background:#DBEAFE;
-                        color:#1D4ED8;
+                        background:${STATUS_COLORS.holiday.bg};
+                        color:${STATUS_COLORS.holiday.text};
+                        border: 1px solid ${STATUS_COLORS.holiday.border};
                         padding:4px 12px;
                         border-radius:999px;
                         font-size:.72rem;
@@ -251,8 +267,9 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                     }
 
                     .badge-weekend{
-                        background:#F3E8FF;
-                        color:#7E22CE;
+                        background:${STATUS_COLORS.weekend.bg};
+                        color:${STATUS_COLORS.weekend.text};
+                        border: 1px solid ${STATUS_COLORS.weekend.border};
                         padding:4px 12px;
                         border-radius:999px;
                         font-size:.72rem;
@@ -260,8 +277,8 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                     }
 
                     .badge-neutral{
-                        background:#E5E7EB;
-                        color:#374151;
+                        background:var(--surface-2);
+                        color:var(--text-2);
                         padding:4px 12px;
                         border-radius:999px;
                         font-size:.72rem;
@@ -334,7 +351,7 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                             style={{
                                 fontSize: "1.25rem",
                                 fontWeight: 700,
-                                color: "#111827",
+                                color: "var(--text-1)",
                             }}
                         >
                             Attendance Details
@@ -345,7 +362,7 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                             style={{
                                 marginTop: "4px",
                                 fontSize: ".82rem",
-                                color: "#6B7280",
+                                color: "var(--text-2)",
                             }}
                         >
                             Complete attendance information
@@ -360,10 +377,10 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                             height: "38px",
                             borderRadius: "12px",
                             border: "none",
-                            background: "#F3F4F6",
+                            background: "var(--surface-3)",
                             cursor: "pointer",
                             fontSize: "1.2rem",
-                            color: "#6B7280",
+                            color: "var(--text-2)",
                             fontWeight: 700,
                             flexShrink: 0,
                         }}
@@ -390,7 +407,7 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                                 alignItems: "flex-start",
                                 gap: "18px",
                                 padding: "14px 0",
-                                borderBottom: "1px solid #F1F5F9",
+                                borderBottom: "1px solid var(--border)",
                             }}
                         >
                             <span
@@ -399,7 +416,7 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                                     minWidth: "145px",
                                     fontSize: ".88rem",
                                     fontWeight: 600,
-                                    color: "#64748B",
+                                    color: "var(--text-2)",
                                     flexShrink: 0,
                                 }}
                             >
@@ -416,7 +433,7 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                                     style={{
                                         fontSize: ".92rem",
                                         fontWeight: 600,
-                                        color: "#111827",
+                                        color: "var(--text-1)",
                                         textAlign: "right",
                                         wordBreak: "break-word",
                                     }}
@@ -438,8 +455,8 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                             padding: "12px",
                             borderRadius: "14px",
                             border: "none",
-                            background: "#111827",
-                            color: "#fff",
+                            background: "var(--brand)",
+                            color: "white",
                             fontWeight: 600,
                             fontSize: ".92rem",
                             cursor: "pointer",

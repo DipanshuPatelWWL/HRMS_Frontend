@@ -57,7 +57,7 @@ const css = `
 .tk-root * { box-sizing: border-box; margin: 0; padding: 0; }
 .tk-root {
     font-family: 'DM Sans', sans-serif;
-    color: #0e1013;
+    color: var(--text-1);
     min-height: 100vh;
 }
 
@@ -70,14 +70,14 @@ const css = `
     flex-wrap: wrap;
     gap: 12px;
 }
-.tk-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.5px; color: #0A0C10; }
-.tk-header p  { font-size: .825rem; color: #4B5563; margin-top: 2px; }
+.tk-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.5px; color: var(--text-1); }
+.tk-header p  { font-size: .825rem; color: var(--text-2); margin-top: 2px; }
 
 /* ── Tabs ── */
 .tk-tabs {
     display: flex;
     gap: 4px;
-    background: #D8DCE8;
+    background: var(--surface-3);
     border-radius: 10px;
     padding: 4px;
     margin-bottom: 22px;
@@ -91,7 +91,7 @@ const css = `
     font-size: .82rem;
     font-weight: 600;
     font-family: inherit;
-    color: #374151;
+    color: var(--text-2);
     cursor: pointer;
     transition: all .15s;
     display: flex;
@@ -99,9 +99,9 @@ const css = `
     gap: 6px;
     white-space: nowrap;
 }
-.tk-tab:hover:not(.active) { background: rgba(255,255,255,.6); color: #111318; }
+.tk-tab:hover:not(.active) { background: var(--surface-2); color: var(--text-1); }
 .tk-tab.active {
-    background: #fff;
+    background: var(--surface);
     color: #4338CA;
     box-shadow: 0 1px 4px rgba(0,0,0,.15);
 }
@@ -117,10 +117,10 @@ const css = `
 @media(max-width:480px){ .tk-stats { grid-template-columns: 1fr; } }
 
 .tk-stat {
-    background: #fff;
+    background: var(--surface);
     border-radius: 14px;
     padding: 18px 20px;
-    border: 1.5px solid #C8CDD8;
+    border: 1.5px solid var(--border);
     position: relative;
     overflow: hidden;
 }
@@ -141,14 +141,14 @@ const css = `
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .7px;
-    color: #4B5563;
+    color: var(--text-2);
     margin-bottom: 8px;
 }
 .tk-stat-val {
     font-size: 2.2rem;
     font-weight: 700;
     letter-spacing: -1.5px;
-    color: #0A0C10;
+    color: var(--text-1);
     line-height: 1;
 }
 
@@ -163,11 +163,11 @@ const css = `
 .tk-select {
     padding: 7px 12px;
     border-radius: 8px;
-    border: 1.5px solid #B0B7C6;
-    background: #fff;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
     font-size: .82rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     cursor: pointer;
     outline: none;
     transition: border .15s;
@@ -176,11 +176,11 @@ const css = `
 .tk-search {
     padding: 7px 12px;
     border-radius: 8px;
-    border: 1.5px solid #B0B7C6;
-    background: #fff;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
     font-size: .82rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     outline: none;
     min-width: 200px;
     transition: border .15s;
@@ -194,7 +194,7 @@ const css = `
     gap: 6px;
     padding: 8px 16px;
     background: #4338CA;
-    color: #fff;
+    color: var(--surface);
     border: none;
     border-radius: 9px;
     font-size: .85rem;
@@ -214,9 +214,9 @@ const css = `
 }
 
 .tk-card {
-    background: #fff;
+    background: var(--surface);
     border-radius: 14px;
-    border: 1.5px solid #C8CDD8;
+    border: 1.5px solid var(--border);
     padding: 20px;
     cursor: pointer;
     transition: all .18s;
@@ -249,12 +249,12 @@ const css = `
 .tk-card-title {
     font-size: .925rem;
     font-weight: 600;
-    color: #0A0C10;
+    color: var(--text-1);
     line-height: 1.35;
 }
 .tk-card-desc {
     font-size: .8rem;
-    color: #374151;
+    color: var(--text-2);
     line-height: 1.5;
     margin-bottom: 14px;
     display: -webkit-box;
@@ -279,12 +279,12 @@ const css = `
     font-weight: 600;
     border: 1px solid transparent;
 }
-.chip-blue   { background: #DBEAFE; color: #1E3A8A; border-color: #BFDBFE; }
-.chip-amber  { background: #FEF3C7; color: #78350F; border-color: #FDE68A; }
-.chip-green  { background: #DCFCE7; color: #14532D; border-color: #BBF7D0; }
-.chip-red    { background: #FEE2E2; color: #7F1D1D; border-color: #FECACA; }
-.chip-gray   { background: #E5E7EB; color: #1F2937; border-color: #D1D5DB; }
-.chip-purple { background: #E0E7FF; color: #312E81; border-color: #C7D2FE; }
+.chip-blue   { background: var(--brand-light); color: #1E3A8A; border-color: #BFDBFE; }
+.chip-amber  { background: var(--warn-bg); color: #78350F; border-color: #FDE68A; }
+.chip-green  { background: var(--success-bg); color: #14532D; border-color: #BBF7D0; }
+.chip-red    { background: var(--danger-bg); color: #7F1D1D; border-color: #FECACA; }
+.chip-gray   { background: var(--surface-3); color: var(--text-1); border-color: var(--border); }
+.chip-purple { background: var(--brand-light); color: #312E81; border-color: #C7D2FE; }
 .chip-teal   { background: #CCFBF1; color: #134E4A; border-color: #99F6E4; }
 
 .tk-badge {
@@ -298,10 +298,10 @@ const css = `
     white-space: nowrap;
     border: 1px solid transparent;
 }
-.badge-pending    { background: #FEF3C7; color: #78350F; border-color: #FDE68A; }
-.badge-inprogress { background: #DBEAFE; color: #1E3A8A; border-color: #BFDBFE; }
-.badge-done       { background: #DCFCE7; color: #14532D; border-color: #BBF7D0; }
-.badge-overdue    { background: #FEE2E2; color: #7F1D1D; border-color: #FECACA; }
+.badge-pending    { background: var(--warn-bg); color: #78350F; border-color: #FDE68A; }
+.badge-inprogress { background: var(--brand-light); color: #1E3A8A; border-color: #BFDBFE; }
+.badge-done       { background: var(--success-bg); color: #14532D; border-color: #BBF7D0; }
+.badge-overdue    { background: var(--danger-bg); color: #7F1D1D; border-color: #FECACA; }
 
 .tk-card.overdue { border-color: #FCA5A5; }
 
@@ -310,7 +310,7 @@ const css = `
     align-items: center;
     gap: 7px;
     font-size: .78rem;
-    color: #374151;
+    color: var(--text-2);
     font-weight: 500;
 }
 
@@ -318,7 +318,7 @@ const css = `
 .tk-avatar {
     width: 28px; height: 28px;
     border-radius: 50%;
-    background: #E0E7FF;
+    background: var(--brand-light);
     border: 1.5px solid #A5B4FC;
     display: flex;
     align-items: center;
@@ -335,7 +335,7 @@ const css = `
 .tk-due {
     font-size: .75rem;
     font-family: 'DM Mono', monospace;
-    color: #4B5563;
+    color: var(--text-2);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -348,14 +348,14 @@ const css = `
     gap: 6px;
     margin-top: 14px;
     padding-top: 12px;
-    border-top: 1.5px solid #E5E7EB;
+    border-top: 1.5px solid var(--surface-3);
 }
 .tk-action-btn {
     flex: 1;
     padding: 6px 10px;
     border-radius: 7px;
-    border: 1.5px solid #C8CDD8;
-    background: #F9FAFB;
+    border: 1.5px solid var(--border);
+    background: var(--surface-2);
     font-size: .76rem;
     font-weight: 600;
     font-family: inherit;
@@ -365,25 +365,25 @@ const css = `
     justify-content: center;
     gap: 5px;
     transition: all .15s;
-    color: #1F2937;
+    color: var(--text-1);
 }
-.tk-action-btn:hover { background: #F3F4F6; border-color: #9CA3AF; }
+.tk-action-btn:hover { background: var(--surface-3); border-color: var(--text-3); }
 .tk-action-btn.danger { color: #991B1B; border-color: #FECACA; }
-.tk-action-btn.danger:hover { background: #FEE2E2; border-color: #FCA5A5; }
+.tk-action-btn.danger:hover { background: var(--danger-bg); border-color: #FCA5A5; }
 .tk-action-btn.primary { color: #3730A3; border-color: #C7D2FE; }
-.tk-action-btn.primary:hover { background: #E0E7FF; border-color: #A5B4FC; }
+.tk-action-btn.primary:hover { background: var(--brand-light); border-color: #A5B4FC; }
 
 /* dept breakdown table */
 .tk-dept-table {
-    background: #fff;
+    background: var(--surface);
     border-radius: 14px;
-    border: 1.5px solid #C8CDD8;
+    border: 1.5px solid var(--border);
     overflow: hidden;
     margin-bottom: 24px;
 }
 .tk-dept-table-header {
     padding: 16px 20px;
-    border-bottom: 1.5px solid #D1D5DB;
+    border-bottom: 1.5px solid var(--border);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -391,50 +391,50 @@ const css = `
 .tk-dept-table-header h3 {
     font-size: .9rem;
     font-weight: 700;
-    color: #0A0C10;
+    color: var(--text-1);
 }
 .tk-dept-row {
     display: grid;
     grid-template-columns: 1fr 80px 80px 80px 80px;
     padding: 12px 20px;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid var(--surface-3);
     align-items: center;
     font-size: .83rem;
     transition: background .12s;
     cursor: pointer;
 }
 .tk-dept-row:last-child { border-bottom: none; }
-.tk-dept-row:hover { background: #F9FAFB; }
+.tk-dept-row:hover { background: var(--surface-2); }
 .tk-dept-row.header-row {
     font-size: .72rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .6px;
-    color: #4B5563;
+    color: var(--text-2);
     cursor: default;
-    background: #F3F4F6;
+    background: var(--surface-3);
 }
-.tk-dept-row.header-row:hover { background: #F3F4F6; }
-.tk-dept-name { font-weight: 600; color: #0A0C10; }
-.tk-dept-num  { text-align: center; color: #1F2937; }
+.tk-dept-row.header-row:hover { background: var(--surface-3); }
+.tk-dept-name { font-weight: 600; color: var(--text-1); }
+.tk-dept-num  { text-align: center; color: var(--text-1); }
 
 /* empty state */
 .tk-empty {
     grid-column: 1/-1;
     text-align: center;
     padding: 4rem 2rem;
-    color: #4B5563;
+    color: var(--text-2);
 }
 .tk-empty-icon {
     width: 56px; height: 56px;
     border-radius: 16px;
-    background: #E5E7EB;
-    border: 1.5px solid #D1D5DB;
+    background: var(--surface-3);
+    border: 1.5px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px;
-    color: #374151;
+    color: var(--text-2);
 }
 
 /* ── Modal ── */
@@ -449,9 +449,9 @@ const css = `
     padding: 16px;
 }
 .tk-modal {
-    background: #fff;
+    background: var(--surface);
     border-radius: 18px;
-    border: 1.5px solid #C8CDD8;
+    border: 1.5px solid var(--border);
     width: 100%;
     max-width: 540px;
     max-height: 90vh;
@@ -468,13 +468,13 @@ const css = `
 .tk-modal-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #0A0C10;
+    color: var(--text-1);
     line-height: 1.3;
     padding-right: 12px;
 }
 .tk-close {
-    background: #F3F4F6;
-    border: 1.5px solid #D1D5DB;
+    background: var(--surface-3);
+    border: 1.5px solid var(--border);
     cursor: pointer;
     width: 32px; height: 32px;
     border-radius: 8px;
@@ -482,22 +482,22 @@ const css = `
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #374151;
+    color: var(--text-2);
     transition: background .15s;
 }
-.tk-close:hover { background: #E5E7EB; border-color: #9CA3AF; }
+.tk-close:hover { background: var(--surface-3); border-color: var(--text-3); }
 .tk-modal-section { margin-bottom: 18px; }
 .tk-modal-label {
     font-size: .72rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .7px;
-    color: #4B5563;
+    color: var(--text-2);
     margin-bottom: 6px;
 }
 .tk-modal-value {
     font-size: .9rem;
-    color: #1F2937;
+    color: var(--text-1);
     font-weight: 500;
     line-height: 1.5;
 }
@@ -505,55 +505,55 @@ const css = `
 .tk-status-btn {
     padding: 6px 14px;
     border-radius: 8px;
-    border: 1.5px solid #C8CDD8;
-    background: #F9FAFB;
+    border: 1.5px solid var(--border);
+    background: var(--surface-2);
     font-size: .8rem;
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
     transition: all .15s;
-    color: #1F2937;
+    color: var(--text-1);
 }
-.tk-status-btn.active-pending    { background: #FEF3C7; color: #78350F; border-color: #FDE68A; }
-.tk-status-btn.active-inprogress { background: #DBEAFE; color: #1E3A8A; border-color: #BFDBFE; }
-.tk-status-btn.active-done       { background: #DCFCE7; color: #14532D; border-color: #BBF7D0; }
+.tk-status-btn.active-pending    { background: var(--warn-bg); color: #78350F; border-color: #FDE68A; }
+.tk-status-btn.active-inprogress { background: var(--brand-light); color: #1E3A8A; border-color: #BFDBFE; }
+.tk-status-btn.active-done       { background: var(--success-bg); color: #14532D; border-color: #BBF7D0; }
 .tk-status-btn:hover:not(.active-pending):not(.active-inprogress):not(.active-done) {
-    border-color: #9CA3AF; background: #F3F4F6; color: #111318;
+    border-color: var(--text-3); background: var(--surface-3); color: var(--text-1);
 }
 .tk-input {
     width: 100%;
-    border: 1.5px solid #B0B7C6;
+    border: 1.5px solid var(--border);
     border-radius: 10px;
     padding: 9px 12px;
     font-size: .875rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     outline: none;
     transition: border .15s;
-    background: #fff;
+    background: var(--surface);
 }
 .tk-input:focus { border-color: #4338CA; }
 .tk-textarea {
     width: 100%;
-    border: 1.5px solid #B0B7C6;
+    border: 1.5px solid var(--border);
     border-radius: 10px;
     padding: 10px 12px;
     font-size: .875rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     resize: vertical;
     min-height: 80px;
     outline: none;
     transition: border .15s;
     line-height: 1.5;
-    background: #fff;
+    background: var(--surface);
 }
 .tk-textarea:focus { border-color: #4338CA; }
 .tk-save-btn {
     width: 100%;
     padding: 11px;
     background: #4338CA;
-    color: #fff;
+    color: var(--surface);
     border: none;
     border-radius: 10px;
     font-size: .9rem;
@@ -569,37 +569,37 @@ const css = `
 .tk-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .tk-tag {
     padding: 3px 9px;
-    background: #E0E7FF;
+    background: var(--brand-light);
     color: #312E81;
     border: 1px solid #C7D2FE;
     border-radius: 6px;
     font-size: .72rem;
     font-weight: 600;
 }
-.tk-divider { border: none; border-top: 1.5px solid #E5E7EB; margin: 16px 0; }
+.tk-divider { border: none; border-top: 1.5px solid var(--surface-3); margin: 16px 0; }
 
 /* confirm modal */
 .tk-confirm-modal { max-width: 380px; }
-.tk-confirm-text { font-size: .9rem; color: #1F2937; line-height: 1.6; margin-bottom: 20px; }
+.tk-confirm-text { font-size: .9rem; color: var(--text-1); line-height: 1.6; margin-bottom: 20px; }
 .tk-confirm-btns { display: flex; gap: 10px; }
 .tk-cancel-btn {
     flex: 1;
     padding: 10px;
-    background: #F3F4F6;
-    color: #1F2937;
-    border: 1.5px solid #D1D5DB;
+    background: var(--surface-3);
+    color: var(--text-1);
+    border: 1.5px solid var(--border);
     border-radius: 9px;
     font-size: .88rem;
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
 }
-.tk-cancel-btn:hover { background: #E5E7EB; border-color: #9CA3AF; }
+.tk-cancel-btn:hover { background: var(--surface-3); border-color: var(--text-3); }
 .tk-danger-btn {
     flex: 1;
     padding: 10px;
     background: #EF4444;
-    color: #fff;
+    color: var(--surface);
     border: none;
     border-radius: 9px;
     font-size: .88rem;
@@ -612,7 +612,7 @@ const css = `
 
 /* loading skeleton */
 .tk-skeleton {
-    background: linear-gradient(90deg, #E5E7EB 25%, #D1D5DB 50%, #E5E7EB 75%);
+    background: linear-gradient(90deg, var(--surface-3) 25%, var(--border) 50%, var(--surface-3) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.4s infinite;
     border-radius: 8px;
@@ -733,7 +733,7 @@ const ViewTaskModal = ({ task, onClose, onSave }) => {
                             <div className="tk-avatar">
                                 <UserIcon size={15} />
                             </div>
-                            <span style={{ color: "#1F2937", fontWeight: 500 }}>{task.assignedBy?.name || "—"}</span>
+                            <span style={{ color: "var(--text-1)", fontWeight: 500 }}>{task.assignedBy?.name || "—"}</span>
                         </div>
                     </div>
                     <div>
@@ -784,9 +784,9 @@ const ViewTaskModal = ({ task, onClose, onSave }) => {
                     <div className="tk-modal-section">
                         <div className="tk-modal-label">Previous report</div>
                         <div className="tk-modal-value" style={{
-                            background: "#F3F4F6", border: "1px solid #D1D5DB",
+                            background: "var(--surface-3)", border: "1px solid var(--border)",
                             padding: "10px 12px", borderRadius: 8,
-                            fontSize: ".82rem", whiteSpace: "pre-wrap", color: "#1F2937",
+                            fontSize: ".82rem", whiteSpace: "pre-wrap", color: "var(--text-1)",
                         }}>{task.workReport}</div>
                     </div>
                 )}
@@ -858,7 +858,7 @@ const TaskFormModal = ({ mode = "create", task = null, members = [], onClose, on
 
                 {error && (
                     <div style={{
-                        background: "#FEE2E2", border: "1.5px solid #FECACA", borderRadius: 8,
+                        background: "var(--danger-bg)", border: "1.5px solid #FECACA", borderRadius: 8,
                         padding: "10px 12px", fontSize: ".83rem", color: "#7F1D1D", marginBottom: 14,
                     }}>
                         {error}
@@ -1062,7 +1062,7 @@ const DeptOverviewTable = ({ deptBreakdown, onSelectDept }) => (
             <div className="tk-dept-num">Done</div>
         </div>
         {deptBreakdown.length === 0 && (
-            <div style={{ padding: "24px 20px", textAlign: "center", color: "#4B5563", fontSize: ".83rem" }}>
+            <div style={{ padding: "24px 20px", textAlign: "center", color: "var(--text-2)", fontSize: ".83rem" }}>
                 No data yet
             </div>
         )}
@@ -1261,13 +1261,13 @@ const Tasks = () => {
             {toast && (
                 <div style={{
                     position: "fixed", bottom: 24, right: 24, zIndex: 9999,
-                    background: "#1A1D23", color: "#fff",
+                    background: "var(--text-1)", color: "var(--surface)",
                     padding: "12px 20px", borderRadius: 12,
                     fontSize: ".85rem", fontWeight: 500,
                     boxShadow: "0 8px 24px rgba(0,0,0,.25)",
                     animation: "fadeUp .2s ease",
                     display: "flex", alignItems: "center", gap: 8,
-                    border: "1px solid #374151",
+                    border: "1px solid var(--text-2)",
                 }}>
                     <Icon d={icons.check} size={14} color="#4ADE80" /> {toast}
                 </div>
@@ -1335,7 +1335,7 @@ const Tasks = () => {
 
                     {/* Filters */}
                     <div className="tk-filters">
-                        <Icon d={icons.filter} size={15} color="#4B5563" />
+                        <Icon d={icons.filter} size={15} color="var(--text-2)" />
 
                         <input
                             className="tk-search"
@@ -1375,8 +1375,8 @@ const Tasks = () => {
                                 }}
                                 style={{
                                     padding: "7px 12px", borderRadius: 8,
-                                    border: "1.5px solid #B0B7C6", background: "#fff",
-                                    fontSize: ".8rem", color: "#374151", cursor: "pointer",
+                                    border: "1.5px solid var(--border)", background: "var(--surface)",
+                                    fontSize: ".8rem", color: "var(--text-2)", cursor: "pointer",
                                     fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5,
                                     fontWeight: 600,
                                 }}
@@ -1393,10 +1393,10 @@ const Tasks = () => {
                         {!loading && filtered.length === 0 && (
                             <div className="tk-empty">
                                 <div className="tk-empty-icon">
-                                    <Icon d={icons.task} size={24} color="#374151" />
+                                    <Icon d={icons.task} size={24} color="var(--text-2)" />
                                 </div>
-                                <p style={{ fontWeight: 600, color: "#111318", marginBottom: 6 }}>No tasks found</p>
-                                <p style={{ fontSize: ".82rem", color: "#4B5563" }}>
+                                <p style={{ fontWeight: 600, color: "var(--text-1)", marginBottom: 6 }}>No tasks found</p>
+                                <p style={{ fontSize: ".82rem", color: "var(--text-2)" }}>
                                     {search || statusFilter !== "all" || priorityFilter !== "all" || deptFilter !== "all"
                                         ? "Try adjusting your filters"
                                         : currentTabIsManaged
@@ -1457,7 +1457,7 @@ const Tasks = () => {
                                         <div className="tk-avatar avatar-cyan">
                                             <UserIcon size={15} />
                                         </div>
-                                        <span style={{ color: "#1F2937", fontWeight: 500 }}>{viewTask.assignedTo?.name || "—"}</span>
+                                        <span style={{ color: "var(--text-1)", fontWeight: 500 }}>{viewTask.assignedTo?.name || "—"}</span>
                                     </div>
                                 </div>
                                 <div>
@@ -1466,7 +1466,7 @@ const Tasks = () => {
                                         <div className="tk-avatar">
                                             <UserIcon size={15} />
                                         </div>
-                                        <span style={{ color: "#1F2937", fontWeight: 500 }}>{viewTask.assignedBy?.name || "—"}</span>
+                                        <span style={{ color: "var(--text-1)", fontWeight: 500 }}>{viewTask.assignedBy?.name || "—"}</span>
                                     </div>
                                 </div>
                                 <div>
@@ -1491,9 +1491,9 @@ const Tasks = () => {
                                     <div className="tk-modal-section">
                                         <div className="tk-modal-label">Work report by employee</div>
                                         <div className="tk-modal-value" style={{
-                                            background: "#F3F4F6", border: "1px solid #D1D5DB",
+                                            background: "var(--surface-3)", border: "1px solid var(--border)",
                                             padding: "10px 12px", borderRadius: 8,
-                                            fontSize: ".85rem", whiteSpace: "pre-wrap", color: "#1F2937",
+                                            fontSize: ".85rem", whiteSpace: "pre-wrap", color: "var(--text-1)",
                                         }}>{viewTask.workReport}</div>
                                     </div>
                                 </>

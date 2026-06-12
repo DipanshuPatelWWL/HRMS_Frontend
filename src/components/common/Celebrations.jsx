@@ -225,7 +225,7 @@ const EMAIL_THEMES = {
         avatarColor: "#fff",
         headingColor: "#ffffff",
         accentColor: "#a78bfa",
-        bodyBg: "#ffffff",
+        bodyBg: "var(--surface)",
     },
     corporate_blue: {
         bannerBg: "linear-gradient(155deg,#0c2d6b 0%,#1d5fcc 55%,#0c2d6b 100%)",
@@ -235,7 +235,7 @@ const EMAIL_THEMES = {
         avatarColor: "#fff",
         headingColor: "#ffffff",
         accentColor: "#60a5fa",
-        bodyBg: "#ffffff",
+        bodyBg: "var(--surface)",
     },
     warm_gold: {
         bannerBg: "linear-gradient(155deg,#78350f 0%,#b45309 55%,#78350f 100%)",
@@ -245,7 +245,7 @@ const EMAIL_THEMES = {
         avatarColor: "#fff",
         headingColor: "#fef3c7",
         accentColor: "#fbbf24",
-        bodyBg: "#ffffff",
+        bodyBg: "var(--surface)",
     },
     light_minimal: {
         bannerBg: "linear-gradient(155deg,#f5f3ff 0%,#ede9fe 55%,#f5f3ff 100%)",
@@ -255,7 +255,7 @@ const EMAIL_THEMES = {
         avatarColor: "#4c1d95",
         headingColor: "#3b0764",
         accentColor: "#7c3aed",
-        bodyBg: "#ffffff",
+        bodyBg: "var(--surface)",
     },
 };
 
@@ -300,7 +300,7 @@ const EmailPreview = ({
             {/* Email meta row */}
             <div
                 style={{
-                    background: "#fff",
+                    background: "var(--surface)",
                     borderRadius: 10,
                     padding: "8px 12px",
                     marginBottom: 10,

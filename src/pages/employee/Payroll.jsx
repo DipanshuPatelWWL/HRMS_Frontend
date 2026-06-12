@@ -29,7 +29,7 @@ const getDeductions = (p) => p.deductions ?? 0;
 
 const StatusBadge = ({ status }) => {
     const s = status === "paid"
-        ? { bg: "#dcfce7", color: "#166534", border: "#86efac", dot: "#16a34a", label: "Paid" }
+        ? { bg: "var(--success-bg)", color: "#166534", border: "#86efac", dot: "#16a34a", label: "Paid" }
         : { bg: "#fef9c3", color: "#854d0e", border: "#fde047", dot: "#ca8a04", label: "Draft" };
     return (
         <span style={{
@@ -200,7 +200,7 @@ const Payroll = () => {
                                                     style={{ minWidth: 64 }}
                                                 >
                                                     {dlLoading === p._id
-                                                        ? <span className="spinner" style={{ borderTopColor: "var(--primary)", borderColor: "#ddd", width: 12, height: 12, borderWidth: 2 }} />
+                                                        ? <span className="spinner" style={{ borderTopColor: "var(--primary)", borderColor: "var(--border)", width: 12, height: 12, borderWidth: 2 }} />
                                                         : <><DownloadIcon /> PDF</>
                                                     }
                                                 </button>

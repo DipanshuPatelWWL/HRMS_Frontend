@@ -121,11 +121,17 @@ const SIDEBAR_STYLES = `
   }
 
   .nav-item:not(.active):hover {
-    background: #4e46e52d !important;
+    background: var(--surface-3) !important;
   }
 
   .nav-item.active {
-    background: #625be79a !important;
+    background: #6366f1 !important;
+    color: #fff !important;
+  }
+
+  .nav-item.active .nav-item-label,
+  .nav-item.active .nav-icon {
+    color: #fff !important;
   }
 
   .nav-icon {
@@ -252,6 +258,7 @@ const ICON_MAP = {
     upcomingEvents: MdEvent,
     aiTraining: MdPsychology,
     salesReport: MdTrendingUp,
+    salesIntelligence: MdTrendingUp,
     dailyReport: MdAssignment,
     assets: MdInventory2,
     assetsMgmt: MdManageAccounts,
@@ -310,7 +317,7 @@ const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
                             borderRadius: "4px",
                             pointerEvents: "none",
                             whiteSpace: "nowrap",
-                            boxShadow: "0 0 0 2px #fff",
+                            boxShadow: "0 0 0 2px var(--surface)",
                             lineHeight: 1.4,
                             letterSpacing: "0.02em",
                         }}
@@ -462,6 +469,9 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         {isSalesBDE && (
                             <NavItem to="/sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
                         )}
+                        {isSalesBDE && (
+                            <NavItem to="/sales-intelligence" label="Sales Intelligence" iconKey="salesIntelligence" onClick={onClose} collapsed={collapsed} />
+                        )}
                         <NavItem to="/employee/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                     </div>
                 )}
@@ -509,6 +519,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/scan-logs" label="Scan Logs" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/ai-training" label="AI Training" iconKey="aiTraining" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/sales-intelligence" label="Sales Intelligence" iconKey="salesIntelligence" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/activity-monitor" label="Activity Monitor" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/policies" label="Policy Management" iconKey="policies" onClick={onClose} collapsed={collapsed} />
@@ -540,6 +551,7 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager-view-task" label="View Tasks" iconKey="viewTasks" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager-sales-intelligence" label="Sales Intelligence" iconKey="salesIntelligence" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-activity-monitor" label="Activity Monitor" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />

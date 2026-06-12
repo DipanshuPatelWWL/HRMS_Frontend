@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import {
@@ -11,15 +11,21 @@ import {
     HiOutlineSearch,
     HiOutlineChevronLeft,
     HiOutlineChevronRight,
+    HiOutlineDownload,
+    HiOutlineDocumentText,
 } from "react-icons/hi";
 import {
     MdOutlineBeachAccess,
+    MdOutlineTableChart,
 } from "react-icons/md";
 import {
     RiCalendarCheckLine,
     RiBuilding2Line,
 } from "react-icons/ri";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // ─────────────────────────────────────────────
 //  Constants
@@ -29,14 +35,33 @@ const MONTHS = [
     "July", "August", "September", "October", "November", "December",
 ];
 
+const STATUS_COLORS = {
+    present: { solid: "#22C55E", bg: "#DCFCE7", border: "#86EFAC", text: "#14532D" },
+    late: { solid: "#F97316", bg: "#FFEDD5", border: "#FDBA74", text: "#7C2D12" },
+    halfday: { solid: "#EAB308", bg: "#FEF9C3", border: "#FDE047", text: "#713F12" },
+    absent: { solid: "#3B82F6", bg: "#DBEAFE", border: "#93C5FD", text: "#1E3A8A" },
+    holiday: { solid: "#A855F7", bg: "#F3E8FF", border: "#D8B4FE", text: "#581C87" },
+    weekend: { solid: "#818CF8", bg: "#EEF2FF", border: "#C7D2FE", text: "#3730A3" },
+    leave: { solid: "#EC4899", bg: "#FCE7F3", border: "#F9A8D4", text: "#831843" }
+};
+
 const STATUS_CONFIG = {
-    punched_in: { label: "Punched In", bg: "#DBEAFE", color: "#1E3A8A", dot: "#2563EB" },
-    punched_out: { label: "Punched Out", bg: "#D1FAE5", color: "#084131", dot: "#962205" },
-    absent: { label: "Absent", bg: "#F1F5F9", color: "#1E293B", dot: "#475569" },
+    punched_in: { label: "Punched In", bg: "var(--brand-light)", color: "var(--brand-dark)", dot: "var(--brand)" },
+    punched_out: { label: "Punched Out", bg: "var(--success-bg)", color: "var(--success)", dot: "#962205" },
+    absent: { label: "Absent", bg: "#DBEAFE", color: "#1E3A8A", dot: "#3B82F6" },
     on_leave: { label: "On Leave", bg: "#F3E8FF", color: "#6B21A8", dot: "#7C3AED" },
-    holiday: { label: "Holiday", bg: "#DBEAFE", color: "#1E3A8A", dot: "#2563EB" },
-    not_started: { label: "Office Closed", bg: "#F8FAFC", color: "#64748B", dot: "#94A3B8" },
-    missed_punchout: { label: "Missed Punch Out", bg: "#FFF7ED", color: "#C2410C", dot: "#F97316" },
+    holiday: { label: "Holiday", bg: "var(--brand-light)", color: "var(--brand-dark)", dot: "var(--brand)" },
+    not_started: { label: "Office Closed", bg: "var(--surface-2)", color: "var(--text-3)", dot: "var(--text-3)" },
+    missed_punchout: { label: "Missed Punch Out", bg: "var(--warn-bg)", color: "var(--warn)", dot: "#F97316" },
+};
+
+const DAY_STATUS_CONFIG = {
+    present: { label: "Present", ...STATUS_COLORS.present },
+    late: { label: "Late", ...STATUS_COLORS.late },
+    halfday: { label: "Half Day", ...STATUS_COLORS.halfday },
+    absent: { label: "Absent", ...STATUS_COLORS.absent },
+    leave: { label: "Leave", ...STATUS_COLORS.leave },
+    holiday: { label: "Holiday", ...STATUS_COLORS.holiday },
 };
 
 const matchesStatus = (emp, filterStatus) => {
@@ -111,17 +136,66 @@ const StatusBadge = ({ status }) => {
 };
 
 // ─────────────────────────────────────────────
+//  Day Status Badge
+// ─────────────────────────────────────────────
+const DayStatusBadge = ({ status }) => {
+    const cfg = DAY_STATUS_CONFIG[status] || DAY_STATUS_CONFIG.absent;
+    return (
+        <span
+            style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "4px 10px",
+                borderRadius: 99,
+                fontSize: ".72rem",
+                fontWeight: 700,
+                background: cfg.bg,
+                color: cfg.text,
+                border: `1px solid ${cfg.border}`,
+            }}
+        >
+            <span
+                style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: cfg.solid,
+                    display: "inline-block",
+                }}
+            />
+            {cfg.label}
+        </span>
+    );
+};
+
+// ─────────────────────────────────────────────
 //  Overview Stat Card
 // ─────────────────────────────────────────────
-const OvCard = ({ label, value, color, Icon }) => (
+const OvCard = ({ label, value, color, Icon, onClick }) => (
     <div
+        onClick={onClick}
         style={{
-            background: "#fff",
+            background: "var(--surface)",
             borderRadius: 14,
             padding: "18px 20px",
-            border: "1px solid #E8EBF0",
+            border: "1px solid var(--border)",
             position: "relative",
             overflow: "hidden",
+            cursor: onClick ? "pointer" : "default",
+            transition: "transform 0.2s, box-shadow 0.2s",
+        }}
+        onMouseEnter={(e) => {
+            if (onClick) {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+            }
+        }}
+        onMouseLeave={(e) => {
+            if (onClick) {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "none";
+            }
         }}
     >
         <div
@@ -149,7 +223,7 @@ const OvCard = ({ label, value, color, Icon }) => (
                         fontWeight: 700,
                         textTransform: "uppercase",
                         letterSpacing: ".6px",
-                        color: "#374151",
+                        color: "var(--text-2)",
                         marginBottom: 8,
                     }}
                 >
@@ -159,7 +233,7 @@ const OvCard = ({ label, value, color, Icon }) => (
                     style={{
                         fontSize: "2rem",
                         fontWeight: 800,
-                        color: "#111318",
+                        color: "var(--text-1)",
                         lineHeight: 1,
                         letterSpacing: "-1.5px",
                     }}
@@ -199,6 +273,18 @@ const HRAttendanceOverview = () => {
     const [filterStatus, setFilterStatus] = useState("all");
     const [filterDept, setFilterDept] = useState("all");
 
+    // Day-wise tab states
+    const [selectedDate, setSelectedDate] = useState(now.toISOString().split("T")[0]);
+    const [dayWiseData, setDayWiseData] = useState([]);
+    const [dayWiseSummary, setDayWiseSummary] = useState({});
+    const [dayWiseLoading, setDayWiseLoading] = useState(false);
+    const [dayWisePage, setDayWisePage] = useState(1);
+    const [dayWiseTotal, setDayWiseTotal] = useState(0);
+    const [dayWiseLimit] = useState(50);
+    const [dayWiseSearch, setDayWiseSearch] = useState("");
+    const [dayWiseStatusFilter, setDayWiseStatusFilter] = useState("all");
+    const [dayWiseDeptFilter, setDayWiseDeptFilter] = useState("all");
+
     const fetchData = async () => {
         setLoading(true);
         setData(null);
@@ -214,18 +300,89 @@ const HRAttendanceOverview = () => {
         }
     };
 
+    const fetchDayWiseData = async () => {
+        setDayWiseLoading(true);
+        try {
+            const res = await API.get(
+                `/attendance/day-wise?date=${selectedDate}&page=${dayWisePage}&limit=${dayWiseLimit}&search=${dayWiseSearch}&department=${dayWiseDeptFilter}&status=${dayWiseStatusFilter}`
+            );
+            setDayWiseData(res.data.data);
+            setDayWiseSummary(res.data.summary);
+            setDayWiseTotal(res.data.total);
+        } catch (err) {
+            console.error("Day-wise attendance fetch failed:", err);
+        } finally {
+            setDayWiseLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchData();
         setFilterDept("all");
         setSearch("");
     }, [viewMonth, viewYear]);
 
-    const departments = [
-        ...new Set([
-            ...(data?.todaySummary || []).map((e) => e.department),
-            ...(data?.monthlyStats || []).map((e) => e.department),
-        ].filter(Boolean)),
-    ];
+    useEffect(() => {
+        if (tab === "daywise") {
+            fetchDayWiseData();
+        }
+    }, [tab, selectedDate, dayWisePage, dayWiseSearch, dayWiseStatusFilter, dayWiseDeptFilter]);
+
+    const departments = useMemo(() => {
+        const set = new Set();
+        (data?.todaySummary || []).forEach(e => e.department && set.add(e.department));
+        (data?.monthlyStats || []).forEach(e => e.department && set.add(e.department));
+        return [...set].sort();
+    }, [data]);
+
+    const handleOvCardClick = (status) => {
+        setTab("daywise");
+        setSelectedDate(now.toISOString().split("T")[0]);
+        setDayWiseStatusFilter(status);
+        setDayWiseSearch("");
+        setDayWiseDeptFilter("all");
+        setDayWisePage(1);
+    };
+
+    const handleExportExcel = () => {
+        if (!dayWiseData.length) return;
+        const exportData = dayWiseData.map(emp => ({
+            "Employee Name": emp.name,
+            "Employee ID": emp.employeeId,
+            "Department": emp.department || "—",
+            "Punch In": emp.punchIn ? fmt12(emp.punchIn) : "—",
+            "Punch Out": emp.punchOut ? fmt12(emp.punchOut) : "—",
+            "Work Hours": fmtHours(emp.workHours),
+            "Late Mins": emp.lateMinutes || 0,
+            "Status": DAY_STATUS_CONFIG[emp.status]?.label || emp.status
+        }));
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+        XLSX.writeFile(wb, `Attendance_${selectedDate}.xlsx`);
+    };
+
+    const handleExportPDF = () => {
+        if (!dayWiseData.length) return;
+        const doc = new jsPDF();
+        doc.text(`Attendance Report - ${fmtDate(selectedDate)}`, 14, 15);
+        const tableData = dayWiseData.map(emp => [
+            emp.name,
+            emp.employeeId,
+            emp.department || "—",
+            emp.punchIn ? fmt12(emp.punchIn) : "—",
+            emp.punchOut ? fmt12(emp.punchOut) : "—",
+            fmtHours(emp.workHours),
+            emp.lateMinutes || 0,
+            DAY_STATUS_CONFIG[emp.status]?.label || emp.status
+        ]);
+        autoTable(doc, {
+            head: [["Name", "ID", "Dept", "Punch In", "Punch Out", "Work Hrs", "Late", "Status"]],
+            body: tableData,
+            startY: 20,
+        });
+        doc.save(`Attendance_${selectedDate}.pdf`);
+    };
 
     const applyFilters = (list) =>
         list.filter((e) => {
@@ -260,49 +417,66 @@ const HRAttendanceOverview = () => {
         (e) => e.attendanceStatus === "punched_in"
     );
 
+    const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+
     return (
         <DashboardLayout>
             <style>{`
                 .hr-ov-root { font-family: 'DM Sans', sans-serif; padding-bottom: 40px; }
                 .hr-ov-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-                .hr-tabs { display: flex; gap: 4px; background: #F1F5F9; border-radius: 10px; padding: 4px; margin-bottom: 20px; width: fit-content; }
-                .hr-tab { padding: 7px 18px; border-radius: 7px; border: none; font-family: 'DM Sans',sans-serif; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .15s; background: transparent; color: #374151; display: flex; align-items: center; gap: 6px; }
-                .hr-tab.active { background: #fff; color: #111318; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
-                .hr-tab:not(.active):hover { color: #111318; background: #e8edf2; }
+                .hr-tabs { display: flex; gap: 4px; background: var(--surface-3); border-radius: 10px; padding: 4px; margin-bottom: 20px; width: fit-content; flex-wrap: wrap; }
+                .hr-tab { padding: 7px 18px; border-radius: 7px; border: none; font-family: 'DM Sans',sans-serif; font-size: .82rem; font-weight: 600; cursor: pointer; transition: all .15s; background: transparent; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+                .hr-tab.active { background: var(--surface); color: var(--text-1); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+                .hr-tab:not(.active):hover { color: var(--text-1); background: var(--surface-2); }
                 .hr-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 12px; }
                 .hr-stats-sec { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
                 @media(max-width:900px){ .hr-stats{ grid-template-columns:repeat(2,1fr); } .hr-stats-sec{ grid-template-columns:repeat(2,1fr); } }
                 @media(max-width:500px){ .hr-stats{ grid-template-columns:1fr; } .hr-stats-sec{ grid-template-columns:1fr; } }
-                .hr-card { background: #fff; border-radius: 14px; border: 1px solid #E8EBF0; overflow: hidden; margin-bottom: 16px; }
-                .hr-card-header { padding: 14px 20px; border-bottom: 1px solid #F1F5F9; font-size: .85rem; font-weight: 700; color: #111318; display: flex; align-items: center; gap: 8px; }
+                .hr-card { background: var(--surface); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 16px; }
+                .hr-card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: .85rem; font-weight: 700; color: var(--text-1); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
                 .hr-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-                .hr-table th { text-align: left; padding: 10px 16px; font-size: .67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #1E293B; border-bottom: 1.5px solid #F1F5F9; white-space: nowrap; background: #FAFBFC; }
-                .hr-table td { padding: 11px 16px; border-bottom: 1px solid #F8FAFC; vertical-align: middle; }
-                .hr-table tbody tr:hover { background: #FAFBFC; }
+                .hr-table th { text-align: left; padding: 10px 16px; font-size: .67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-1); border-bottom: 1.5px solid var(--border); white-space: nowrap; background: var(--surface-3); }
+                .hr-table td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+                .hr-table tbody tr:hover { background: var(--surface-3); }
                 .hr-table tbody tr:last-child td { border-bottom: none; }
-                .hr-chip { display: inline-flex; align-items: center; gap: 4px; font-family: 'DM Mono',monospace; font-size: .73rem; background: #F3F4F6; padding: 3px 8px; border-radius: 5px; color: #111318; }
+                .hr-chip { display: inline-flex; align-items: center; gap: 4px; font-family: 'DM Mono',monospace; font-size: .73rem; background: var(--surface-3); padding: 3px 8px; border-radius: 5px; color: var(--text-1); }
                 .hr-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
-                .hr-filters-search { flex: 1; min-width: 200px; max-width: 300px; padding: 8px 14px 8px 36px; border: 1.5px solid #E2E8F0; border-radius: 9px; font-size: .82rem; font-family:'DM Sans',sans-serif; outline: none; transition: border-color .15s; color: #111318; }
+                .hr-filters-search { flex: 1; min-width: 200px; max-width: 300px; padding: 8px 14px 8px 36px; border: 1.5px solid var(--border); border-radius: 9px; font-size: .82rem; font-family:'DM Sans',sans-serif; outline: none; transition: border-color .15s; color: var(--text-1); background: var(--surface); }
                 .hr-filters-search:focus { border-color: #6366F1; }
-                .hr-filters-search::placeholder { color: #6B7280; }
-                .hr-filters select { padding: 8px 12px; border: 1.5px solid #E2E8F0; border-radius: 9px; font-size: .82rem; font-family:'DM Sans',sans-serif; background: #fff; outline: none; cursor: pointer; color: #111318; }
-                .hr-filters select:focus { border-color: #6366F1; }
+                .hr-filters-search::placeholder { color: var(--text-3); }
+                .hr-filters select, .hr-filters input[type="date"] { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 9px; font-size: .82rem; font-family:'DM Sans',sans-serif; background: var(--surface); outline: none; cursor: pointer; color: var(--text-1); }
+                .hr-filters select:focus, .hr-filters input[type="date"]:focus { border-color: #6366F1; }
                 .hr-nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-                .hr-nav-btn { width: 32px; height: 32px; border: 1.5px solid #E2E8F0; border-radius: 8px; background: #FAFAFA; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #111318; font-size: 1rem; transition: all .15s; }
-                .hr-nav-btn:hover { background: #F1F5F9; border-color: #6366F1; color: #6366F1; }
-                .hr-nav select { border: 1.5px solid #E2E8F0; border-radius: 8px; padding: 6px 10px; font-size: .82rem; font-weight: 600; font-family:'DM Sans',sans-serif; background: #FAFAFA; outline: none; cursor: pointer; color: #111318; }
+                .hr-nav-btn { width: 32px; height: 32px; border: 1.5px solid var(--border); border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-1); font-size: 1rem; transition: all .15s; }
+                .hr-nav-btn:hover { background: var(--surface-3); border-color: #6366F1; color: #6366F1; }
+                .hr-nav select { border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: .82rem; font-weight: 600; font-family:'DM Sans',sans-serif; background: var(--surface); outline: none; cursor: pointer; color: var(--text-1); }
                 .hr-nav select:focus { border-color: #6366F1; }
                 .hr-today-btn { padding: 6px 14px; border-radius: 7px; font-size: .75rem; font-weight: 700; border: 1.5px solid #C7D2FE; background: #EEF2FF; color: #4F46E5; cursor: pointer; font-family:'DM Sans',sans-serif; }
                 .hr-today-btn:hover { background: #E0E7FF; }
                 .alert-section { border-radius: 12px; padding: 14px 18px; margin-bottom: 16px; }
                 .alert-section-title { font-size: .78rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
                 .alert-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-                .spinner-sm { width: 20px; height: 20px; border: 2px solid #E2E8F0; border-top-color: #6366F1; border-radius: 50%; animation: spin .6s linear infinite; }
+                .spinner-sm { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: #6366F1; border-radius: 50%; animation: spin .6s linear infinite; }
                 @keyframes spin { to { transform: rotate(360deg); } }
-                .empty-cell { text-align: center; color: #374151; padding: 2.5rem; font-size: .85rem; }
-                .dept-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .67rem; font-weight: 700; background: #EFF6FF; color: #1E40AF; border: 1px solid #BFDBFE; }
+                .empty-cell { text-align: center; color: var(--text-2); padding: 2.5rem; font-size: .85rem; }
+                .dept-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .67rem; font-weight: 700; background: var(--brand-light); color: var(--brand-dark); border: 1px solid var(--border); }
                 .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 300px; }
-                .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #374151; pointer-events: none; }
+                .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-2); pointer-events: none; }
+                .btn-export { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: .75rem; font-weight: 700; cursor: pointer; transition: all .15s; border: 1.5px solid transparent; font-family: inherit; }
+                .btn-excel { background: #DCFCE7; color: #166534; border-color: #BBF7D0; }
+                .btn-excel:hover { background: #BBF7D0; }
+                .btn-pdf { background: #FEE2E2; color: #991B1B; border-color: #FECACA; }
+                .btn-pdf:hover { background: #FECACA; }
+                .pagination { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border); }
+                .pagination-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: .75rem; font-weight: 600; color: var(--text-1); }
+                .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+                .pagination-info { font-size: .75rem; color: var(--text-2); font-weight: 600; }
+                .summary-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+                @media(max-width: 768px) { .summary-strip { grid-template-columns: repeat(3, 1fr); } }
+                @media(max-width: 480px) { .summary-strip { grid-template-columns: repeat(2, 1fr); } }
+                .summary-pill { padding: 10px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+                .summary-pill-val { font-size: 1.4rem; font-weight: 800; line-height: 1; margin-bottom: 2px; }
+                .summary-pill-lbl { font-size: .62rem; font-weight: 700; text-transform: uppercase; color: var(--text-2); letter-spacing: .5px; }
             `}</style>
 
             <div className="hr-ov-root">
@@ -313,7 +487,7 @@ const HRAttendanceOverview = () => {
                             style={{
                                 fontSize: "1.45rem",
                                 fontWeight: 800,
-                                color: "#111318",
+                                color: "var(--text-1)",
                                 letterSpacing: "-.3px",
                                 display: "flex",
                                 alignItems: "center",
@@ -326,7 +500,7 @@ const HRAttendanceOverview = () => {
                         <p
                             style={{
                                 fontSize: ".8rem",
-                                color: "#374151",
+                                color: "var(--text-2)",
                                 marginTop: 4,
                                 fontWeight: 500,
                             }}
@@ -416,18 +590,21 @@ const HRAttendanceOverview = () => {
                         value={ov.punchedIn ?? "—"}
                         color="#22C55E"
                         Icon={HiOutlineCheckCircle}
+                        onClick={() => handleOvCardClick("present")}
                     />
                     <OvCard
                         label="Absent Today"
                         value={ov.absentToday ?? "—"}
-                        color="#EF4444"
+                        color="#3B82F6"
                         Icon={HiOutlineXCircle}
+                        onClick={() => handleOvCardClick("absent")}
                     />
                     <OvCard
                         label="On Leave"
                         value={ov.onLeaveTodayCount ?? "—"}
                         color="#A78BFA"
                         Icon={MdOutlineBeachAccess}
+                        onClick={() => handleOvCardClick("leave")}
                     />
                 </div>
 
@@ -450,6 +627,7 @@ const HRAttendanceOverview = () => {
                         value={ov.lateToday ?? "—"}
                         color="#F43F5E"
                         Icon={HiOutlineClock}
+                        onClick={() => handleOvCardClick("late")}
                     />
                 </div>
 
@@ -458,13 +636,14 @@ const HRAttendanceOverview = () => {
                     <div
                         className="alert-section"
                         style={{
-                            background: "#FFF7ED",
-                            border: "1px solid #FED7AA",
+                            background: "var(--warn-bg)",
+                            border: "1px solid var(--warn)",
+                            opacity: 0.9
                         }}
                     >
                         <div
                             className="alert-section-title"
-                            style={{ color: "#9A3412" }}
+                            style={{ color: "var(--warn)" }}
                         >
                             <HiOutlineExclamationCircle size={16} />
                             Missed Punch Out ({missedPunchOut.length})
@@ -478,12 +657,12 @@ const HRAttendanceOverview = () => {
                                         alignItems: "center",
                                         gap: 6,
                                         padding: "5px 10px",
-                                        background: "#fff",
-                                        border: "1px solid #FED7AA",
+                                        background: "var(--surface)",
+                                        border: "1px solid var(--border)",
                                         borderRadius: 8,
                                         fontSize: ".76rem",
                                         fontWeight: 600,
-                                        color: "#7C2D12",
+                                        color: "var(--text-1)",
                                     }}
                                 >
                                     {e.name}
@@ -491,7 +670,7 @@ const HRAttendanceOverview = () => {
                                         style={{
                                             fontFamily: "DM Mono,monospace",
                                             fontSize: ".68rem",
-                                            color: "#C2410C",
+                                            color: "var(--text-2)",
                                         }}
                                     >
                                         ({e.employeeId})
@@ -500,7 +679,7 @@ const HRAttendanceOverview = () => {
                                         <span
                                             style={{
                                                 marginLeft: 4,
-                                                color: "#15803D",
+                                                color: "var(--success)",
                                                 fontWeight: 700,
                                             }}
                                         >
@@ -518,13 +697,14 @@ const HRAttendanceOverview = () => {
                     <div
                         className="alert-section"
                         style={{
-                            background: "#F0FDF4",
-                            border: "1px solid #BBF7D0",
+                            background: "var(--success-bg)",
+                            border: "1px solid var(--success)",
+                            opacity: 0.9
                         }}
                     >
                         <div
                             className="alert-section-title"
-                            style={{ color: "#14532D" }}
+                            style={{ color: "var(--success)" }}
                         >
                             <HiOutlineCheckCircle size={16} />
                             Currently In Office ({activePunchedIn.length})
@@ -538,12 +718,12 @@ const HRAttendanceOverview = () => {
                                         alignItems: "center",
                                         gap: 6,
                                         padding: "5px 10px",
-                                        background: "#fff",
-                                        border: "1px solid #BBF7D0",
+                                        background: "var(--surface)",
+                                        border: "1px solid var(--border)",
                                         borderRadius: 8,
                                         fontSize: ".76rem",
                                         fontWeight: 600,
-                                        color: "#14532D",
+                                        color: "var(--text-1)",
                                     }}
                                 >
                                     {e.name} ·{" "}
@@ -559,8 +739,8 @@ const HRAttendanceOverview = () => {
                                         <span
                                             style={{
                                                 marginLeft: 4,
-                                                background: "#FEE2E2",
-                                                color: "#991B1B",
+                                                background: "var(--danger-bg)",
+                                                color: "var(--danger)",
                                                 padding: "1px 6px",
                                                 borderRadius: 4,
                                                 fontSize: ".68rem",
@@ -586,6 +766,13 @@ const HRAttendanceOverview = () => {
                         Today's Status
                     </button>
                     <button
+                        className={`hr-tab ${tab === "daywise" ? "active" : ""}`}
+                        onClick={() => setTab("daywise")}
+                    >
+                        <MdOutlineTableChart size={14} />
+                        Day-wise Attendance
+                    </button>
+                    <button
                         className={`hr-tab ${tab === "monthly" ? "active" : ""}`}
                         onClick={() => setTab("monthly")}
                     >
@@ -601,721 +788,452 @@ const HRAttendanceOverview = () => {
                     </button>
                 </div>
 
-                {/* ── Filters ── */}
-                <div className="hr-filters">
-                    <div className="search-wrap">
-                        <HiOutlineSearch
-                            className="search-icon"
-                            size={15}
-                        />
-                        <input
-                            className="hr-filters-search"
-                            placeholder="Search by name, ID or department…"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                    </div>
-                    {tab === "today" && (
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                        >
-                            <option value="all">All Status</option>
-                            <option value="punched_in">Punched In</option>
-                            <option value="punched_out">Punched Out</option>
-                            <option value="absent">Absent</option>
-                            <option value="on_leave">On Leave</option>
-                            <option value="not_started">Office Closed</option>
-                        </select>
-                    )}
-                    <select
-                        value={filterDept}
-                        onChange={(e) => setFilterDept(e.target.value)}
-                    >
-                        <option value="all">All Departments</option>
-                        {departments.map((d) => (
-                            <option key={d} value={d}>
-                                {d}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* ── Loading ── */}
-                {loading && <StopwatchLoader />}
-
                 {/* ─────────────────────────────────────────────
                      TODAY TAB
                 ───────────────────────────────────────────── */}
-                {!loading && tab === "today" && (
-                    <div className="hr-card">
-                        <div className="hr-card-header">
-                            <HiOutlineClock size={16} color="#6366F1" />
-                            Today —{" "}
-                            {now.toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                            })}
-                            <span
-                                style={{
-                                    marginLeft: "auto",
-                                    fontSize: ".75rem",
-                                    color: "#374151",
-                                    fontWeight: 600,
-                                }}
+                {tab === "today" && (
+                    <>
+                        {/* ── Filters ── */}
+                        <div className="hr-filters">
+                            <div className="search-wrap">
+                                <HiOutlineSearch
+                                    className="search-icon"
+                                    size={15}
+                                />
+                                <input
+                                    className="hr-filters-search"
+                                    placeholder="Search by name, ID or department…"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </div>
+                            <select
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
                             >
-                                {filteredToday.length} employees
-                            </span>
-                        </div>
-                        <table className="hr-table">
-                            <thead>
-                                <tr>
-                                    <th>Employee</th>
-                                    <th>Department</th>
-                                    <th>Status</th>
-                                    <th>Punch In</th>
-                                    <th>Punch Out</th>
-                                    <th>Work Hrs</th>
-                                    <th>Note</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredToday.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="empty-cell">
-                                            No employees found
-                                        </td>
-                                    </tr>
-                                )}
-                                {filteredToday.map((emp) => (
-                                    <tr key={emp._id}>
-                                        <td>
-                                            <div
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: 10,
-                                                }}
-                                            >
-                                                <div
-                                                    style={{
-                                                        width: 34,
-                                                        height: 34,
-                                                        borderRadius: "50%",
-                                                        background:
-                                                            "linear-gradient(135deg,#667eea,#764ba2)",
-                                                        color: "#fff",
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        justifyContent:
-                                                            "center",
-                                                        fontWeight: 700,
-                                                        fontSize: ".75rem",
-                                                        flexShrink: 0,
-                                                    }}
-                                                >
-                                                    {initials(emp.name)}
-                                                </div>
-                                                <div>
-                                                    <p
-                                                        style={{
-                                                            fontWeight: 700,
-                                                            color: "#111318",
-                                                            fontSize: ".83rem",
-                                                        }}
-                                                    >
-                                                        {emp.name}
-                                                    </p>
-                                                    <p
-                                                        style={{
-                                                            fontSize: ".7rem",
-                                                            color: "#374151",
-                                                            fontFamily:
-                                                                "DM Mono,monospace",
-                                                            fontWeight: 500,
-                                                        }}
-                                                    >
-                                                        {emp.employeeId}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span className="dept-tag">
-                                                {emp.department || "—"}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <StatusBadge
-                                                status={emp.attendanceStatus}
-                                            />
-                                        </td>
-                                        <td>
-                                            {emp.punchIn ? (
-                                                <span className="hr-chip">
-                                                    <span
-                                                        style={{
-                                                            width: 6,
-                                                            height: 6,
-                                                            borderRadius: "50%",
-                                                            background:
-                                                                "#22C55E",
-                                                            display:
-                                                                "inline-block",
-                                                        }}
-                                                    />
-                                                    {fmt12(emp.punchIn)}
-                                                    {emp.isLate && (
-                                                        <span
-                                                            style={{
-                                                                color: "#DC2626",
-                                                                fontWeight: 700,
-                                                            }}
-                                                        >
-                                                            +{emp.lateMinutes}m
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            ) : (
-                                                <span
-                                                    style={{ color: "#6B7280" }}
-                                                >
-                                                    —
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td>
-                                            {emp.punchOut ? (
-                                                <span className="hr-chip">
-                                                    <span
-                                                        style={{
-                                                            width: 6,
-                                                            height: 6,
-                                                            borderRadius: "50%",
-                                                            background:
-                                                                "#EF4444",
-                                                            display:
-                                                                "inline-block",
-                                                        }}
-                                                    />
-                                                    {fmt12(emp.punchOut)}
-                                                </span>
-                                            ) : emp.missedPunchOut ? (
-                                                <span
-                                                    style={{
-                                                        fontSize: ".72rem",
-                                                        color: "#DC2626",
-                                                        fontWeight: 700,
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: 4,
-                                                    }}
-                                                >
-                                                    <HiOutlineExclamationCircle
-                                                        size={13}
-                                                    />
-                                                    Missed
-                                                </span>
-                                            ) : (
-                                                <span
-                                                    style={{ color: "#6B7280" }}
-                                                >
-                                                    —
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td
-                                            style={{
-                                                fontFamily:
-                                                    "DM Mono,monospace",
-                                                fontSize: ".77rem",
-                                                color: "#111318",
-                                                fontWeight: 600,
-                                            }}
-                                        >
-                                            {fmtHours(emp.workHours)}
-                                        </td>
-                                        <td style={{ fontSize: ".71rem" }}>
-                                            {emp.attendanceStatus === "not_started" && (
-                                                <span style={{ background: "#F1F5F9", color: "#475569", padding: "2px 7px", borderRadius: 4, fontWeight: 600, fontSize: ".68rem" }}>
-                                                    Opens {emp.shiftStartHour != null
-                                                        ? `${emp.shiftStartHour % 12 || 12}:${String(emp.shiftStartMinute).padStart(2, "0")} ${emp.shiftStartHour >= 12 ? "PM" : "AM"}`
-                                                        : "10:00 AM"}
-                                                </span>
-                                            )}
-                                            {emp.onLeave && (
-                                                <span style={{ background: "#F3E8FF", color: "#6B21A8", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>
-                                                    {emp.leaveType || "Leave"}
-                                                </span>
-                                            )}
-                                            {emp.isHalfDay && !emp.onLeave && (
-                                                <span style={{ background: "#FEF3C7", color: "#92400E", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>
-                                                    Half Day
-                                                </span>
-                                            )}
-                                            {emp.isLate && !emp.isHalfDay && !emp.onLeave && (
-                                                <span style={{ background: "#FEE2E2", color: "#991B1B", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>
-                                                    Late
-                                                </span>
-                                            )}
-                                        </td>
-                                    </tr>
+                                <option value="all">All Status</option>
+                                <option value="punched_in">Punched In</option>
+                                <option value="punched_out">Punched Out</option>
+                                <option value="absent">Absent</option>
+                                <option value="on_leave">On Leave</option>
+                                <option value="not_started">Office Closed</option>
+                            </select>
+                            <select
+                                value={filterDept}
+                                onChange={(e) => setFilterDept(e.target.value)}
+                            >
+                                <option value="all">All Departments</option>
+                                {departments.map((d) => (
+                                    <option key={d} value={d}>
+                                        {d}
+                                    </option>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            </select>
+                        </div>
+
+                        {loading && <StopwatchLoader />}
+
+                        {!loading && (
+                            <div className="hr-card">
+                                <div className="hr-card-header">
+                                    <HiOutlineClock size={16} color="#6366F1" />
+                                    Today — {fmtDate(now)}
+                                    <span style={{ marginLeft: "auto", fontSize: ".75rem", color: "var(--text-2)", fontWeight: 600 }}>
+                                        {filteredToday.length} employees
+                                    </span>
+                                </div>
+                                <div style={{ overflowX: "auto" }}>
+                                    <table className="hr-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Department</th>
+                                                <th>Status</th>
+                                                <th>Punch In</th>
+                                                <th>Punch Out</th>
+                                                <th>Work Hrs</th>
+                                                <th>Note</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredToday.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={7} className="empty-cell">No employees found</td>
+                                                </tr>
+                                            )}
+                                            {filteredToday.map((emp) => (
+                                                <tr key={emp._id}>
+                                                    <td>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#667eea,#764ba2)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: ".75rem", flexShrink: 0 }}>
+                                                                {initials(emp.name)}
+                                                            </div>
+                                                            <div>
+                                                                <p style={{ fontWeight: 700, color: "var(--text-1)", fontSize: ".83rem" }}>{emp.name}</p>
+                                                                <p style={{ fontSize: ".7rem", color: "var(--text-2)", fontFamily: "DM Mono,monospace", fontWeight: 500 }}>{emp.employeeId}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td><span className="dept-tag">{emp.department || "—"}</span></td>
+                                                    <td><StatusBadge status={emp.attendanceStatus} /></td>
+                                                    <td>
+                                                        {emp.punchIn ? (
+                                                            <span className="hr-chip">
+                                                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", display: "inline-block" }} />
+                                                                {fmt12(emp.punchIn)}
+                                                                {emp.isLate && <span style={{ color: "#DC2626", fontWeight: 700 }}>+{emp.lateMinutes}m</span>}
+                                                            </span>
+                                                        ) : <span style={{ color: "#6B7280" }}>—</span>}
+                                                    </td>
+                                                    <td>
+                                                        {emp.punchOut ? (
+                                                            <span className="hr-chip">
+                                                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444", display: "inline-block" }} />
+                                                                {fmt12(emp.punchOut)}
+                                                            </span>
+                                                        ) : emp.missedPunchOut ? (
+                                                            <span style={{ fontSize: ".72rem", color: "#DC2626", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                                                                <HiOutlineExclamationCircle size={13} /> Missed
+                                                            </span>
+                                                        ) : <span style={{ color: "#6B7280" }}>—</span>}
+                                                    </td>
+                                                    <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", color: "var(--text-1)", fontWeight: 600 }}>{fmtHours(emp.workHours)}</td>
+                                                    <td style={{ fontSize: ".71rem" }}>
+                                                        {emp.attendanceStatus === "not_started" && (
+                                                            <span style={{ background: "var(--surface-3)", color: "var(--text-2)", padding: "2px 7px", borderRadius: 4, fontWeight: 600, fontSize: ".68rem" }}>
+                                                                Opens {emp.shiftStartHour != null ? `${emp.shiftStartHour % 12 || 12}:${String(emp.shiftStartMinute).padStart(2, "0")} ${emp.shiftStartHour >= 12 ? "PM" : "AM"}` : "10:00 AM"}
+                                                            </span>
+                                                        )}
+                                                        {emp.onLeave && <span style={{ background: "var(--brand-light)", color: "var(--brand)", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>{emp.leaveType || "Leave"}</span>}
+                                                        {emp.isHalfDay && !emp.onLeave && <span style={{ background: "var(--warn-bg)", color: "var(--warn)", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>Half Day</span>}
+                                                        {emp.isLate && !emp.isHalfDay && !emp.onLeave && <span style={{ background: "var(--danger-bg)", color: "var(--danger)", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>Late</span>}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* ─────────────────────────────────────────────
+                     DAY-WISE TAB
+                ───────────────────────────────────────────── */}
+                {tab === "daywise" && (
+                    <>
+                        <div className="hr-filters">
+                            <input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                style={{ fontWeight: 700 }}
+                            />
+                            <div className="search-wrap">
+                                <HiOutlineSearch className="search-icon" size={15} />
+                                <input
+                                    className="hr-filters-search"
+                                    placeholder="Search name or ID…"
+                                    value={dayWiseSearch}
+                                    onChange={(e) => setDayWiseSearch(e.target.value)}
+                                />
+                            </div>
+                            <select
+                                value={dayWiseStatusFilter}
+                                onChange={(e) => setDayWiseStatusFilter(e.target.value)}
+                            >
+                                <option value="all">All Status</option>
+                                <option value="present">Present</option>
+                                <option value="late">Late</option>
+                                <option value="halfday">Half Day</option>
+                                <option value="absent">Absent</option>
+                                <option value="leave">Leave</option>
+                                <option value="holiday">Holiday</option>
+                            </select>
+                            <select
+                                value={dayWiseDeptFilter}
+                                onChange={(e) => setDayWiseDeptFilter(e.target.value)}
+                            >
+                                <option value="all">All Departments</option>
+                                {departments.map((d) => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
+                            <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+                                <button className="btn-export btn-excel" onClick={handleExportExcel}>
+                                    <HiOutlineDownload size={14} /> Excel
+                                </button>
+                                <button className="btn-export btn-pdf" onClick={handleExportPDF}>
+                                    <HiOutlineDocumentText size={14} /> PDF
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="summary-strip">
+                            {[
+                                { label: "Present", val: dayWiseSummary.present, cfg: DAY_STATUS_CONFIG.present },
+                                { label: "Late", val: dayWiseSummary.late, cfg: DAY_STATUS_CONFIG.late },
+                                { label: "Half Day", val: dayWiseSummary.halfday, cfg: DAY_STATUS_CONFIG.halfday },
+                                { label: "Absent", val: dayWiseSummary.absent, cfg: DAY_STATUS_CONFIG.absent },
+                                { label: "Leave", val: dayWiseSummary.leave, cfg: DAY_STATUS_CONFIG.leave },
+                            ].map(s => (
+                                <div key={s.label} className="summary-pill" style={{
+                                    background: isDark ? `${s.cfg.solid}15` : s.cfg.bg,
+                                    borderColor: `${s.cfg.solid}33`
+                                }}>
+                                    <div className="summary-pill-val" style={{ color: s.cfg.solid }}>{s.val ?? 0}</div>
+                                    <div className="summary-pill-lbl">{s.label}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {dayWiseLoading && <StopwatchLoader />}
+
+                        {!dayWiseLoading && (
+                            <div className="hr-card">
+                                <div className="hr-card-header">
+                                    <MdOutlineTableChart size={16} color="#6366F1" />
+                                    Attendance: {fmtDate(selectedDate)}
+                                    <span style={{ marginLeft: "auto", fontSize: ".75rem", color: "var(--text-2)", fontWeight: 600 }}>
+                                        {dayWiseTotal} employees
+                                    </span>
+                                </div>
+                                <div style={{ overflowX: "auto" }}>
+                                    <table className="hr-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Department</th>
+                                                <th>Punch In</th>
+                                                <th>Punch Out</th>
+                                                <th>Work Hours</th>
+                                                <th>Late</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {dayWiseData.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={7} className="empty-cell">No data found</td>
+                                                </tr>
+                                            )}
+                                            {dayWiseData.map((emp) => (
+                                                <tr key={emp._id}>
+                                                    <td>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#667eea,#764ba2)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: ".75rem", flexShrink: 0 }}>
+                                                                {initials(emp.name)}
+                                                            </div>
+                                                            <div>
+                                                                <p style={{ fontWeight: 700, color: "var(--text-1)", fontSize: ".83rem" }}>{emp.name}</p>
+                                                                <p style={{ fontSize: ".7rem", color: "var(--text-2)", fontFamily: "DM Mono,monospace", fontWeight: 500 }}>{emp.employeeId}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td><span className="dept-tag">{emp.department || "—"}</span></td>
+                                                    <td>{emp.punchIn ? <span className="hr-chip">{fmt12(emp.punchIn)}</span> : "—"}</td>
+                                                    <td>{emp.punchOut ? <span className="hr-chip">{fmt12(emp.punchOut)}</span> : "—"}</td>
+                                                    <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", color: "var(--text-1)", fontWeight: 600 }}>{fmtHours(emp.workHours)}</td>
+                                                    <td>{emp.lateMinutes > 0 ? <span style={{ color: "#DC2626", fontWeight: 700, fontSize: ".75rem" }}>{emp.lateMinutes}m</span> : "—"}</td>
+                                                    <td><DayStatusBadge status={emp.status} /></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {dayWiseTotal > dayWiseLimit && (
+                                    <div className="pagination">
+                                        <div className="pagination-info">
+                                            Showing {(dayWisePage - 1) * dayWiseLimit + 1} to {Math.min(dayWisePage * dayWiseLimit, dayWiseTotal)} of {dayWiseTotal}
+                                        </div>
+                                        <button
+                                            className="pagination-btn"
+                                            disabled={dayWisePage === 1}
+                                            onClick={() => setDayWisePage(p => p - 1)}
+                                        >
+                                            Prev
+                                        </button>
+                                        <button
+                                            className="pagination-btn"
+                                            disabled={dayWisePage * dayWiseLimit >= dayWiseTotal}
+                                            onClick={() => setDayWisePage(p => p + 1)}
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* ─────────────────────────────────────────────
                      MONTHLY TAB
                 ───────────────────────────────────────────── */}
                 {!loading && tab === "monthly" && (
-                    <div className="hr-card">
-                        <div className="hr-card-header">
-                            <RiBuilding2Line size={16} color="#6366F1" />
-                            Monthly Stats — {MONTHS[viewMonth - 1]} {viewYear}
-                            <span
-                                style={{
-                                    marginLeft: "auto",
-                                    fontSize: ".75rem",
-                                    color: "#374151",
-                                    fontWeight: 600,
-                                }}
+                    <>
+                        <div className="hr-filters">
+                            <div className="search-wrap">
+                                <HiOutlineSearch className="search-icon" size={15} />
+                                <input
+                                    className="hr-filters-search"
+                                    placeholder="Search name, ID or department…"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </div>
+                            <select
+                                value={filterDept}
+                                onChange={(e) => setFilterDept(e.target.value)}
                             >
-                                {filteredMonthly.length} employees
-                            </span>
+                                <option value="all">All Departments</option>
+                                {departments.map((d) => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
                         </div>
-                        <table className="hr-table">
-                            <thead>
-                                <tr>
-                                    <th>Employee</th>
-                                    <th>Department</th>
-                                    <th>Days Present</th>
-                                    <th>Late</th>
-                                    <th>Absent</th>
-                                    <th>Leave Days</th>
-                                    <th>Total Hrs</th>
-                                    <th>Avg / Day</th>
-                                    <th>Late hrs</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredMonthly.length === 0 && (
-                                    <tr>
-                                        <td colSpan={9} className="empty-cell">
-                                            No data available
-                                        </td>
-                                    </tr>
-                                )}
-                                {filteredMonthly.map((emp) => {
-                                    const s = emp.stats;
-                                    return (
-                                        <tr key={emp._id}>
-                                            <td>
-                                                <div
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: 10,
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            width: 34,
-                                                            height: 34,
-                                                            borderRadius: "50%",
-                                                            background:
-                                                                "linear-gradient(135deg,#667eea,#764ba2)",
-                                                            color: "#fff",
-                                                            display: "flex",
-                                                            alignItems:
-                                                                "center",
-                                                            justifyContent:
-                                                                "center",
-                                                            fontWeight: 700,
-                                                            fontSize: ".75rem",
-                                                            flexShrink: 0,
-                                                        }}
-                                                    >
-                                                        {initials(emp.name)}
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            style={{
-                                                                fontWeight: 700,
-                                                                color: "#111318",
-                                                                fontSize:
-                                                                    ".83rem",
-                                                            }}
-                                                        >
-                                                            {emp.name}
-                                                        </p>
-                                                        <p
-                                                            style={{
-                                                                fontSize:
-                                                                    ".7rem",
-                                                                color: "#374151",
-                                                                fontFamily:
-                                                                    "DM Mono,monospace",
-                                                                fontWeight: 500,
-                                                            }}
-                                                        >
-                                                            {emp.employeeId}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className="dept-tag">
-                                                    {emp.department || "—"}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                                    <span style={{ fontWeight: 700, color: "#15803D", fontSize: ".85rem" }}>
-                                                        {s.presentDays + s.halfDays}
-                                                    </span>
-                                                    {s.halfDays > 0 && (
-                                                        <span style={{
-                                                            fontSize: ".68rem", color: "#92400E",
-                                                            background: "#FEF3C7", padding: "1px 6px",
-                                                            borderRadius: 3, fontWeight: 600,
-                                                            border: "1px solid #FDE68A",
-                                                        }}>
-                                                            {s.halfDays} half
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-
-
-                                            <td>
-                                                {s.lateDays > 0 ? (
-                                                    <span
-                                                        style={{
-                                                            background:
-                                                                "#FEE2E2",
-                                                            color: "#991B1B",
-                                                            padding:
-                                                                "2px 8px",
-                                                            borderRadius: 4,
-                                                            fontWeight: 700,
-                                                            fontSize: ".75rem",
-                                                        }}
-                                                    >
-                                                        {s.lateDays}
-                                                    </span>
-                                                ) : (
-                                                    <span
-                                                        style={{
-                                                            color: "#374151",
-                                                            fontWeight: 500,
-                                                        }}
-                                                    >
-                                                        0
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                {s.absentDays > 0 ? (
-                                                    <span
-                                                        style={{
-                                                            background:
-                                                                "#F1F5F9",
-                                                            color: "#1E293B",
-                                                            padding:
-                                                                "2px 8px",
-                                                            borderRadius: 4,
-                                                            fontWeight: 700,
-                                                            fontSize: ".75rem",
-                                                        }}
-                                                    >
-                                                        {s.absentDays}
-                                                    </span>
-                                                ) : (
-                                                    <span
-                                                        style={{
-                                                            color: "#374151",
-                                                            fontWeight: 500,
-                                                        }}
-                                                    >
-                                                        0
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td>
-                                                {s.leaveDays > 0 ? (
-                                                    <span
-                                                        style={{
-                                                            background: "#F3E8FF",
-                                                            color: "#6B21A8",
-                                                            padding: "2px 8px",
-                                                            borderRadius: 4,
-                                                            fontWeight: 700,
-                                                            fontSize: ".75rem",
-                                                        }}
-                                                    >
-                                                        {s.leaveDays}
-                                                    </span>
-                                                ) : (
-                                                    <span style={{ color: "#374151", fontWeight: 500 }}>0</span>
-                                                )}
-                                            </td>
-
-                                            {/* Total Work Hours */}
-                                            <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "#111318" }}>
-                                                {s.totalWorkHours > 0 ? (
-                                                    <span style={{ display: "inline-flex", alignItems: "baseline", gap: 2 }}>
-                                                        {Math.floor(s.totalWorkHours)}
-                                                        <span style={{ fontSize: ".68rem", color: "#6B7280", fontWeight: 400 }}>
-                                                            h {Math.round((s.totalWorkHours % 1) * 60)}m
-                                                        </span>
-                                                    </span>
-                                                ) : (
-                                                    <span style={{ color: "#9CA3AF" }}>—</span>
-                                                )}
-                                            </td>
-
-                                            {/* Avg Daily Hours */}
-                                            <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "#111318" }}>
-                                                {s.avgDailyHours > 0 ? (
-                                                    <span style={{ display: "inline-flex", alignItems: "baseline", gap: 2 }}>
-                                                        {Math.floor(s.avgDailyHours)}
-                                                        <span style={{ fontSize: ".68rem", color: "#6B7280", fontWeight: 400 }}>
-                                                            h {Math.round((s.avgDailyHours % 1) * 60)}m
-                                                        </span>
-                                                    </span>
-                                                ) : (
-                                                    <span style={{ color: "#9CA3AF" }}>—</span>
-                                                )}
-                                            </td>
-
-                                            {/* Total Late Minutes */}
-                                            <td>
-                                                {s.totalLateMinutes > 0 ? (() => {
-                                                    const totalMins = Math.round(s.totalLateMinutes);
-                                                    const hrs = Math.floor(totalMins / 60);
-                                                    const mins = totalMins % 60;
-                                                    return (
-                                                        <span style={{
-                                                            background: "#FFF7ED",
-                                                            color: "#C2410C",
-                                                            padding: "2px 8px",
-                                                            borderRadius: 4,
-                                                            fontWeight: 700,
-                                                            fontSize: ".75rem",
-                                                            fontFamily: "DM Mono,monospace",
-                                                        }}>
-                                                            {hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`}
-                                                        </span>
-                                                    );
-                                                })() : (
-                                                    <span style={{ color: "#374151", fontWeight: 500 }}>—</span>
-                                                )}
-                                            </td>
+                        <div className="hr-card">
+                            <div className="hr-card-header">
+                                <RiBuilding2Line size={16} color="#6366F1" />
+                                Monthly Stats — {MONTHS[viewMonth - 1]} {viewYear}
+                                <span style={{ marginLeft: "auto", fontSize: ".75rem", color: "var(--text-2)", fontWeight: 600 }}>
+                                    {filteredMonthly.length} employees
+                                </span>
+                            </div>
+                            <div style={{ overflowX: "auto" }}>
+                                <table className="hr-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Department</th>
+                                            <th>Days Present</th>
+                                            <th>Late</th>
+                                            <th>Absent</th>
+                                            <th>Leave Days</th>
+                                            <th>Total Hrs</th>
+                                            <th>Avg / Day</th>
+                                            <th>Late hrs</th>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                    </thead>
+                                    <tbody>
+                                        {filteredMonthly.length === 0 && (
+                                            <tr>
+                                                <td colSpan={9} className="empty-cell">No data available</td>
+                                            </tr>
+                                        )}
+                                        {filteredMonthly.map((emp) => {
+                                            const s = emp.stats;
+                                            return (
+                                                <tr key={emp._id}>
+                                                    <td>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#667eea,#764ba2)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: ".75rem", flexShrink: 0 }}>
+                                                                {initials(emp.name)}
+                                                            </div>
+                                                            <div>
+                                                                <p style={{ fontWeight: 700, color: "var(--text-1)", fontSize: ".83rem" }}>{emp.name}</p>
+                                                                <p style={{ fontSize: ".7rem", color: "var(--text-2)", fontFamily: "DM Mono,monospace", fontWeight: 500 }}>{emp.employeeId}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td><span className="dept-tag">{emp.department || "—"}</span></td>
+                                                    <td>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                                            <span style={{ fontWeight: 700, color: "#15803D", fontSize: ".85rem" }}>{s.presentDays + s.halfDays}</span>
+                                                            {s.halfDays > 0 && <span style={{ fontSize: ".68rem", color: "#92400E", background: "#FEF3C7", padding: "1px 6px", borderRadius: 3, fontWeight: 600, border: "1px solid #FDE68A" }}>{s.halfDays} half</span>}
+                                                        </div>
+                                                    </td>
+                                                    <td>{s.lateDays > 0 ? <span style={{ background: "#FEE2E2", color: "#991B1B", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem" }}>{s.lateDays}</span> : <span style={{ color: "var(--text-2)", fontWeight: 500 }}>0</span>}</td>
+                                                    <td>{s.absentDays > 0 ? <span style={{ background: "#DBEAFE", color: "#1E3A8A", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem" }}>{s.absentDays}</span> : <span style={{ color: "var(--text-2)", fontWeight: 500 }}>0</span>}</td>
+                                                    <td>{s.leaveDays > 0 ? <span style={{ background: "#F3E8FF", color: "#6B21A8", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem" }}>{s.leaveDays}</span> : <span style={{ color: "#374151", fontWeight: 500 }}>0</span>}</td>
+                                                    <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "var(--text-1)" }}>{s.totalWorkHours > 0 ? <span style={{ display: "inline-flex", alignItems: "baseline", gap: 2 }}>{Math.floor(s.totalWorkHours)}<span style={{ fontSize: ".68rem", color: "#6B7280", fontWeight: 400 }}>h {Math.round((s.totalWorkHours % 1) * 60)}m</span></span> : <span style={{ color: "#9CA3AF" }}>—</span>}</td>
+                                                    <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "var(--text-1)" }}>{s.avgDailyHours > 0 ? <span style={{ display: "inline-flex", alignItems: "baseline", gap: 2 }}>{Math.floor(s.avgDailyHours)}<span style={{ fontSize: ".68rem", color: "#6B7280", fontWeight: 400 }}>h {Math.round((s.avgDailyHours % 1) * 60)}m</span></span> : <span style={{ color: "#9CA3AF" }}>—</span>}</td>
+                                                    <td>{s.totalLateMinutes > 0 ? (() => { const totalMins = Math.round(s.totalLateMinutes); const hrs = Math.floor(totalMins / 60); const mins = totalMins % 60; return <span style={{ background: "#FFF7ED", color: "#C2410C", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem", fontFamily: "DM Mono,monospace" }}>{hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`}</span>; })() : <span style={{ color: "#374151", fontWeight: 500 }}>—</span>}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </>
                 )}
 
                 {/* ─────────────────────────────────────────────
                      LEAVES TAB
                 ───────────────────────────────────────────── */}
                 {!loading && tab === "leaves" && (
-                    <div className="hr-card">
-                        <div className="hr-card-header">
-                            <MdOutlineBeachAccess size={16} color="#6366F1" />
-                            Approved Leave Schedule — {MONTHS[viewMonth - 1]}{" "}
-                            {viewYear}
-                            <span
-                                style={{
-                                    marginLeft: "auto",
-                                    fontSize: ".75rem",
-                                    color: "#374151",
-                                    fontWeight: 600,
-                                }}
-                            >
-                                {filteredLeaves.length} leaves
-                            </span>
+                    <>
+                        <div className="hr-filters">
+                            <div className="search-wrap">
+                                <HiOutlineSearch className="search-icon" size={15} />
+                                <input
+                                    className="hr-filters-search"
+                                    placeholder="Search by name, ID or department…"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </div>
                         </div>
-                        <table className="hr-table">
-                            <thead>
-                                <tr>
-                                    <th>Employee</th>
-                                    <th>Department</th>
-                                    <th>Leave Type</th>
-                                    <th>From</th>
-                                    <th>To</th>
-                                    <th>Days</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredLeaves.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="empty-cell">
-                                            No approved leaves for this period
-                                        </td>
-                                    </tr>
-                                )}
-                                {filteredLeaves.map((leave) => {
-                                    const from = new Date(leave.fromDate);
-                                    const to = new Date(leave.toDate);
-                                    const days = leave.totalDays || (
-                                        Math.ceil(
-                                            (to - from) /
-                                            (1000 * 60 * 60 * 24)
-                                        ) + 1
-                                    );
-                                    return (
-                                        <tr key={leave._id}>
-                                            <td>
-                                                <div
-                                                    style={{
-                                                        display: "flex",
-                                                        alignItems: "center",
-                                                        gap: 10,
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            width: 34,
-                                                            height: 34,
-                                                            borderRadius: "50%",
-                                                            background:
-                                                                "linear-gradient(135deg,#a78bfa,#7c3aed)",
-                                                            color: "#fff",
-                                                            display: "flex",
-                                                            alignItems:
-                                                                "center",
-                                                            justifyContent:
-                                                                "center",
-                                                            fontWeight: 700,
-                                                            fontSize: ".75rem",
-                                                            flexShrink: 0,
-                                                        }}
-                                                    >
-                                                        {initials(
-                                                            leave.user.name
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            style={{
-                                                                fontWeight: 700,
-                                                                color: "#111318",
-                                                                fontSize:
-                                                                    ".83rem",
-                                                            }}
-                                                        >
-                                                            {leave.user.name}
-                                                        </p>
-                                                        <p
-                                                            style={{
-                                                                fontSize:
-                                                                    ".7rem",
-                                                                color: "#374151",
-                                                                fontFamily:
-                                                                    "DM Mono,monospace",
-                                                                fontWeight: 500,
-                                                            }}
-                                                        >
-                                                            {
-                                                                leave.user
-                                                                    .employeeId
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className="dept-tag">
-                                                    {leave.user.department ||
-                                                        "—"}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span
-                                                    style={{
-                                                        background: "#F3E8FF",
-                                                        color: "#6B21A8",
-                                                        padding: "3px 9px",
-                                                        borderRadius: 5,
-                                                        fontWeight: 700,
-                                                        fontSize: ".74rem",
-                                                        textTransform:
-                                                            "capitalize",
-                                                    }}
-                                                >
-                                                    {leave.type?.replace(
-                                                        /_/g,
-                                                        " "
-                                                    ) || "Leave"}
-                                                </span>
-                                            </td>
-                                            <td
-                                                style={{
-                                                    fontSize: ".8rem",
-                                                    color: "#111318",
-                                                    fontWeight: 500,
-                                                }}
-                                            >
-                                                {fmtDate(leave.fromDate)}
-                                            </td>
-                                            <td
-                                                style={{
-                                                    fontSize: ".8rem",
-                                                    color: "#111318",
-                                                    fontWeight: 500,
-                                                }}
-                                            >
-                                                {fmtDate(leave.toDate)}
-                                            </td>
-                                            <td>
-                                                <span
-                                                    style={{
-                                                        fontWeight: 800,
-                                                        color: "#4F46E5",
-                                                        fontSize: ".85rem",
-                                                    }}
-                                                >
-                                                    {days}
-                                                </span>
-                                                <span
-                                                    style={{
-                                                        fontSize: ".72rem",
-                                                        color: "#374151",
-                                                        marginLeft: 3,
-                                                        fontWeight: 500,
-                                                    }}
-                                                >
-                                                    day{days !== 1 ? "s" : ""}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span
-                                                    style={{
-                                                        background: "#D1FAE5",
-                                                        color: "#065F46",
-                                                        padding: "3px 9px",
-                                                        borderRadius: 5,
-                                                        fontWeight: 700,
-                                                        fontSize: ".72rem",
-                                                    }}
-                                                >
-                                                    Approved
-                                                </span>
-                                            </td>
+                        <div className="hr-card">
+                            <div className="hr-card-header">
+                                <MdOutlineBeachAccess size={16} color="#6366F1" />
+                                Approved Leave Schedule — {MONTHS[viewMonth - 1]} {viewYear}
+                                <span style={{ marginLeft: "auto", fontSize: ".75rem", color: "var(--text-2)", fontWeight: 600 }}>
+                                    {filteredLeaves.length} leaves
+                                </span>
+                            </div>
+                            <div style={{ overflowX: "auto" }}>
+                                <table className="hr-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee</th>
+                                            <th>Department</th>
+                                            <th>Leave Type</th>
+                                            <th>From</th>
+                                            <th>To</th>
+                                            <th>Days</th>
+                                            <th>Status</th>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                    </thead>
+                                    <tbody>
+                                        {filteredLeaves.length === 0 && (
+                                            <tr>
+                                                <td colSpan={7} className="empty-cell">No approved leaves for this period</td>
+                                            </tr>
+                                        )}
+                                        {filteredLeaves.map((leave) => {
+                                            const from = new Date(leave.fromDate);
+                                            const to = new Date(leave.toDate);
+                                            const days = leave.totalDays || (Math.ceil((to - from) / (1000 * 60 * 60 * 24)) + 1);
+                                            return (
+                                                <tr key={leave._id}>
+                                                    <td>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                            <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#a78bfa,#7c3aed)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: ".75rem", flexShrink: 0 }}>
+                                                                {initials(leave.user.name)}
+                                                            </div>
+                                                            <div>
+                                                                <p style={{ fontWeight: 700, color: "var(--text-1)", fontSize: ".83rem" }}>{leave.user.name}</p>
+                                                                <p style={{ fontSize: ".7rem", color: "var(--text-2)", fontFamily: "DM Mono,monospace", fontWeight: 500 }}>{leave.user.employeeId}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td><span className="dept-tag">{leave.user.department || "—"}</span></td>
+                                                    <td><span style={{ background: "#F3E8FF", color: "#6B21A8", padding: "3px 9px", borderRadius: 5, fontWeight: 700, fontSize: ".74rem", textTransform: "capitalize" }}>{leave.type?.replace(/_/g, " ") || "Leave"}</span></td>
+                                                    <td style={{ fontSize: ".8rem", color: "var(--text-1)", fontWeight: 500 }}>{fmtDate(leave.fromDate)}</td>
+                                                    <td style={{ fontSize: ".8rem", color: "var(--text-1)", fontWeight: 500 }}>{fmtDate(leave.toDate)}</td>
+                                                    <td><span style={{ fontWeight: 800, color: "#4F46E5", fontSize: ".85rem" }}>{days}</span><span style={{ fontSize: ".72rem", color: "var(--text-2)", marginLeft: 3, fontWeight: 500 }}>day{days !== 1 ? "s" : ""}</span></td>
+                                                    <td><span style={{ background: "#D1FAE5", color: "#065F46", padding: "3px 9px", borderRadius: 5, fontWeight: 700, fontSize: ".72rem" }}>Approved</span></td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </>
                 )}
             </div>
         </DashboardLayout>

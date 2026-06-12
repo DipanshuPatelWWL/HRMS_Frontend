@@ -11,9 +11,9 @@ const styles = `
 
   .ann-page {
     min-height: 100vh;
-    background: #f0f2f8;
+    background: var(--surface-2);
     font-family: 'Nunito', sans-serif;
-    color: #1e1e2e;
+    color: var(--text-1);
     padding: 36px 32px 60px;
     max-width: 920px;
     margin: 0 auto;
@@ -33,7 +33,7 @@ const styles = `
     font-size: 2.75rem;
     letter-spacing: -0.04em;
     margin: 0;
-    color: #1e1e2e;
+    color: var(--text-1);
   }
 
  @media (max-width:480px) {
@@ -43,7 +43,7 @@ const styles = `
     font-size: 1.4rem;
     letter-spacing: -0.04em;
     margin: 0;
-    color: #1e1e2e;
+    color: var(--text-1);
 }}
 
 
@@ -54,7 +54,7 @@ const styles = `
     font-size: 2.4rem;
     letter-spacing: -0.04em;
     margin: 0;
-    color: #1e1e2e;
+    color: var(--text-1);
 }}
 
   .ann-title span {
@@ -71,8 +71,8 @@ const styles = `
   }
 
   .ann-count-badge {
-    background: #1e1e2e;
-    color: #fff;
+    background: var(--surface-3);
+    color: var(--text-1);
     font-family: 'Syne', sans-serif;
     font-weight: 700;
     font-size: 0.72rem;
@@ -80,12 +80,13 @@ const styles = `
     text-transform: uppercase;
     padding: 8px 20px;
     border-radius: 100px;
+    border: 1px solid var(--border);
   }
 
   @media (max-width:480px){
    .ann-count-badge {
-    background: #1e1e2e;
-    color: #fff;
+    background: var(--surface-3);
+    color: var(--text-1);
     font-family: 'Syne', sans-serif;
     font-weight: 500;
     font-size: 0.60rem;
@@ -114,8 +115,8 @@ const styles = `
   .ann-tabs {
     display: flex;
     gap: 4px;
-    background: #fff;
-    border: 1.5px solid #e8eaf2;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
     border-radius: 12px;
     padding: 4px;
     margin-bottom: 24px;
@@ -131,17 +132,17 @@ const styles = `
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--text-2);
     cursor: pointer;
     transition: all 0.2s;
   }
   .ann-tab.active {
-    background: #1e1e2e;
+    background: var(--brand);
     color: #fff;
   }
   .ann-tab:hover:not(.active) {
-    background: #f1f5f9;
-    color: #334155;
+    background: var(--surface-2);
+    color: var(--text-1);
   }
 
   .ann-list { display: flex; flex-direction: column; gap: 14px; }
@@ -153,21 +154,21 @@ const styles = `
   .ann-empty {
     text-align: center;
     padding: 64px 0;
-    color: #94a3b8;
+    color: var(--text-3);
     font-size: 0.95rem;
   }
   .ann-empty-icon { font-size: 2.8rem; display: block; margin-bottom: 12px; }
 
   .ann-skeleton {
-    background: #fff;
-    border: 1.5px solid #e8eaf2;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
     border-radius: 18px;
     padding: 20px 22px;
     margin-bottom: 14px;
     animation: pulse 1.5s ease-in-out infinite;
   }
   .ann-skel-line {
-    background: #f1f5f9;
+    background: var(--surface-2);
     border-radius: 6px;
     margin-bottom: 10px;
   }

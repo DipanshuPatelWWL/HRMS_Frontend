@@ -48,7 +48,7 @@ const C = {
     ink100: '#e8e8f0',
     ink50: '#f4f4f8',
 
-    white: '#ffffff',
+    white: 'var(--surface)',
     pageBg: '#f8f7ff',
 }
 
@@ -101,6 +101,9 @@ const getInitials = (name = '') =>
 
 const fmtDate = (d) =>
     d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+
+const fmtDateTime = (d) =>
+    d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '—'
 
 /* ─── Shared Styles ──────────────────────────────────────────────────────────── */
 const inputStyle = (err = false, focused = false) => ({
@@ -516,7 +519,7 @@ const DetailModal = ({ open, onClose, report }) => {
 
     const DETAIL_FIELDS = [
         { label: 'Marketer', value: report.marketer || '—', Icon: User },
-        { label: 'Date', value: fmtDate(report.date || report.createdAt), Icon: Calendar },
+        { label: 'Date & Time', value: fmtDateTime(report.date || report.createdAt), Icon: Calendar },
         { label: 'Service', value: report.services || '—', Icon: Wrench },
         { label: 'Country', value: report.country || '—', Icon: Globe },
         { label: 'Priority', value: report.priority || 'Medium', Icon: Zap },
@@ -992,7 +995,7 @@ const SalesReports = () => {
     const alreadySent = (r) => r.review_status !== 'draft'
     const canEdit = (r) => r.review_status === 'draft'
 
-    const TABLE_HEADERS = ['#', 'DATE', 'CLIENT', 'SERVICE', 'COUNTRY', 'PRIORITY', 'STATUS', 'ACTIONS']
+    const TABLE_HEADERS = ['#', 'DATE & TIME', 'CLIENT', 'SERVICE', 'COUNTRY', 'PRIORITY', 'STATUS', 'ACTIONS']
 
     return (
         <DashboardLayout>
@@ -1182,8 +1185,17 @@ const SalesReports = () => {
                                                 </td>
 
                                                 {/* Date */}
-                                                <td style={{ padding: '13px 18px', color: C.ink700, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                                    {fmtDate(report.date || report.createdAt)}
+                                                <td style={{ padding: '13px 18px', whiteSpace: 'nowrap' }}>
+                                                    {report.date || report.createdAt ? (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+                                                            <span style={{ fontSize: 12, fontWeight: 700, color: C.ink700 }}>
+                                                                {new Date(report.date || report.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                            </span>
+                                                            <span style={{ fontSize: 10, color: C.ink400, fontWeight: 600 }}>
+                                                                {new Date(report.date || report.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                            </span>
+                                                        </div>
+                                                    ) : '--'}
                                                 </td>
 
                                                 {/* Client */}

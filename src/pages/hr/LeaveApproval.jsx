@@ -27,9 +27,9 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
     if (!leave) return null;
 
     const leaveTypeColor = {
-        casual: { bg: "#dbeafe", color: "#1d4ed8", border: "#93c5fd" },
-        sick: { bg: "#fef3c7", color: "#92400e", border: "#fcd34d" },
-        earned: { bg: "#dcfce7", color: "#14532d", border: "#4ade80" },
+        casual: { bg: "var(--brand-light)", color: "#1d4ed8", border: "#93c5fd" },
+        sick: { bg: "var(--warn-bg)", color: "#92400e", border: "#fcd34d" },
+        earned: { bg: "var(--success-bg)", color: "#14532d", border: "#4ade80" },
     };
 
     const typeStyle = leaveTypeColor[leave.type] || leaveTypeColor.casual;
@@ -43,7 +43,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
             <div>
                 <div style={{
                     height: 6,
-                    background: "#e5e7eb",
+                    background: "var(--surface-3)",
                     borderRadius: 99,
                     overflow: "hidden",
                     marginTop: 6,
@@ -60,7 +60,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                     display: "flex",
                     justifyContent: "space-between",
                     fontSize: ".72rem",
-                    color: "#6b7280",
+                    color: "var(--text-3)",
                     marginTop: 4,
                     fontWeight: 500,
                 }}>
@@ -77,7 +77,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
             style={{
                 position: "fixed",
                 inset: 0,
-                background: "rgba(15,23,42,.45)",
+                background: "rgba(0,0,0,.6)",
                 backdropFilter: "blur(4px)",
                 display: "flex",
                 alignItems: "center",
@@ -89,14 +89,15 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
             <div
                 onClick={e => e.stopPropagation()}
                 style={{
-                    background: "#fff",
+                    background: "var(--surface)",
                     borderRadius: 20,
                     width: "100%",
                     maxWidth: 480,
                     maxHeight: "90vh",
                     overflowY: "auto",
-                    boxShadow: "0 25px 50px rgba(0,0,0,.18)",
+                    boxShadow: "0 25px 50px rgba(0,0,0,.3)",
                     animation: "modalPop .18s ease",
+                    border: "1px solid var(--border)",
                 }}
             >
                 <style>{`
@@ -109,7 +110,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                 {/* Header */}
                 <div style={{
                     padding: "20px 24px 16px",
-                    borderBottom: "1px solid #f1f5f9",
+                    borderBottom: "1px solid var(--border)",
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "flex-start",
@@ -118,14 +119,14 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                         <h2 style={{
                             fontSize: "1.1rem",
                             fontWeight: 800,
-                            color: "#0f172a",
+                            color: "var(--text-1)",
                             margin: 0,
                         }}>
                             Leave Request Details
                         </h2>
                         <p style={{
                             fontSize: ".78rem",
-                            color: "#6b7280",
+                            color: "var(--text-2)",
                             marginTop: 3,
                             fontWeight: 500,
                         }}>
@@ -140,10 +141,10 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                             height: 34,
                             borderRadius: 10,
                             border: "none",
-                            background: "#f3f4f6",
+                            background: "var(--surface-3)",
                             cursor: "pointer",
                             fontSize: "1.1rem",
-                            color: "#6b7280",
+                            color: "var(--text-2)",
                             fontWeight: 700,
                             flexShrink: 0,
                             display: "grid",
@@ -180,7 +181,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                 {leave.type} Leave Request
                             </span>
                             <span style={{
-                                background: "#fff",
+                                background: "var(--surface)",
                                 border: `1px solid ${typeStyle.border}`,
                                 color: typeStyle.color,
                                 borderRadius: 99,
@@ -211,7 +212,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                 <div style={{
                                     fontSize: ".9rem",
                                     fontWeight: 700,
-                                    color: "#0f172a",
+                                    color: "var(--text-1)",
                                     marginTop: 2,
                                 }}>
                                     {new Date(leave.fromDate).toLocaleDateString("en-IN", {
@@ -235,7 +236,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                 <div style={{
                                     fontSize: ".9rem",
                                     fontWeight: 700,
-                                    color: "#0f172a",
+                                    color: "var(--text-1)",
                                     marginTop: 2,
                                 }}>
                                     {new Date(leave.toDate).toLocaleDateString("en-IN", {
@@ -267,7 +268,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                 </div>
                                 <div style={{
                                     fontSize: ".85rem",
-                                    color: "#374151",
+                                    color: "var(--text-2)",
                                     fontWeight: 500,
                                 }}>
                                     {leave.reason}
@@ -310,7 +311,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                             fontWeight: 800,
                             textTransform: "uppercase",
                             letterSpacing: ".5px",
-                            color: "#374151",
+                            color: "var(--text-2)",
                             marginBottom: 12,
                         }}>
                             Employee Leave Balance
@@ -320,7 +321,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                             <div style={{
                                 textAlign: "center",
                                 padding: "1.5rem",
-                                color: "#9ca3af",
+                                color: "var(--text-3)",
                                 fontSize: ".85rem",
                             }}>
                                 Loading balance...
@@ -331,7 +332,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                             <div style={{
                                 textAlign: "center",
                                 padding: "1rem",
-                                color: "#9ca3af",
+                                color: "var(--text-3)",
                                 fontSize: ".85rem",
                             }}>
                                 Balance not available
@@ -346,8 +347,8 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                             }}>
                                 {/* Casual Leave */}
                                 <div style={{
-                                    background: "#f8fafc",
-                                    border: "1px solid #e2e8f0",
+                                    background: "var(--surface-2)",
+                                    border: "1px solid var(--border)",
                                     borderRadius: 10,
                                     padding: "12px 14px",
                                     // Highlight if this is the leave type being requested
@@ -370,14 +371,14 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                             <span style={{
                                                 fontSize: ".85rem",
                                                 fontWeight: 700,
-                                                color: "#1e293b",
+                                                color: "var(--text-1)",
                                             }}>
                                                 Casual Leave
                                             </span>
                                             {leave.type === "casual" && (
                                                 <span style={{
                                                     fontSize: ".68rem",
-                                                    background: "#dbeafe",
+                                                    background: "var(--brand-light)",
                                                     color: "#1d4ed8",
                                                     border: "1px solid #93c5fd",
                                                     borderRadius: 99,
@@ -427,13 +428,13 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
 
                                 {/* Sick Leave */}
                                 <div style={{
-                                    background: "#f8fafc",
-                                    border: "1px solid #e2e8f0",
+                                    background: "var(--surface-2)",
+                                    border: "1px solid var(--border)",
                                     borderRadius: 10,
                                     padding: "12px 14px",
                                     ...(leave.type === "sick" && {
                                         border: "1.5px solid #fcd34d",
-                                        background: "#fffbeb",
+                                        background: "var(--warn-bg)",
                                     }),
                                 }}>
                                     <div style={{
@@ -450,14 +451,14 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                             <span style={{
                                                 fontSize: ".85rem",
                                                 fontWeight: 700,
-                                                color: "#1e293b",
+                                                color: "var(--text-1)",
                                             }}>
                                                 Sick Leave
                                             </span>
                                             {leave.type === "sick" && (
                                                 <span style={{
                                                     fontSize: ".68rem",
-                                                    background: "#fef3c7",
+                                                    background: "var(--warn-bg)",
                                                     color: "#92400e",
                                                     border: "1px solid #fcd34d",
                                                     borderRadius: 99,
@@ -503,8 +504,8 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
 
                                 {/* Earned Leave */}
                                 <div style={{
-                                    background: "#f8fafc",
-                                    border: "1px solid #e2e8f0",
+                                    background: "var(--surface-2)",
+                                    border: "1px solid var(--border)",
                                     borderRadius: 10,
                                     padding: "12px 14px",
                                     ...(leave.type === "earned" && {
@@ -526,14 +527,14 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                                             <span style={{
                                                 fontSize: ".85rem",
                                                 fontWeight: 700,
-                                                color: "#1e293b",
+                                                color: "var(--text-1)",
                                             }}>
                                                 Earned Leave
                                             </span>
                                             {leave.type === "earned" && (
                                                 <span style={{
                                                     fontSize: ".68rem",
-                                                    background: "#dcfce7",
+                                                    background: "var(--success-bg)",
                                                     color: "#14532d",
                                                     border: "1px solid #4ade80",
                                                     borderRadius: 99,
@@ -584,7 +585,7 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                 {/* Footer */}
                 <div style={{
                     padding: "14px 24px",
-                    borderTop: "1px solid #f1f5f9",
+                    borderTop: "1px solid var(--border)",
                 }}>
                     <button
                         onClick={onClose}
@@ -593,8 +594,8 @@ const LeaveBalanceModal = ({ leave, onClose }) => {
                             padding: "11px",
                             borderRadius: 12,
                             border: "none",
-                            background: "#111827",
-                            color: "#fff",
+                            background: "#6366F1",
+                            color: "var(--surface)",
                             fontWeight: 700,
                             fontSize: ".9rem",
                             cursor: "pointer",
@@ -777,7 +778,7 @@ const LeaveApproval = () => {
                                             <div>{l.userName || l.user?.name || "—"}</div>
                                             <div style={{
                                                 fontSize: ".75rem",
-                                                color: "#707070",
+                                                color: "var(--text-3)",
                                             }}>
                                                 {l.employeeId || l.user?.employeeId || ""}
                                             </div>
@@ -790,9 +791,9 @@ const LeaveApproval = () => {
                                                 fontSize: ".75rem",
                                                 fontWeight: 700,
                                                 background:
-                                                    l.type === "casual" ? "#dbeafe" :
-                                                        l.type === "sick" ? "#fef3c7" :
-                                                            "#dcfce7",
+                                                    l.type === "casual" ? "var(--brand-light)" :
+                                                        l.type === "sick" ? "var(--warn-bg)" :
+                                                            "var(--success-bg)",
                                                 color:
                                                     l.type === "casual" ? "#1d4ed8" :
                                                         l.type === "sick" ? "#92400e" :
@@ -817,8 +818,8 @@ const LeaveApproval = () => {
                                             <td>
                                                 {shouldSkipTL(l) ? (
                                                     <span className="badge" style={{
-                                                        background: "#f3f4f6",
-                                                        color: "#9ca3af",
+                                                        background: "var(--surface-3)",
+                                                        color: "var(--text-3)",
                                                         fontSize: ".72rem",
                                                         fontStyle: "italic",
                                                     }}>

@@ -4,20 +4,20 @@ import DashboardLayout from "../layout/DashboardLayout";
 
 /* ── design tokens ── */
 const T = {
-    bg: "#f5f4f7",
-    surface: "#ffffff",
-    border: "#e4e1f0",
-    accent: "#6c63ff",
-    accentLight: "#ede9ff",
+    bg: "var(--surface-2)",
+    surface: "var(--surface)",
+    border: "var(--border)",
+    accent: "var(--brand)",
+    accentLight: "var(--brand-light)",
     success: "#059669",
-    successLight: "#ecfdf5",
+    successLight: "var(--success-bg)",
     error: "#dc2626",
-    errorLight: "#fef2f2",
+    errorLight: "var(--danger-bg)",
     warn: "#d97706",
-    warnLight: "#fffbeb",
-    text: "#111827",
-    sub: "#374151",
-    muted: "#6b7280",
+    warnLight: "var(--warn-bg)",
+    text: "var(--text-1)",
+    sub: "var(--text-2)",
+    muted: "var(--text-3)",
     ff: "'Plus Jakarta Sans', sans-serif",
 };
 
@@ -150,7 +150,7 @@ function LogRow({ log, onDelete }) {
                     display: "flex", alignItems: "center", gap: 12,
                     padding: "12px 16px", cursor: "pointer",
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
+                onMouseEnter={e => e.currentTarget.style.background = "var(--surface-2)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
                 {/* avatar */}

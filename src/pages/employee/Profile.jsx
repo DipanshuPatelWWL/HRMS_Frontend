@@ -54,21 +54,21 @@ const toUrl = (path) =>
    DESIGN TOKENS
 ════════════════════════════════════════ */
 const T = {
-    bg: "#f5f4f7",
-    surface: "#ffffff",
-    border: "#e4e1f0",
+    bg: "var(--surface-2)",
+    surface: "var(--surface)",
+    border: "var(--border)",
     borderFocus: "#6c63ff",
-    text: "#111827",
-    textSub: "#374151",
-    muted: "#6b7280",
+    text: "var(--text-1)",
+    textSub: "var(--text-2)",
+    muted: "var(--text-3)",
     accent: "#6c63ff",
-    accentLight: "#ede9ff",
+    accentLight: "var(--surface-2)",
     success: "#059669",
-    successLight: "#ecfdf5",
+    successLight: "var(--success-bg)",
     error: "#dc2626",
-    errorLight: "#fef2f2",
+    errorLight: "var(--danger-bg)",
     warn: "#d97706",
-    warnLight: "#fffbeb",
+    warnLight: "var(--warn-bg)",
     radius: 16,
     radiusSm: 10,
 };
@@ -174,7 +174,7 @@ const ROLE_COLORS = {
     superadmin: "#7e22ce",
     manager: "#15803d",
     tl: "#c2410c",
-    employee: "#374151",
+    employee: "var(--text-2)",
 };
 
 /* ════════════════════════════════════════
@@ -230,7 +230,7 @@ const Select = ({ error, touched, children, style, ...props }) => (
 const Btn = ({ loading, children, variant = "primary", size = "md", style, ...props }) => {
     const sizes = { sm: { padding: "7px 14px", fontSize: 12 }, md: { padding: "10px 22px", fontSize: 13.5 } };
     const variants = {
-        primary: { background: loading ? "#a5a0f0" : T.accent, color: "#fff", boxShadow: loading ? "none" : "0 4px 14px rgba(108,99,255,.28)" },
+        primary: { background: loading ? "#a5a0f0" : T.accent, color: "var(--surface)", boxShadow: loading ? "none" : "0 4px 14px rgba(108,99,255,.28)" },
         ghost: { background: T.accentLight, color: T.accent, border: `1px solid ${T.border}` },
         danger: { background: T.errorLight, color: T.error, border: "1px solid #fecaca" },
     };
@@ -800,7 +800,7 @@ export default function Profile() {
 
                 {!profileComplete && (
                     <div style={{
-                        background: "linear-gradient(135deg,#fffbeb,#fef3c7)",
+                        background: "linear-gradient(135deg,var(--warn-bg),var(--warn-bg))",
                         border: "1.5px solid #fde68a", borderRadius: T.radius,
                         padding: "18px 20px", display: "flex", gap: 14, alignItems: "flex-start",
                     }}>
@@ -939,7 +939,7 @@ export default function Profile() {
                             <div style={{ position: "relative", flexShrink: 0 }}>
                                 {avatarPreview
                                     ? <img src={avatarPreview} alt="avatar" style={{ width: 60, height: 60, borderRadius: "50%", objectFit: "cover", border: `2.5px solid ${T.accent}` }} />
-                                    : <div style={{ width: 60, height: 60, borderRadius: "50%", background: `linear-gradient(135deg,${T.accent},#9b89ff)`, display: "grid", placeItems: "center", color: "#fff", fontSize: 20, fontWeight: 800, fontFamily: ff }}>{initials}</div>}
+                                    : <div style={{ width: 60, height: 60, borderRadius: "50%", background: `linear-gradient(135deg,${T.accent},#9b89ff)`, display: "grid", placeItems: "center", color: "var(--surface)", fontSize: 20, fontWeight: 800, fontFamily: ff }}>{initials}</div>}
                                 {avatarLoading && <StopwatchLoader />}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
@@ -1442,9 +1442,9 @@ export default function Profile() {
                                         <span>🏢 {bankVerification.branch}</span>
                                         <span>📍 {bankVerification.city}, {bankVerification.state}</span>
                                         <span style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                                            {bankVerification.rtgs && <span style={{ background: "#dcfce7", padding: "1px 6px", borderRadius: 4 }}>RTGS</span>}
-                                            {bankVerification.neft && <span style={{ background: "#dcfce7", padding: "1px 6px", borderRadius: 4 }}>NEFT</span>}
-                                            {bankVerification.imps && <span style={{ background: "#dcfce7", padding: "1px 6px", borderRadius: 4 }}>IMPS</span>}
+                                            {bankVerification.rtgs && <span style={{ background: "var(--success-bg)", padding: "1px 6px", borderRadius: 4 }}>RTGS</span>}
+                                            {bankVerification.neft && <span style={{ background: "var(--success-bg)", padding: "1px 6px", borderRadius: 4 }}>NEFT</span>}
+                                            {bankVerification.imps && <span style={{ background: "var(--success-bg)", padding: "1px 6px", borderRadius: 4 }}>IMPS</span>}
                                         </span>
                                     </div>
                                 </div>
@@ -1594,9 +1594,9 @@ export default function Profile() {
 
                             <div style={{ position: "relative", flexShrink: 0 }}>
                                 {avatarPreview
-                                    ? <img src={avatarPreview} alt="avatar" style={{ width: 78, height: 78, borderRadius: "50%", objectFit: "cover", border: "3px solid #fff", boxShadow: "0 4px 14px rgba(0,0,0,.14)", display: "block" }} />
-                                    : <div style={{ width: 78, height: 78, borderRadius: "50%", background: `linear-gradient(135deg,${T.accent},#9b89ff)`, border: "3px solid #fff", boxShadow: "0 4px 14px rgba(0,0,0,.14)", display: "grid", placeItems: "center", color: "#fff", fontSize: 24, fontWeight: 800, fontFamily: ff }}>{initials}</div>}
-                                <div style={{ position: "absolute", bottom: 4, right: 4, width: 13, height: 13, borderRadius: "50%", background: "#22c55e", border: "2px solid #fff" }} />
+                                    ? <img src={avatarPreview} alt="avatar" style={{ width: 78, height: 78, borderRadius: "50%", objectFit: "cover", border: "3px solid var(--surface)", boxShadow: "0 4px 14px rgba(0,0,0,.14)", display: "block" }} />
+                                    : <div style={{ width: 78, height: 78, borderRadius: "50%", background: `linear-gradient(135deg,${T.accent},#9b89ff)`, border: "3px solid var(--surface)", boxShadow: "0 4px 14px rgba(0,0,0,.14)", display: "grid", placeItems: "center", color: "var(--surface)", fontSize: 24, fontWeight: 800, fontFamily: ff }}>{initials}</div>}
+                                <div style={{ position: "absolute", bottom: 4, right: 4, width: 13, height: 13, borderRadius: "50%", background: "#22c55e", border: "2px solid var(--surface)" }} />
                             </div>
 
                             <div className="pf-hero-meta" style={{ flex: 1, minWidth: 0, paddingTop: 44 }}>
@@ -1636,7 +1636,7 @@ export default function Profile() {
                                 {/* QR code — scannable by HR */}
                                 {user?.employeeId && (
                                     <div style={{
-                                        background: "#fff", padding: 6, borderRadius: 10,
+                                        background: "var(--surface)", padding: 6, borderRadius: 10,
                                         border: `1.5px solid ${T.border}`,
                                         boxShadow: "0 2px 8px rgba(0,0,0,.07)",
                                         display: "flex", flexDirection: "column", alignItems: "center", gap: 3
@@ -1645,7 +1645,7 @@ export default function Profile() {
                                             value={`${QR_CODE_URL}/employee/${user.employeeId}`}
                                             size={52}
                                             fgColor={T.accent}
-                                            bgColor="#ffffff"
+                                            bgColor="var(--surface)"
                                             level="M"
                                             includeMargin={false}
                                         />

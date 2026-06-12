@@ -20,8 +20,8 @@ const injectStyles = () => {
 
     /* ── Card ── */
     .ma2-card {
-        background: #ffffff;
-        border: 2px solid #e2e8f0;
+        background: var(--surface);
+        border: 2px solid var(--border);
         border-radius: 16px;
         padding: 20px;
         cursor: pointer;
@@ -58,8 +58,8 @@ const injectStyles = () => {
 
     /* ── Info row ── */
     .ma2-info {
-        background: #ffffff;
-        border: 2px solid #e2e8f0;
+        background: var(--surface);
+        border: 2px solid var(--border);
         border-radius: 14px;
         padding: 16px 20px;
         display: flex;
@@ -74,8 +74,8 @@ const injectStyles = () => {
     .ma2-hist-btn {
         display: inline-flex; align-items: center; gap: 6px;
         padding: 7px 14px; border-radius: 8px;
-        border: 2px solid #cbd5e1; background: #fff;
-        font-size: 12px; font-weight: 700; color: #1e293b;
+        border: 2px solid #cbd5e1; background: var(--surface);
+        font-size: 12px; font-weight: 700; color: var(--text-1);
         cursor: pointer; transition: all .18s;
         font-family: 'Plus Jakarta Sans', sans-serif;
         letter-spacing: .01em;
@@ -94,7 +94,7 @@ const injectStyles = () => {
         backdrop-filter: blur(3px);
     }
     .ma2-modal {
-        background: #fff;
+        background: var(--surface);
         border-radius: 20px;
         width: 100%; max-width: 480px;
         max-height: 88vh; overflow-y: auto;
@@ -104,8 +104,8 @@ const injectStyles = () => {
     .ma2-spin { animation: ma2-spin .75s linear infinite; }
 
     .ma2-detail-field {
-        background: #f8fafc;
-        border: 1.5px solid #e2e8f0;
+        background: var(--surface-2);
+        border: 1.5px solid var(--border);
         border-radius: 10px;
         padding: 12px 14px;
     }
@@ -117,8 +117,8 @@ const injectStyles = () => {
     .ma2-pwd-btn {
         display: inline-flex; align-items: center; gap: 5px;
         padding: 6px 12px; border-radius: 8px;
-        border: 2px solid #e2e8f0; background: #fff;
-        font-size: 12px; font-weight: 700; color: #1e293b;
+        border: 2px solid var(--border); background: var(--surface);
+        font-size: 12px; font-weight: 700; color: var(--text-1);
         cursor: pointer; transition: all .17s;
         font-family: 'Plus Jakarta Sans', sans-serif;
         white-space: nowrap; flex-shrink: 0;
@@ -295,20 +295,20 @@ const injectStyles = () => {
 
 /* ─── Asset Config ───────────────────────────────────────────────────────── */
 const ASSET_META = {
-    Laptop: { bg: "#DCFCE7", accent: "#166534", border: "#86EFAC" },
-    Monitor: { bg: "#DBEAFE", accent: "#1e40af", border: "#93C5FD" },
+    Laptop: { bg: "var(--success-bg)", accent: "#166534", border: "#86EFAC" },
+    Monitor: { bg: "var(--brand-light)", accent: "#1e40af", border: "#93C5FD" },
     Mouse: { bg: "#FEF9C3", accent: "#854d0e", border: "#FDE047" },
-    Keyboard: { bg: "#F3E8FF", accent: "#6b21a8", border: "#D8B4FE" },
+    Keyboard: { bg: "var(--surface-3)", accent: "#6b21a8", border: "#D8B4FE" },
     Headset: { bg: "#FCE7F3", accent: "#9d174d", border: "#F9A8D4" },
-    Other: { bg: "#F1F5F9", accent: "#334155", border: "#CBD5E1" },
+    Other: { bg: "var(--surface-2)", accent: "#334155", border: "#CBD5E1" },
 };
 
 const COND = {
-    Good: { bg: "#DCFCE7", color: "#166534", dot: "#16a34a" },
+    Good: { bg: "var(--success-bg)", color: "#166534", dot: "#16a34a" },
     New: { bg: "#D1FAE5", color: "#065f46", dot: "#059669" },
-    Damaged: { bg: "#FEF3C7", color: "#92400e", dot: "#d97706" },
-    Replaced: { bg: "#DBEAFE", color: "#1e40af", dot: "#2563eb" },
-    Retired: { bg: "#FFE4E6", color: "#9f1239", dot: "#e11d48" },
+    Damaged: { bg: "var(--warn-bg)", color: "#92400e", dot: "#d97706" },
+    Replaced: { bg: "var(--brand-light)", color: "#1e40af", dot: "#2563eb" },
+    Retired: { bg: "var(--danger-bg)", color: "#9f1239", dot: "#e11d48" },
     Fair: { bg: "#FEF9C3", color: "#854d0e", dot: "#ca8a04" },
 };
 
@@ -421,7 +421,7 @@ const ASSET_ICONS = {
 
 /* ─── Condition Badge ────────────────────────────────────────────────────── */
 function CondBadge({ value }) {
-    const c = COND[value] || { bg: "#f1f5f9", color: "#334155", dot: "#64748b" };
+    const c = COND[value] || { bg: "var(--surface-2)", color: "#334155", dot: "var(--text-2)" };
     return (
         <span className="ma2-tag" style={{ background: c.bg, color: c.color }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.dot, display: "inline-block", flexShrink: 0 }} />
@@ -465,9 +465,9 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
                 {/* ── Modal Header ── */}
                 <div style={{
                     padding: "20px 22px 18px",
-                    borderBottom: "2px solid #f1f5f9",
+                    borderBottom: "2px solid var(--surface-2)",
                     display: "flex", alignItems: "center", gap: 14,
-                    position: "sticky", top: 0, background: "#fff", zIndex: 1,
+                    position: "sticky", top: 0, background: "var(--surface)", zIndex: 1,
                     borderRadius: "20px 20px 0 0",
                 }}>
                     <div style={{
@@ -479,23 +479,23 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
                         <AssetIcon size={22} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 800, fontSize: 16, color: "#0f172a", lineHeight: 1.2 }}>
+                        <div style={{ fontWeight: 800, fontSize: 16, color: "var(--text-1)", lineHeight: 1.2 }}>
                             {asset.name}
                         </div>
-                        <div style={{ fontSize: 12.5, color: "#64748b", fontWeight: 600, marginTop: 2 }}>
+                        <div style={{ fontSize: 12.5, color: "var(--text-2)", fontWeight: 600, marginTop: 2 }}>
                             {asset.assetType}
                         </div>
                     </div>
                     <button onClick={onClose} style={{
                         width: 34, height: 34, borderRadius: 9,
-                        border: "2px solid #e2e8f0", background: "#fff",
+                        border: "2px solid var(--border)", background: "var(--surface)",
                         cursor: "pointer", display: "flex",
                         alignItems: "center", justifyContent: "center",
                         color: "#334155", flexShrink: 0,
                         transition: "all .15s",
                     }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor = "#1D9E75"; e.currentTarget.style.color = "#1D9E75"; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.color = "#334155"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "#334155"; }}
                     >
                         <Icons.X size={15} />
                     </button>
@@ -511,7 +511,7 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
                                 style={{
                                     width: "100%", maxHeight: 200, borderRadius: 12,
                                     objectFit: "cover",
-                                    border: "2px solid #e2e8f0",
+                                    border: "2px solid var(--border)",
                                     display: "block",
                                 }}
                             />
@@ -531,13 +531,13 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
                         {fields.map(({ icon: FieldIcon, label, value, mono }) => (
                             <div key={label} className="ma2-detail-field">
                                 <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
-                                    <span style={{ color: "#64748b", display: "flex" }}><FieldIcon size={12} /></span>
-                                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "#64748b" }}>
+                                    <span style={{ color: "var(--text-2)", display: "flex" }}><FieldIcon size={12} /></span>
+                                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em", color: "var(--text-2)" }}>
                                         {label}
                                     </span>
                                 </div>
                                 <div style={{
-                                    fontSize: 13.5, fontWeight: 700, color: "#0f172a",
+                                    fontSize: 13.5, fontWeight: 700, color: "var(--text-1)",
                                     fontFamily: mono ? "'JetBrains Mono', monospace" : undefined,
                                     letterSpacing: mono ? 0.5 : undefined,
                                     wordBreak: "break-all",
@@ -578,22 +578,22 @@ function HistoryModal({ modal, loading, onClose }) {
         <div className="ma2-modal-bg" onClick={(e) => e.target === e.currentTarget && onClose()}>
             <div className="ma2-modal">
                 <div style={{
-                    padding: "20px 22px", borderBottom: "2px solid #f1f5f9",
+                    padding: "20px 22px", borderBottom: "2px solid var(--surface-2)",
                     display: "flex", justifyContent: "space-between", alignItems: "center",
-                    position: "sticky", top: 0, background: "#fff", zIndex: 1,
+                    position: "sticky", top: 0, background: "var(--surface)", zIndex: 1,
                     borderRadius: "20px 20px 0 0",
                 }}>
                     <div>
-                        <div style={{ fontWeight: 800, fontSize: 15, color: "#0f172a" }}>
+                        <div style={{ fontWeight: 800, fontSize: 15, color: "var(--text-1)" }}>
                             Asset History
                         </div>
-                        <div style={{ fontSize: 12, color: "#64748b", fontWeight: 600, marginTop: 1 }}>
+                        <div style={{ fontSize: 12, color: "var(--text-2)", fontWeight: 600, marginTop: 1 }}>
                             {modal.asset.name || modal.asset.assetType}
                         </div>
                     </div>
                     <button onClick={onClose} style={{
                         width: 34, height: 34, borderRadius: 9,
-                        border: "2px solid #e2e8f0", background: "#fff",
+                        border: "2px solid var(--border)", background: "var(--surface)",
                         cursor: "pointer", display: "flex",
                         alignItems: "center", justifyContent: "center", color: "#334155",
                     }}>
@@ -609,7 +609,7 @@ function HistoryModal({ modal, loading, onClose }) {
                             <Icons.Spin /> Loading history…
                         </div>
                     ) : modal.history.length === 0 ? (
-                        <div style={{ textAlign: "center", padding: "28px 0", color: "#94a3b8" }}>
+                        <div style={{ textAlign: "center", padding: "28px 0", color: "var(--text-3)" }}>
                             <Icons.Info size={28} />
                             <p style={{ margin: "10px 0 0", fontSize: 13, fontWeight: 600 }}>No history found</p>
                         </div>
@@ -654,14 +654,14 @@ function AssetCard({ asset, delay, onHistory, onClick }) {
                     <div
                         className="ma2-card-name"
                         style={{
-                            fontWeight: 800, fontSize: 14.5, color: "#0f172a",
+                            fontWeight: 800, fontSize: 14.5, color: "var(--text-1)",
                             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                             marginBottom: 3,
                         }}
                     >
                         {asset.name}
                     </div>
-                    <div style={{ fontSize: 12, color: "#475569", fontWeight: 600 }}>
+                    <div style={{ fontSize: 12, color: "var(--text-2)", fontWeight: 600 }}>
                         {asset.assetType}
                     </div>
                 </div>
@@ -670,16 +670,16 @@ function AssetCard({ asset, delay, onHistory, onClick }) {
 
             {/* Barcode */}
             <div style={{
-                background: "#f8fafc", borderRadius: 8,
+                background: "var(--surface-2)", borderRadius: 8,
                 padding: "8px 12px", marginBottom: 14,
                 display: "flex", alignItems: "center", gap: 8,
-                border: "1.5px solid #e2e8f0",
+                border: "1.5px solid var(--border)",
             }}>
-                <span style={{ color: "#94a3b8", display: "flex", flexShrink: 0 }}>
+                <span style={{ color: "var(--text-3)", display: "flex", flexShrink: 0 }}>
                     <Icons.Barcode size={13} />
                 </span>
                 <code style={{
-                    fontSize: 12, color: "#1e293b", fontWeight: 700,
+                    fontSize: 12, color: "var(--text-1)", fontWeight: 700,
                     fontFamily: "'JetBrains Mono', monospace",
                     letterSpacing: 0.5, overflow: "hidden",
                     textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -690,9 +690,9 @@ function AssetCard({ asset, delay, onHistory, onClick }) {
 
             {/* Footer */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#475569" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, color: "var(--text-2)" }}>
                     <Icons.Calendar size={12} />
-                    <span style={{ fontSize: 11.5, fontWeight: 600, color: "#475569" }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 600, color: "var(--text-2)" }}>
                         {fmtDate(asset.assignedDate) ? `Assigned ${fmtDate(asset.assignedDate)}` : "No date"}
                     </span>
                 </div>
@@ -763,7 +763,7 @@ export default function MyAssets() {
             <DashboardLayout>
                 <div style={{
                     margin: 16, padding: "18px 22px",
-                    background: "#FFF1F2", border: "2px solid #FECDD3",
+                    background: "var(--danger-bg)", border: "2px solid #FECDD3",
                     borderRadius: 12, color: "#9f1239",
                     fontSize: 14, fontWeight: 600, display: "flex", gap: 10, alignItems: "center",
                 }}>
@@ -796,7 +796,7 @@ export default function MyAssets() {
         },
         {
             num: damagedCount, label: "Damaged",
-            bg: "#FFF7ED", border: "#FCD34D", color: "#92400e", numColor: "#78350f",
+            bg: "var(--warn-bg)", border: "#FCD34D", color: "#92400e", numColor: "#78350f",
             Icon: Icons.AlertTriangle,
         },
     ];
@@ -809,11 +809,11 @@ export default function MyAssets() {
                 <div style={{ marginBottom: 24, animation: "ma2-rise .4s cubic-bezier(.22,1,.36,1) both" }}>
                     <h1
                         className="ma2-page-title"
-                        style={{ fontSize: 24, fontWeight: 800, color: "#0f172a", margin: 0, letterSpacing: "-.02em" }}
+                        style={{ fontSize: 24, fontWeight: 800, color: "var(--text-1)", margin: 0, letterSpacing: "-.02em" }}
                     >
                         My Assets
                     </h1>
-                    <p style={{ fontSize: 13.5, color: "#475569", margin: "5px 0 0", fontWeight: 500 }}>
+                    <p style={{ fontSize: 13.5, color: "var(--text-2)", margin: "5px 0 0", fontWeight: 500 }}>
                         Equipment and accessories assigned to you by the company
                     </p>
                 </div>
@@ -863,14 +863,14 @@ export default function MyAssets() {
                         <Icons.Desk size={20} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color: "#64748b", marginBottom: 3 }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--text-2)", marginBottom: 3 }}>
                             Your Desk
                         </div>
                         <div
                             className="ma2-info-value"
-                            style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                            style={{ fontSize: 16, fontWeight: 800, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                         >
-                            {deskNumber || <span style={{ color: "#94a3b8", fontStyle: "italic", fontWeight: 500, fontSize: 14 }}>Not assigned</span>}
+                            {deskNumber || <span style={{ color: "var(--text-3)", fontStyle: "italic", fontWeight: 500, fontSize: 14 }}>Not assigned</span>}
                         </div>
                     </div>
                 </div>
@@ -889,13 +889,13 @@ export default function MyAssets() {
                         <Icons.Lock size={20} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color: "#64748b", marginBottom: 3 }}>
+                        <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".07em", color: "var(--text-2)", marginBottom: 3 }}>
                             System Password
                         </div>
                         <div
                             className="ma2-info-value"
                             style={{
-                                fontSize: 16, fontWeight: 800, color: "#0f172a",
+                                fontSize: 16, fontWeight: 800, color: "var(--text-1)",
                                 fontFamily: showPwd ? "'JetBrains Mono', monospace" : undefined,
                                 letterSpacing: showPwd ? 2 : undefined,
                                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -903,7 +903,7 @@ export default function MyAssets() {
                         >
                             {systemPassword
                                 ? (showPwd ? systemPassword : "•".repeat(Math.min(systemPassword.length, 10)))
-                                : <span style={{ color: "#94a3b8", fontStyle: "italic", fontWeight: 500, fontSize: 14 }}>Not set</span>
+                                : <span style={{ color: "var(--text-3)", fontStyle: "italic", fontWeight: 500, fontSize: 14 }}>Not set</span>
                             }
                         </div>
                     </div>
@@ -928,13 +928,13 @@ export default function MyAssets() {
                     <span style={{
                         display: "inline-flex", alignItems: "center", justifyContent: "center",
                         width: 22, height: 22, borderRadius: 6,
-                        background: "#1D9E75", color: "#fff",
+                        background: "#1D9E75", color: "var(--surface)",
                         fontSize: 11, fontWeight: 800,
                     }}>
                         {assets.length}
                     </span>
                     Assigned Assets
-                    <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, textTransform: "none", letterSpacing: 0 }}>
+                    <span style={{ fontSize: 11, color: "var(--text-3)", fontWeight: 500, textTransform: "none", letterSpacing: 0 }}>
                         — click any card to view details
                     </span>
                 </div>
@@ -942,14 +942,14 @@ export default function MyAssets() {
                 {/* ── Asset Grid ── */}
                 {assets.length === 0 ? (
                     <div style={{
-                        textAlign: "center", padding: "60px 0", color: "#94a3b8",
+                        textAlign: "center", padding: "60px 0", color: "var(--text-3)",
                         animation: "ma2-rise .4s 300ms cubic-bezier(.22,1,.36,1) both",
                     }}>
                         <div style={{ color: "#cbd5e1", marginBottom: 12, display: "flex", justifyContent: "center" }}>
                             <Icons.Package size={52} />
                         </div>
-                        <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#475569" }}>No assets assigned yet</p>
-                        <p style={{ margin: "4px 0 0", fontSize: 13, color: "#94a3b8" }}>Your company hasn't assigned any equipment to you</p>
+                        <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--text-2)" }}>No assets assigned yet</p>
+                        <p style={{ margin: "4px 0 0", fontSize: 13, color: "var(--text-3)" }}>Your company hasn't assigned any equipment to you</p>
                     </div>
                 ) : (
                     <div className="ma2-asset-grid">

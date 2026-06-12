@@ -50,7 +50,7 @@ const UserAvatar = ({ name = "", size = 30, bg = "#6366F1" }) => {
                     y="50%"
                     dominantBaseline="central"
                     textAnchor="middle"
-                    fill="#fff"
+                    fill="var(--surface)"
                     fontSize="14"
                     fontFamily="'DM Sans', sans-serif"
                     fontWeight="700"
@@ -73,8 +73,8 @@ const css = `
 .hd-root * { box-sizing: border-box; margin: 0; padding: 0; }
 .hd-root {
     font-family: 'DM Sans', sans-serif;
-    background: #F4F6FA;
-    color: #111318;
+    background: var(--surface-2);
+    color: var(--text-1);
     min-height: 100vh;
 }
 
@@ -87,8 +87,8 @@ const css = `
     flex-wrap: wrap;
     gap: 12px;
 }
-.hd-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.5px; color: #0D0F14; }
-.hd-header p  { font-size: .825rem; color: #4B5563; margin-top: 2px; font-weight: 500; }
+.hd-header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.5px; color: var(--text-1); }
+.hd-header p  { font-size: .825rem; color: var(--text-2); margin-top: 2px; font-weight: 500; }
 
 /* new ticket btn */
 .btn-new-ticket {
@@ -97,7 +97,7 @@ const css = `
     gap: 7px;
     padding: 10px 18px;
     background: #6366F1;
-    color: #fff;
+    color: var(--surface);
     border: none;
     border-radius: 10px;
     font-size: .875rem;
@@ -122,7 +122,7 @@ const css = `
 @media(max-width:480px){ .hd-stats { grid-template-columns: 1fr; } }
 
 .hd-stat {
-    background: #fff;
+    background: var(--surface);
     border-radius: 14px;
     padding: 18px 20px;
     border: 1.5px solid #CBD5E1;
@@ -146,14 +146,14 @@ const css = `
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .7px;
-    color: #374151;
+    color: var(--text-2);
     margin-bottom: 8px;
 }
 .hd-stat-val {
     font-size: 2.2rem;
     font-weight: 700;
     letter-spacing: -1.5px;
-    color: #0D0F14;
+    color: var(--text-1);
     line-height: 1;
 }
 
@@ -168,11 +168,11 @@ const css = `
 .hd-select {
     padding: 7px 12px;
     border-radius: 8px;
-    border: 1.5px solid #94A3B8;
-    background: #fff;
+    border: 1.5px solid var(--text-3);
+    background: var(--surface);
     font-size: .82rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     font-weight: 500;
     cursor: pointer;
     outline: none;
@@ -183,11 +183,11 @@ const css = `
 .hd-search {
     padding: 7px 12px;
     border-radius: 8px;
-    border: 1.5px solid #94A3B8;
-    background: #fff;
+    border: 1.5px solid var(--text-3);
+    background: var(--surface);
     font-size: .82rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     font-weight: 500;
     outline: none;
     min-width: 200px;
@@ -204,7 +204,7 @@ const css = `
 }
 
 .hd-ticket-row {
-    background: #fff;
+    background: var(--surface);
     border-radius: 14px;
     border: 1.5px solid #CBD5E1;
     padding: 18px 20px;
@@ -249,22 +249,22 @@ const css = `
 .hd-ticket-title {
     font-size: .925rem;
     font-weight: 600;
-    color: #0D0F14;
+    color: var(--text-1);
 }
 .hd-ticket-id {
     font-family: 'DM Mono', monospace;
     font-size: .72rem;
-    color: #374151;
-    background: #E5E7EB;
+    color: var(--text-2);
+    background: var(--surface-3);
     padding: 2px 7px;
     border-radius: 5px;
     white-space: nowrap;
     font-weight: 500;
-    border: 1px solid #D1D5DB;
+    border: 1px solid var(--border);
 }
 .hd-ticket-desc {
     font-size: .8rem;
-    color: #374151;
+    color: var(--text-2);
     margin-bottom: 10px;
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -289,13 +289,13 @@ const css = `
     font-weight: 600;
     border: 1px solid;
 }
-.chip-blue    { background: #DBEAFE; color: #1E40AF; border-color: #93C5FD; }
-.chip-amber   { background: #FEF3C7; color: #78350F; border-color: #FCD34D; }
-.chip-green   { background: #DCFCE7; color: #14532D; border-color: #86EFAC; }
-.chip-red     { background: #FFE4E6; color: #9F1239; border-color: #FCA5A5; }
-.chip-gray    { background: #E5E7EB; color: #1F2937; border-color: #9CA3AF; }
-.chip-purple  { background: #EDE9FE; color: #3730A3; border-color: #A5B4FC; }
-.chip-orange  { background: #FFEDD5; color: #9A3412; border-color: #FDBA74; }
+.chip-blue    { background: var(--brand-light); color: #1E40AF; border-color: #93C5FD; }
+.chip-amber   { background: var(--warn-bg); color: #78350F; border-color: #FCD34D; }
+.chip-green   { background: var(--success-bg); color: #14532D; border-color: #86EFAC; }
+.chip-red     { background: var(--danger-bg); color: #9F1239; border-color: #FCA5A5; }
+.chip-gray    { background: var(--surface-3); color: var(--text-1); border-color: var(--text-3); }
+.chip-purple  { background: var(--surface-3); color: #3730A3; border-color: #A5B4FC; }
+.chip-orange  { background: var(--warn-bg); color: #9A3412; border-color: #FDBA74; }
 
 /* status badge */
 .hd-badge {
@@ -309,16 +309,16 @@ const css = `
     white-space: nowrap;
     border: 1.5px solid;
 }
-.badge-open       { background: #DBEAFE; color: #1E3A8A; border-color: #93C5FD; }
-.badge-inprogress { background: #FFEDD5; color: #7C2D12; border-color: #FDBA74; }
-.badge-resolved   { background: #DCFCE7; color: #14532D; border-color: #86EFAC; }
-.badge-closed     { background: #E5E7EB; color: #1F2937; border-color: #9CA3AF; }
-.badge-critical   { background: #FFE4E6; color: #9F1239; border-color: #FCA5A5; }
+.badge-open       { background: var(--brand-light); color: #1E3A8A; border-color: #93C5FD; }
+.badge-inprogress { background: var(--warn-bg); color: #7C2D12; border-color: #FDBA74; }
+.badge-resolved   { background: var(--success-bg); color: #14532D; border-color: #86EFAC; }
+.badge-closed     { background: var(--surface-3); color: var(--text-1); border-color: var(--text-3); }
+.badge-critical   { background: var(--danger-bg); color: #9F1239; border-color: #FCA5A5; }
 
 /* reply count bubble */
 .hd-reply-count {
     font-size: .7rem;
-    background: #EDE9FE;
+    background: var(--surface-3);
     color: #3730A3;
     border-radius: 99px;
     padding: 2px 8px;
@@ -330,15 +330,15 @@ const css = `
 .hd-empty {
     text-align: center;
     padding: 4rem 2rem;
-    color: #374151;
-    background: #fff;
+    color: var(--text-2);
+    background: var(--surface);
     border-radius: 14px;
     border: 1.5px solid #CBD5E1;
 }
 .hd-empty-icon {
     width: 56px; height: 56px;
     border-radius: 16px;
-    background: #E5E7EB;
+    background: var(--surface-3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -348,7 +348,7 @@ const css = `
 
 /* skeleton */
 .hd-skeleton {
-    background: linear-gradient(90deg, #E5E7EB 25%, #D1D5DB 50%, #E5E7EB 75%);
+    background: linear-gradient(90deg, var(--surface-3) 25%, var(--border) 50%, var(--surface-3) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.4s infinite;
     border-radius: 8px;
@@ -367,7 +367,7 @@ const css = `
     padding: 16px;
 }
 .hd-modal {
-    background: #fff;
+    background: var(--surface);
     border-radius: 18px;
     width: 100%;
     max-width: 560px;
@@ -388,12 +388,12 @@ const css = `
 .hd-modal-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #0D0F14;
+    color: var(--text-1);
     line-height: 1.3;
     padding-right: 12px;
 }
 .hd-close-btn {
-    background: #E5E7EB;
+    background: var(--surface-3);
     border: 1.5px solid #CBD5E1;
     cursor: pointer;
     width: 32px; height: 32px;
@@ -402,10 +402,10 @@ const css = `
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #374151;
+    color: var(--text-2);
     transition: background .15s;
 }
-.hd-close-btn:hover { background: #D1D5DB; }
+.hd-close-btn:hover { background: var(--border); }
 
 /* form */
 .hd-form-group {
@@ -419,15 +419,15 @@ const css = `
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .7px;
-    color: #374151;
+    color: var(--text-2);
 }
 .hd-input {
     padding: 10px 12px;
-    border: 1.5px solid #94A3B8;
+    border: 1.5px solid var(--text-3);
     border-radius: 10px;
     font-size: .875rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     outline: none;
     transition: border .15s;
 }
@@ -435,11 +435,11 @@ const css = `
 .hd-input::placeholder { color: #6B7280; }
 .hd-textarea {
     padding: 10px 12px;
-    border: 1.5px solid #94A3B8;
+    border: 1.5px solid var(--text-3);
     border-radius: 10px;
     font-size: .875rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     outline: none;
     resize: vertical;
     min-height: 100px;
@@ -450,14 +450,14 @@ const css = `
 .hd-textarea::placeholder { color: #6B7280; }
 .hd-select-full {
     padding: 10px 12px;
-    border: 1.5px solid #94A3B8;
+    border: 1.5px solid var(--text-3);
     border-radius: 10px;
     font-size: .875rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     outline: none;
     cursor: pointer;
-    background: #fff;
+    background: var(--surface);
     transition: border .15s;
 }
 .hd-select-full:focus { border-color: #6366F1; }
@@ -473,7 +473,7 @@ const css = `
     width: 100%;
     padding: 11px;
     background: #6366F1;
-    color: #fff;
+    color: var(--surface);
     border: none;
     border-radius: 10px;
     font-size: .9rem;
@@ -497,7 +497,7 @@ const css = `
     gap: 8px;
     margin-bottom: 18px;
     padding-bottom: 18px;
-    border-bottom: 1.5px solid #E5E7EB;
+    border-bottom: 1.5px solid var(--surface-3);
 }
 
 .hd-replies {
@@ -524,24 +524,24 @@ const css = `
 }
 .hd-bubble-name {
     font-size: .7rem;
-    color: #374151;
+    color: var(--text-2);
     margin-bottom: 4px;
     font-weight: 600;
 }
 .hd-reply-bubble.staff .hd-bubble-name { text-align: right; }
 .hd-bubble-text {
-    background: #F1F5F9;
+    background: var(--surface-2);
     padding: 10px 14px;
     border-radius: 12px 12px 12px 4px;
     font-size: .85rem;
-    color: #1E293B;
+    color: var(--text-1);
     line-height: 1.5;
     word-break: break-word;
     border: 1px solid #CBD5E1;
 }
 .hd-reply-bubble.staff .hd-bubble-text {
     background: #6366F1;
-    color: #fff;
+    color: var(--surface);
     border-radius: 12px 12px 4px 12px;
     border-color: #4F46E5;
 }
@@ -558,9 +558,9 @@ const css = `
 .hd-no-replies {
     text-align: center;
     padding: 2rem;
-    color: #374151;
+    color: var(--text-2);
     font-size: .82rem;
-    background: #F8FAFC;
+    background: var(--surface-2);
     border-radius: 10px;
     border: 1.5px solid #CBD5E1;
     font-weight: 500;
@@ -571,17 +571,17 @@ const css = `
     display: flex;
     gap: 8px;
     align-items: flex-end;
-    border-top: 1.5px solid #E5E7EB;
+    border-top: 1.5px solid var(--surface-3);
     padding-top: 16px;
 }
 .hd-reply-input {
     flex: 1;
     padding: 10px 14px;
-    border: 1.5px solid #94A3B8;
+    border: 1.5px solid var(--text-3);
     border-radius: 10px;
     font-size: .875rem;
     font-family: inherit;
-    color: #111318;
+    color: var(--text-1);
     outline: none;
     resize: none;
     min-height: 42px;
@@ -603,7 +603,7 @@ const css = `
     justify-content: center;
     flex-shrink: 0;
     transition: background .15s;
-    color: #fff;
+    color: var(--surface);
 }
 .hd-send-btn:hover:not(:disabled) { background: #4F46E5; }
 .hd-send-btn:disabled { opacity: .45; cursor: not-allowed; }
@@ -611,9 +611,9 @@ const css = `
 /* close ticket btn */
 .hd-close-ticket-btn {
     padding: 8px 16px;
-    background: #F1F5F9;
-    color: #1E293B;
-    border: 1.5px solid #94A3B8;
+    background: var(--surface-2);
+    color: var(--text-1);
+    border: 1.5px solid var(--text-3);
     border-radius: 8px;
     font-size: .8rem;
     font-weight: 600;
@@ -624,18 +624,18 @@ const css = `
     align-items: center;
     gap: 6px;
 }
-.hd-close-ticket-btn:hover { background: #E2E8F0; color: #0D0F14; border-color: #64748B; }
+.hd-close-ticket-btn:hover { background: var(--border); color: var(--text-1); border-color: var(--text-2); }
 
 /* divider */
-.hd-divider { border: none; border-top: 1.5px solid #E5E7EB; margin: 16px 0; }
+.hd-divider { border: none; border-top: 1.5px solid var(--surface-3); margin: 16px 0; }
 
 /* description block */
 .hd-desc-block {
-    background: #F8FAFC;
+    background: var(--surface-2);
     border-radius: 10px;
     padding: 12px 14px;
     font-size: .85rem;
-    color: #1E293B;
+    color: var(--text-1);
     line-height: 1.6;
     white-space: pre-wrap;
     margin-bottom: 16px;
@@ -645,16 +645,16 @@ const css = `
 
 /* attachments */
 .hd-file-drop {
-    border: 2px dashed #94A3B8;
+    border: 2px dashed var(--text-3);
     border-radius: 10px;
     padding: 16px;
     text-align: center;
     cursor: pointer;
     transition: border .15s, background .15s;
-    background: #F8FAFC;
+    background: var(--surface-2);
     position: relative;
 }
-.hd-file-drop:hover { border-color: #6366F1; background: #F5F3FF; }
+.hd-file-drop:hover { border-color: #6366F1; background: var(--surface-3); }
 .hd-file-drop input[type="file"] {
     position: absolute;
     inset: 0;
@@ -665,7 +665,7 @@ const css = `
 }
 .hd-file-drop-text {
     font-size: .8rem;
-    color: #374151;
+    color: var(--text-2);
     font-weight: 500;
     pointer-events: none;
 }
@@ -685,7 +685,7 @@ const css = `
     height: 72px;
     border-radius: 8px;
     overflow: hidden;
-    border: 1.5px solid #94A3B8;
+    border: 1.5px solid var(--text-3);
     flex-shrink: 0;
 }
 .hd-preview-item img {
@@ -705,7 +705,7 @@ const css = `
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
+    color: var(--surface);
     padding: 0;
 }
 
@@ -715,8 +715,8 @@ const css = `
     bottom: 24px;
     right: 24px;
     z-index: 9999;
-    background: #0D0F14;
-    color: #fff;
+    background: var(--text-1);
+    color: var(--surface);
     padding: 12px 20px;
     border-radius: 12px;
     font-size: .85rem;
@@ -726,7 +726,7 @@ const css = `
     align-items: center;
     gap: 8px;
     animation: slideUp .2s ease;
-    border: 1px solid #374151;
+    border: 1px solid var(--text-2);
 }
 @keyframes slideUp { from{transform:translateY(12px);opacity:0} to{transform:translateY(0);opacity:1} }
 `;
@@ -790,24 +790,24 @@ const categoryChip = (c) => {
 };
 
 const iconBg = {
-    it: "#DBEAFE",
-    hr: "#EDE9FE",
-    admin: "#E5E7EB",
-    payroll: "#DCFCE7",
-    attendance: "#FEF3C7",
-    other: "#E5E7EB",
+    it: "var(--brand-light)",
+    hr: "var(--surface-3)",
+    admin: "var(--surface-3)",
+    payroll: "var(--success-bg)",
+    attendance: "var(--warn-bg)",
+    other: "var(--surface-3)",
 };
 const iconColor = {
     it: "#1E40AF",
     hr: "#4338CA",
-    admin: "#374151",
+    admin: "var(--text-2)",
     payroll: "#15803D",
     attendance: "#78350F",
-    other: "#4B5563",
+    other: "var(--text-2)",
 };
 
 /* Avatar bg per role */
-const avatarBg = (isStaff) => isStaff ? "#6366F1" : "#475569";
+const avatarBg = (isStaff) => isStaff ? "#6366F1" : "var(--text-2)";
 
 /* ─── Raise Ticket Modal ─────────────────────────────────────────────────── */
 const RaiseModal = ({ onClose, onCreated }) => {
@@ -970,7 +970,7 @@ const RaiseModal = ({ onClose, onCreated }) => {
 
                 {error && (
                     <div style={{
-                        background: "#FFE4E6", color: "#9F1239",
+                        background: "var(--danger-bg)", color: "#9F1239",
                         padding: "10px 14px", borderRadius: 8,
                         fontSize: ".82rem", marginBottom: 10,
                         border: "1.5px solid #FCA5A5",
@@ -1090,7 +1090,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                         <div style={{
                             fontFamily: "'DM Mono', monospace",
                             fontSize: ".72rem",
-                            color: "#374151",
+                            color: "var(--text-2)",
                             marginBottom: 4,
                             fontWeight: 600,
                         }}>
@@ -1126,7 +1126,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: ".7px",
-                    color: "#374151",
+                    color: "var(--text-2)",
                     marginBottom: 8,
                 }}>
                     Description
@@ -1136,7 +1136,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                 {/* Attachments */}
                 {ticket.attachments?.length > 0 && (
                     <>
-                        <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "#374151", marginBottom: 8 }}>
+                        <div style={{ fontSize: ".72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".7px", color: "var(--text-2)", marginBottom: 8 }}>
                             Attachments ({ticket.attachments.length})
                         </div>
                         <div className="hd-previews" style={{ marginBottom: 16 }}>
@@ -1146,7 +1146,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                                     href={toUrl(att.url)}
                                     target="_blank"
                                     rel="noreferrer"
-                                    style={{ display: "block", borderRadius: 8, overflow: "hidden", border: "1.5px solid #94A3B8", width: 72, height: 72, flexShrink: 0 }}
+                                    style={{ display: "block", borderRadius: 8, overflow: "hidden", border: "1.5px solid var(--text-3)", width: 72, height: 72, flexShrink: 0 }}
                                 >
                                     <img
                                         src={toUrl(att.url)}
@@ -1162,7 +1162,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                 {/* Resolved info */}
                 {isResolved && ticket.resolvedAt && (
                     <div style={{
-                        background: "#DCFCE7",
+                        background: "var(--success-bg)",
                         border: "1.5px solid #86EFAC",
                         borderRadius: 8,
                         padding: "10px 14px",
@@ -1186,7 +1186,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: ".7px",
-                    color: "#374151",
+                    color: "var(--text-2)",
                     marginBottom: 10,
                 }}>
                     Conversation ({ticket.replies?.length || 0})
@@ -1220,7 +1220,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                                         {isStaff && (
                                             <span style={{
                                                 marginLeft: 5,
-                                                background: "#EDE9FE",
+                                                background: "var(--surface-3)",
                                                 color: "#3730A3",
                                                 padding: "1px 5px",
                                                 borderRadius: 4,
@@ -1246,21 +1246,21 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                     <div style={{
                         textAlign: "center",
                         padding: "14px",
-                        background: "#F8FAFC",
+                        background: "var(--surface-2)",
                         borderRadius: 10,
-                        color: "#374151",
+                        color: "var(--text-2)",
                         fontSize: ".82rem",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         gap: 6,
-                        borderTop: "1.5px solid #E5E7EB",
+                        borderTop: "1.5px solid var(--surface-3)",
                         paddingTop: 16,
                         marginTop: 4,
                         fontWeight: 600,
                         border: "1.5px solid #CBD5E1",
                     }}>
-                        <Icon d={icons.lock} size={14} color="#374151" />
+                        <Icon d={icons.lock} size={14} color="var(--text-2)" />
                         This ticket is closed
                     </div>
                 ) : (
@@ -1279,7 +1279,7 @@ const ThreadModal = ({ ticket: initialTicket, currentUser, onClose, onUpdate }) 
                             disabled={sending || !reply.trim()}
                             title="Send reply"
                         >
-                            <Icon d={icons.send} size={15} color="#fff" />
+                            <Icon d={icons.send} size={15} color="var(--surface)" />
                         </button>
                     </div>
                 )}
@@ -1406,7 +1406,7 @@ const Helpdesk = () => {
                             <p>Raise issues and track resolution status</p>
                         </div>
                         <button className="btn-new-ticket" onClick={() => setShowRaise(true)}>
-                            <Icon d={icons.plus} size={16} color="#fff" />
+                            <Icon d={icons.plus} size={16} color="var(--surface)" />
                             New ticket
                         </button>
                     </div>
@@ -1423,7 +1423,7 @@ const Helpdesk = () => {
 
                     {/* Filters */}
                     <div className="hd-filters">
-                        <Icon d={icons.filter} size={15} color="#374151" />
+                        <Icon d={icons.filter} size={15} color="var(--text-2)" />
 
                         <input
                             className="hd-search"
@@ -1463,8 +1463,8 @@ const Helpdesk = () => {
                                 onClick={() => { setStatus("all"); setCat("all"); setSearch(""); }}
                                 style={{
                                     padding: "7px 12px", borderRadius: 8,
-                                    border: "1.5px solid #94A3B8", background: "#fff",
-                                    fontSize: ".8rem", color: "#374151",
+                                    border: "1.5px solid var(--text-3)", background: "var(--surface)",
+                                    fontSize: ".8rem", color: "var(--text-2)",
                                     cursor: "pointer", fontFamily: "inherit",
                                     display: "flex", alignItems: "center", gap: 5,
                                     fontWeight: 600,
@@ -1478,8 +1478,8 @@ const Helpdesk = () => {
                             onClick={fetchTickets}
                             style={{
                                 padding: "7px 10px", borderRadius: 8,
-                                border: "1.5px solid #94A3B8", background: "#fff",
-                                cursor: "pointer", color: "#374151",
+                                border: "1.5px solid var(--text-3)", background: "var(--surface)",
+                                cursor: "pointer", color: "var(--text-2)",
                                 display: "flex", alignItems: "center",
                             }}
                             title="Refresh"
@@ -1498,12 +1498,12 @@ const Helpdesk = () => {
                         {!loading && filtered.length === 0 && (
                             <div className="hd-empty">
                                 <div className="hd-empty-icon">
-                                    <Icon d={icons.inbox} size={24} color="#374151" />
+                                    <Icon d={icons.inbox} size={24} color="var(--text-2)" />
                                 </div>
-                                <p style={{ fontWeight: 700, color: "#0D0F14", marginBottom: 6 }}>
+                                <p style={{ fontWeight: 700, color: "var(--text-1)", marginBottom: 6 }}>
                                     No tickets found
                                 </p>
-                                <p style={{ fontSize: ".82rem", color: "#374151", fontWeight: 500 }}>
+                                <p style={{ fontSize: ".82rem", color: "var(--text-2)", fontWeight: 500 }}>
                                     {search || statusFilter !== "all" || categoryFilter !== "all"
                                         ? "Try adjusting your filters"
                                         : "You haven't raised any tickets yet"}
@@ -1522,13 +1522,13 @@ const Helpdesk = () => {
                                     <div
                                         className="hd-ticket-icon"
                                         style={{
-                                            background: iconBg[ticket.category] || "#E5E7EB",
+                                            background: iconBg[ticket.category] || "var(--surface-3)",
                                         }}
                                     >
                                         <Icon
                                             d={icons.ticket}
                                             size={18}
-                                            color={iconColor[ticket.category] || "#374151"}
+                                            color={iconColor[ticket.category] || "var(--text-2)"}
                                         />
                                     </div>
                                 </div>

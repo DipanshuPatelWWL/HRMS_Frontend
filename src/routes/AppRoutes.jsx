@@ -52,6 +52,9 @@ import PolicyManagement from "../pages/hr/PolicyManagement";
 import ActivityMonitor from "../pages/hr/ActivityMonitor";
 import Policies from "../pages/employee/Policies";
 
+//------------------------Advance Sales --------------------------------------//
+import SalesIntelligence from '../../pages/SalesIntelligence'
+
 // ─────────────────────────────────────────────
 //  Protected route
 // ─────────────────────────────────────────────
@@ -110,6 +113,8 @@ const AppRoutes = () => (
         <Route path="/employee/daily-report" element={<Protected allowedRoles={["employee"]}><DailyReports /></Protected>} />
         <Route path="/employee/assets" element={<Protected allowedRoles={["employee"]}><MyAssets /></Protected>} />
         <Route path="/employee/policies" element={<Protected allowedRoles={["employee"]}><Policies /></Protected>} />
+        <Route path="/sales-intelligence"
+            element={<Protected allowedRoles={["employee"]}><SalesIntelligence /></Protected>} />
 
         {/* Sales Report Route */}
         <Route path="/employee/sales-reports"
@@ -185,6 +190,8 @@ const AppRoutes = () => (
         <Route path="/hr/assets" element={<Protected allowedRoles={["hr"]}><AssetManagement /></Protected>} />
         <Route path="/hr/policies" element={<Protected allowedRoles={["hr"]}><PolicyManagement /></Protected>} />
         <Route path="/hr/activity-monitor" element={<Protected allowedRoles={["hr"]}><ActivityMonitor /></Protected>} />
+        <Route path="/hr/sales-intelligence"
+            element={<Protected allowedRoles={["hr"]}><SalesIntelligence /></Protected>} />
 
 
         {/* Manager Routes */}
@@ -206,6 +213,8 @@ const AppRoutes = () => (
         <Route path="/manager-assets" element={<Protected allowedRoles={["manager"]}><AssetManagement /></Protected>} />
         <Route path="/manager-policies" element={<Protected allowedRoles={["manager"]}><PolicyManagement /></Protected>} />
         <Route path="/manager-activity-monitor" element={<Protected allowedRoles={["manager"]}><ActivityMonitor /></Protected>} />
+        <Route path="/manager-sales-intelligence"
+            element={<Protected allowedRoles={["manager"]}><SalesIntelligence /></Protected>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/login" replace />} />

@@ -51,19 +51,17 @@ const styles = `
     animation: chipIn 0.2s cubic-bezier(0.22,1,0.36,1) both;
   }
 
-  .emp-chip-remove {
-    background: none;
-    border: none;
+ .emp-chip-remove {
     color: #a78bfa;
     cursor: pointer;
-    padding: 0;
     font-size: 0.72rem;
     line-height: 1;
     margin-left: 2px;
     transition: color 0.15s, transform 0.15s;
     display: flex;
     align-items: center;
-  }
+    user-select: none;
+}
   .emp-chip-remove:hover { color: #db2777; transform: scale(1.2); }
 
   .emp-trigger-placeholder { color: #94a3b8; font-size: 0.88rem; }
@@ -346,13 +344,26 @@ const UserMultiSelect = ({ value = [], onChange, employees = [] }) => {
                         ) : allSelected ? (
                             <span className="emp-chip">
                                 All {employees.length} employees
-                                <button className="emp-chip-remove" onClick={(e) => { e.stopPropagation(); onChange([]); }}>✕</button>
+                                <span
+                                    className="emp-chip-remove"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onChange([]);
+                                    }}
+                                >
+                                    ✕
+                                </span>
                             </span>
                         ) : (
                             selectedEmployees.map((emp) => (
                                 <span key={emp._id} className="emp-chip">
                                     {emp.name.split(" ")[0]}
-                                    <button className="emp-chip-remove" onClick={(ev) => removeChip(ev, emp._id)}>✕</button>
+                                    <span
+                                        className="emp-chip-remove"
+                                        onClick={(ev) => removeChip(ev, emp._id)}
+                                    >
+                                        ✕
+                                    </span>
                                 </span>
                             ))
                         )}

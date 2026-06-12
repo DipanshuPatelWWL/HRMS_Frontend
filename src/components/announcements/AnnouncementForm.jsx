@@ -8,7 +8,7 @@ const AnnouncementForm = ({ onSuccess, employees = [], editTarget = null, onCanc
   const [form, setForm] = useState({
     title: "",
     body: "",
-    targetRole: "all",
+    targetRoles: [],
     targetUsers: [],
     important: false,
     pinned: false,
@@ -22,7 +22,7 @@ const AnnouncementForm = ({ onSuccess, employees = [], editTarget = null, onCanc
       setForm({
         title: editTarget.title ?? "",
         body: editTarget.body ?? "",
-        targetRole: editTarget.targetRole ?? "all",
+        targetRoles: editTarget.targetRoles ?? [],
         targetUsers: (editTarget.targetUsers ?? []).map((u) =>
           typeof u === "object" ? u._id : u
         ),
@@ -30,7 +30,7 @@ const AnnouncementForm = ({ onSuccess, employees = [], editTarget = null, onCanc
         pinned: editTarget.pinned ?? false,
       });
     } else {
-      setForm({ title: "", body: "", targetRole: "all", targetUsers: [], important: false, pinned: false });
+      setForm({ title: "", body: "", targetRoles: [], targetUsers: [], important: false, pinned: false });
     }
   }, [editTarget]);
 
@@ -47,7 +47,7 @@ const AnnouncementForm = ({ onSuccess, employees = [], editTarget = null, onCanc
         await API.post("/announcements", form);
         toast.success("Announcement published!");
       }
-      setForm({ title: "", body: "", targetRole: "all", targetUsers: [], important: false, pinned: false });
+      setForm({ title: "", body: "", targetRoles: [], targetUsers: [], important: false, pinned: false });
       onSuccess();
     } catch (err) {
       toast.error(err?.response?.data?.message ?? "Something went wrong");
@@ -152,6 +152,55 @@ const AnnouncementForm = ({ onSuccess, employees = [], editTarget = null, onCanc
           box-shadow: 0 0 0 3px rgba(59,91,219,0.12);
           background: white;
         }
+          .af-role-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.af-role-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.af-role-pill:hover {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+.af-role-pill.active {
+  background: #eff6ff;
+  border-color: #3b5bdb;
+  color: #1d4ed8;
+}
+.af-role-pill-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  background: white;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.af-role-pill.active .af-role-pill-check {
+  background: #3b5bdb;
+  border-color: #3b5bdb;
+  color: white;
+}
         .af-input::placeholder,
         .af-textarea::placeholder { color: #94a3b8; }
 
@@ -314,20 +363,33 @@ const AnnouncementForm = ({ onSuccess, employees = [], editTarget = null, onCanc
           {/* Role + Toggles */}
           <div>
             <label className="af-label">Target Audience</label>
-            <div className="af-row">
-              <div className="af-row-select">
-                <select
-                  className="af-select"
-                  value={form.targetRole}
-                  onChange={(e) => set("targetRole", e.target.value)}
-                >
-                  <option value="all">All roles</option>
-                  <option value="employee">Employee</option>
-                  <option value="hr">HR</option>
-                  <option value="manager">Manager</option>
-                  <option value="tl">Team Lead</option>
-                </select>
-              </div>
+            <div className="af-role-select" style={{ marginBottom: "10px" }}>
+              {[
+                { value: "all", label: "All roles" },
+                { value: "employee", label: "Employee" },
+                { value: "hr", label: "HR" },
+                { value: "manager", label: "Manager" },
+                { value: "tl", label: "Team Lead" },
+              ].map(({ value, label }) => {
+                const isActive = form.targetRoles.includes(value);
+                return (
+                  <div
+                    key={value}
+                    className={`af-role-pill ${isActive ? "active" : ""}`}
+                    onClick={() =>
+                      set(
+                        "targetRoles",
+                        isActive
+                          ? form.targetRoles.filter((r) => r !== value)
+                          : [...form.targetRoles, value]
+                      )
+                    }
+                  >
+                    <span className="af-role-pill-check">{isActive ? "✓" : ""}</span>
+                    {label}
+                  </div>
+                );
+              })}
 
               <div className="af-toggles">
                 {[
@@ -364,8 +426,8 @@ const AnnouncementForm = ({ onSuccess, employees = [], editTarget = null, onCanc
               ? isEditing ? "Updating…" : "Publishing…"
               : isEditing ? "Update Announcement" : "Publish Announcement"}
           </button>
-        </form>
-      </div>
+        </form >
+      </div >
     </>
   );
 };

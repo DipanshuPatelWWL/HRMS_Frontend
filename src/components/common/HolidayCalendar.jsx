@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Calendar from "react-calendar";
 import DashboardLayout from "../layout/DashboardLayout";
 import API from "../../services/api";
+import { useTheme } from "../../hooks/useTheme";
 
 /* ─── SVG Icons ──────────────────────────────────────────────────────────── */
 const Icons = {
@@ -73,9 +74,12 @@ const Icons = {
 
 /* ─── Inject Styles ──────────────────────────────────────────────────────── */
 const injectStyles = () => {
-    if (document.head.querySelector("style[data-hc2]")) return;
-    const s = document.createElement("style");
-    s.setAttribute("data-hc2", "1");
+    let s = document.head.querySelector("style[data-hc2]");
+    if (!s) {
+        s = document.createElement("style");
+        s.setAttribute("data-hc2", "1");
+        document.head.appendChild(s);
+    }
     s.textContent = `
     @keyframes hc2-rise { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:none } }
     @keyframes hc2-pop  { 0%{transform:scale(.95);opacity:0} 70%{transform:scale(1.01)} 100%{transform:scale(1);opacity:1} }
@@ -84,13 +88,13 @@ const injectStyles = () => {
     .hc2-rise  { animation: hc2-rise .38s cubic-bezier(.22,1,.36,1) both; }
 
     /* ── Calendar card ── */
-    .hc2-cal-card {
-        background: #ffffff;
-        border: 2px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 20px;
-        box-shadow: 0 4px 16px rgba(0,0,0,.06);
-    }
+   .hc2-cal-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: var(--shadow-md);
+}
     .hc2-cal-card .react-calendar {
         width: 100%;
         border: none;
@@ -107,55 +111,55 @@ const injectStyles = () => {
         gap: 6px;
         height: auto;
     }
-    .hc2-cal-card .react-calendar__navigation button {
-        background: #f8fafc;
-        border: 2px solid #e2e8f0;
-        border-radius: 9px;
-        min-width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: #0f172a;
-        padding: 0;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        transition: background .13s, border-color .13s;
-    }
-    .hc2-cal-card .react-calendar__navigation button:hover:not(:disabled) {
-        background: #f0faf6;
-        border-color: #1D9E75;
-        color: #1D9E75;
-    }
+   .hc2-cal-card .react-calendar__navigation button {
+    background: var(--surface-3);
+    border: 2px solid var(--border);
+    border-radius: 9px;
+    min-width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-1);
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: background .13s, border-color .13s;
+}
+.hc2-cal-card .react-calendar__navigation button:hover:not(:disabled) {
+    background: var(--surface-2);
+    border-color: #1D9E75;
+    color: #1D9E75;
+}
     .hc2-cal-card .react-calendar__navigation button:disabled {
         opacity: .35;
         cursor: not-allowed;
     }
-    .hc2-cal-card .react-calendar__navigation__label {
-        flex: 1;
-        font-size: clamp(13px, 2.5vw, 15.5px);
-        font-weight: 800;
-        color: #0f172a;
-        border: none !important;
-        background: none !important;
-        pointer-events: none;
-        cursor: default;
-        letter-spacing: -.01em;
-    }
+  .hc2-cal-card .react-calendar__navigation__label {
+    flex: 1;
+    font-size: clamp(13px, 2.5vw, 15.5px);
+    font-weight: 800;
+    color: var(--text-1);
+    border: none !important;
+    background: none !important;
+    pointer-events: none;
+    cursor: default;
+    letter-spacing: -.01em;
+}
 
     /* Weekday headers */
     .hc2-cal-card .react-calendar__month-view__weekdays {
         margin-bottom: 4px;
     }
-    .hc2-cal-card .react-calendar__month-view__weekdays__weekday {
-        padding: 6px 0;
-        text-align: center;
-        font-size: clamp(9px, 1.8vw, 11px);
-        font-weight: 800;
-        color: #475569;
-        text-transform: uppercase;
-        letter-spacing: .07em;
-    }
+   .hc2-cal-card .react-calendar__month-view__weekdays__weekday {
+    padding: 6px 0;
+    text-align: center;
+    font-size: clamp(9px, 1.8vw, 11px);
+    font-weight: 800;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+}
     .hc2-cal-card .react-calendar__month-view__weekdays__weekday abbr {
         text-decoration: none;
     }
@@ -174,7 +178,7 @@ const injectStyles = () => {
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: clamp(11px, 2vw, 13.5px);
         font-weight: 600;
-        color: #0f172a;
+       color: var(--text-1);
         padding: clamp(4px, 1.5vw, 7px) 2px;
         transition: background .12s, color .12s, border-color .12s;
         aspect-ratio: 1;
@@ -182,24 +186,33 @@ const injectStyles = () => {
         min-height: 36px;
         -webkit-tap-highlight-color: transparent;
     }
-    .hc2-cal-card .react-calendar__tile:hover:not(.react-calendar__tile--active) {
-        background: #f1f5f9;
-        border-color: #cbd5e1;
-    }
+        /* Reset react-calendar default tile styles */
+.hc2-cal-card .react-calendar__tile:enabled:hover,
+.hc2-cal-card .react-calendar__tile:enabled:focus {
+    background: var(--surface-3);
+    outline: none;
+}
+.hc2-cal-card .react-calendar button {
+    outline: none;
+}
+  .hc2-cal-card .react-calendar__tile:hover:not(.react-calendar__tile--active) {
+    background: var(--surface-3);
+    border-color: var(--border-strong);
+}
 
     /* SAT & SUN header labels → red */
-    .hc2-cal-card .react-calendar__month-view__weekdays__weekday:nth-child(6) abbr,
-    .hc2-cal-card .react-calendar__month-view__weekdays__weekday:last-child abbr {
-       color: #dc2626;
-    }
+   .hc2-cal-card .react-calendar__month-view__weekdays__weekday:nth-child(6) abbr,
+.hc2-cal-card .react-calendar__month-view__weekdays__weekday:last-child abbr {
+   color: var(--danger);
+}
 
     /* Today */
-    .hc2-cal-card .react-calendar__tile--now:not(.react-calendar__tile--active) {
-        background: #EFF6FF;
-        color: #1d4ed8;
-        font-weight: 800;
-        border-color: #BFDBFE;
-    }
+ .hc2-cal-card .react-calendar__tile--now:not(.react-calendar__tile--active) {
+    background: var(--brand-light);
+    color: var(--brand);
+    font-weight: 800;
+    border-color: var(--border-strong);
+}
 
     /* Active/selected */
     .hc2-cal-card .react-calendar__tile--active,
@@ -212,31 +225,31 @@ const injectStyles = () => {
     }
 
     /* Neighbouring month */
-    .hc2-cal-card .react-calendar__month-view__days__day--neighboringMonth {
-        color: #cbd5e1;
-        font-weight: 400;
-    }
-
+   .hc2-cal-card .react-calendar__month-view__days__day--neighboringMonth {
+    color: var(--text-3);
+    font-weight: 400;
+}
     /* Weekend */
-    .hc2-cal-card .hc2-weekend:not(.react-calendar__tile--active) {
-        color: #dc2626;
-        background: #fff5f5;
-    }
-    .hc2-cal-card .hc2-weekend:not(.react-calendar__tile--active):hover {
-        background: #fee2e2;
-        border-color: #fca5a5;
-    }
+.hc2-cal-card .hc2-weekend:not(.react-calendar__tile--active) {
+    color: var(--danger);
+    background: transparent;
+}
+.hc2-cal-card .hc2-weekend:not(.react-calendar__tile--active):hover {
+    background: var(--surface-3);
+    border-color: var(--danger);
+}
 
     /* Holiday */
-    .hc2-cal-card .hc2-holiday:not(.react-calendar__tile--active) {
-        background: #fff1f2;
-        color: #be123c;
-        font-weight: 800;
-        border-color: #fecdd3;
-    }
-    .hc2-cal-card .hc2-holiday:not(.react-calendar__tile--active):hover {
-        background: #ffe4e6;
-    }
+  .hc2-cal-card .hc2-holiday:not(.react-calendar__tile--active) {
+    background: var(--danger-bg);
+    color: var(--danger);
+    font-weight: 800;
+    border-color: var(--border-strong);
+}
+.hc2-cal-card .hc2-holiday:not(.react-calendar__tile--active):hover {
+    background: var(--danger-bg);
+    border-color: var(--danger);
+}
 
     /* Holiday dot */
     .hc2-tile-dot {
@@ -253,15 +266,15 @@ const injectStyles = () => {
     }
 
     /* ── Cards ── */
-    .hc2-card {
-        background: #fff;
-        border: 2px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 16px 18px;
-        box-shadow: 0 2px 10px rgba(0,0,0,.05);
-        transition: border-color .18s;
-    }
-    .hc2-card:hover { border-color: #cbd5e1; }
+ .hc2-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    transition: border-color .18s;
+}
+.hc2-card:hover { border-color: var(--border-strong); }
 
     /* ── List item ── */
     .hc2-list-item {
@@ -269,7 +282,7 @@ const injectStyles = () => {
         align-items: center;
         justify-content: space-between;
         padding: 9px 0;
-        border-bottom: 1.5px solid #f1f5f9;
+       border-bottom: 1.5px solid var(--border);
         transition: background .12s;
         gap: 8px;
     }
@@ -279,7 +292,7 @@ const injectStyles = () => {
     .hc2-section-label {
         font-size: 10.5px;
         font-weight: 800;
-        color: #64748b;
+          color: var(--text-2);
         text-transform: uppercase;
         letter-spacing: .09em;
         margin: 0 0 8px;
@@ -316,7 +329,7 @@ const injectStyles = () => {
     .hc2-legend {
         margin-top: 16px;
         padding-top: 14px;
-        border-top: 2px solid #f1f5f9;
+        border-top: 2px solid var(--border);
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
@@ -388,8 +401,7 @@ const injectStyles = () => {
 
 /* ─── Main Component ─────────────────────────────────────────────────────── */
 const HolidayCalendar = () => {
-    injectStyles();
-
+    const { theme } = useTheme();
     const [calMonth, setCalMonth] = useState(new Date());
     const [calValue, setCalValue] = useState(new Date());
     const [value, setValue] = useState(new Date());
@@ -412,7 +424,8 @@ const HolidayCalendar = () => {
             }
         };
         fetchHolidays();
-    }, [calMonth]);
+        injectStyles();
+    }, [calMonth, theme]);
 
     const getHolidayForDate = (date) =>
         holidays.find((h) => new Date(h.date).toDateString() === date.toDateString());
@@ -452,22 +465,23 @@ const HolidayCalendar = () => {
                 <div className="hc2-page-header hc2-rise">
                     <div style={{
                         width: 42, height: 42, borderRadius: 12,
-                        background: "#EFF6FF", border: "2px solid #BFDBFE",
+                        background: "var(--brand-light)", border: "2px solid var(--border-strong)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#1d4ed8", flexShrink: 0,
+                        color: "var(--brand)",
+                        flexShrink: 0,
                     }}>
                         <Icons.CalendarDays size={20} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <h2 style={{
                             fontSize: "clamp(17px, 3.5vw, 21px)",
-                            fontWeight: 800, color: "#0f172a",
+                            fontWeight: 800, color: "var(--text-1)",
                             margin: 0, letterSpacing: "-.02em",
                             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                         }}>
                             Holiday Calendar
                         </h2>
-                        <p style={{ fontSize: 12.5, color: "#475569", margin: "2px 0 0", fontWeight: 500 }}>
+                        <p style={{ fontSize: 12.5, color: "var(--text-2)", margin: "2px 0 0", fontWeight: 500 }}>
                             {calMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                             {" — "}
                             {holidays.length} holiday{holidays.length !== 1 ? "s" : ""} this month
@@ -505,18 +519,18 @@ const HolidayCalendar = () => {
                         {/* Legend */}
                         <div className="hc2-legend">
                             {[
-                                { color: "#1D9E75", label: "Selected" },
-                                { color: "#1d4ed8", label: "Today", bg: "#EFF6FF" },
-                                { color: "#be123c", label: "Holiday", bg: "#fff1f2" },
-                                { color: "#dc2626", label: "Weekend", bg: "#fff5f5" },
-                            ].map(({ color, label, bg }) => (
+                                { borderColor: "#1D9E75", bg: "#1D9E75", label: "Selected" },
+                                { borderColor: "var(--brand)", bg: "var(--brand-light)", label: "Today" },
+                                { borderColor: "var(--danger)", bg: "var(--danger-bg)", label: "Holiday" },
+                                { borderColor: "var(--danger)", bg: "transparent", label: "Weekend" },
+                            ].map(({ borderColor, bg, label }) => (
                                 <div key={label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                     <span style={{
                                         width: 12, height: 12, borderRadius: 4,
-                                        background: bg || color, border: `2px solid ${color}`,
+                                        background: bg, border: `2px solid ${borderColor}`,
                                         flexShrink: 0,
                                     }} />
-                                    <span style={{ fontSize: 11.5, fontWeight: 600, color: "#334155" }}>{label}</span>
+                                    <span style={{ fontSize: 11.5, fontWeight: 600, color: "var(--text-2)" }}>{label}</span>
                                 </div>
                             ))}
                         </div>
@@ -532,17 +546,17 @@ const HolidayCalendar = () => {
                                     <div style={{ marginBottom: 12 }}>
                                         <div style={{
                                             fontSize: 11, fontWeight: 800, textTransform: "uppercase",
-                                            letterSpacing: ".08em", color: "#64748b", marginBottom: 4,
+                                            letterSpacing: ".08em", color: "var(--text-2)", marginBottom: 4,
                                         }}>
                                             Selected Date
                                         </div>
                                         <div style={{
                                             fontSize: "clamp(15px, 3vw, 18px)",
-                                            fontWeight: 800, color: "#0f172a", letterSpacing: "-.01em",
+                                            fontWeight: 800, color: "var(--text-1)", letterSpacing: "-.01em",
                                         }}>
                                             {selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                                         </div>
-                                        <div style={{ fontSize: 12.5, fontWeight: 600, color: "#475569", marginTop: 2 }}>
+                                        <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-2)", marginTop: 2 }}>
                                             {selectedDate.toLocaleDateString("en-US", { weekday: "long" })}
                                         </div>
                                     </div>
@@ -550,19 +564,19 @@ const HolidayCalendar = () => {
                                     {selectedHoliday ? (
                                         <div style={{
                                             display: "flex", alignItems: "center", gap: 9,
-                                            background: "#fff1f2", border: "2px solid #fecdd3",
+                                            background: "var(--danger-bg)", border: "2px solid var(--border-strong)",
                                             borderRadius: 10, padding: "10px 12px",
                                         }}>
                                             <Icons.Gift size={16} />
                                             <div style={{ minWidth: 0 }}>
                                                 <div style={{
-                                                    fontSize: 11, fontWeight: 800, color: "#9f1239",
+                                                    fontSize: 11, fontWeight: 800, color: "var(--danger)",
                                                     textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 1,
                                                 }}>
                                                     Public Holiday
                                                 </div>
                                                 <div style={{
-                                                    fontSize: 13.5, fontWeight: 700, color: "#be123c",
+                                                    fontSize: 13.5, fontWeight: 700, color: "var(--danger)",
                                                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                                                 }}>
                                                     {selectedHoliday.name}
@@ -572,36 +586,36 @@ const HolidayCalendar = () => {
                                     ) : isWeekend ? (
                                         <div style={{
                                             display: "flex", alignItems: "center", gap: 9,
-                                            background: "#fff5f5", border: "2px solid #fca5a5",
+                                            background: "var(--danger-bg)", border: "2px solid var(--border-strong)",
                                             borderRadius: 10, padding: "10px 12px",
                                         }}>
                                             <Icons.Sun size={16} />
-                                            <div style={{ fontSize: 13, fontWeight: 700, color: "#dc2626" }}>
+                                            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--danger)" }}>
                                                 Weekend — Day off
                                             </div>
                                         </div>
                                     ) : (
                                         <div style={{
                                             display: "flex", alignItems: "center", gap: 9,
-                                            background: "#f8fafc", border: "2px solid #e2e8f0",
+                                            background: "var(--surface-3)", border: "2px solid var(--border)",
                                             borderRadius: 10, padding: "10px 12px",
                                         }}>
                                             <Icons.Info size={16} />
-                                            <div style={{ fontSize: 13, fontWeight: 600, color: "#475569" }}>
+                                            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-2)" }}>
                                                 Regular working day
                                             </div>
                                         </div>
                                     )}
                                 </>
                             ) : (
-                                <div style={{ textAlign: "center", padding: "18px 0", color: "#94a3b8" }}>
-                                    <div style={{ color: "#cbd5e1", marginBottom: 10, display: "flex", justifyContent: "center" }}>
+                                <div style={{ textAlign: "center", padding: "18px 0", color: "var(--text-3)" }}>
+                                    <div style={{ color: "var(--text-3)", marginBottom: 10, display: "flex", justifyContent: "center" }}>
                                         <Icons.Empty size={34} />
                                     </div>
-                                    <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: "#475569" }}>
+                                    <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: "var(--text-2)" }}>
                                         Select a date
                                     </p>
-                                    <p style={{ margin: "4px 0 0", fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
+                                    <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-3)", fontWeight: 500 }}>
                                         Click any day to see details
                                     </p>
                                 </div>
@@ -613,10 +627,10 @@ const HolidayCalendar = () => {
 
                             {holidays.length === 0 && !loading && (
                                 <div style={{ textAlign: "center", padding: "18px 0" }}>
-                                    <div style={{ color: "#cbd5e1", marginBottom: 8, display: "flex", justifyContent: "center" }}>
+                                    <div style={{ color: "var(--text-3)", marginBottom: 8, display: "flex", justifyContent: "center" }}>
                                         <Icons.Empty size={28} />
                                     </div>
-                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#475569" }}>
+                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--text-2)" }}>
                                         No holidays this month
                                     </p>
                                 </div>
@@ -629,8 +643,8 @@ const HolidayCalendar = () => {
                                         Upcoming
                                         <span style={{
                                             marginLeft: "auto", fontSize: 10, fontWeight: 800,
-                                            background: "#DCFCE7", color: "#166534",
-                                            border: "1.5px solid #86EFAC",
+                                            background: "var(--success-bg)", color: "var(--success)",
+                                            border: "1.5px solid var(--border-strong)",
                                             borderRadius: 20, padding: "1px 8px",
                                         }}>
                                             {upcomingHolidays.length}
@@ -643,18 +657,18 @@ const HolidayCalendar = () => {
                                                     display: "flex", alignItems: "center",
                                                     gap: 8, minWidth: 0, flex: 1,
                                                 }}>
-                                                    <Icons.Dot color="#ef4444" />
+                                                    <Icons.Dot color="var(--danger)" />
                                                     <span style={{
-                                                        fontSize: 13, fontWeight: 700, color: "#0f172a",
+                                                        fontSize: 13, fontWeight: 700, color: "var(--text-1)",
                                                         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                                                     }}>
                                                         {h.name}
                                                     </span>
                                                 </div>
                                                 <span style={{
-                                                    fontSize: 11, fontWeight: 700, color: "#475569",
+                                                    fontSize: 11, fontWeight: 700, color: "var(--text-2)",
                                                     flexShrink: 0,
-                                                    background: "#f8fafc", border: "1.5px solid #e2e8f0",
+                                                    background: "var(--surface-3)", border: "1.5px solid var(--border)",
                                                     borderRadius: 6, padding: "2px 6px",
                                                     whiteSpace: "nowrap",
                                                 }}>
@@ -673,8 +687,8 @@ const HolidayCalendar = () => {
                                         Past
                                         <span style={{
                                             marginLeft: "auto", fontSize: 10, fontWeight: 800,
-                                            background: "#f1f5f9", color: "#475569",
-                                            border: "1.5px solid #cbd5e1",
+                                            background: "var(--surface-3)", color: "var(--text-2)",
+                                            border: "1.5px solid var(--border)",
                                             borderRadius: 20, padding: "1px 8px",
                                         }}>
                                             {pastHolidays.length}
@@ -687,18 +701,18 @@ const HolidayCalendar = () => {
                                                     display: "flex", alignItems: "center",
                                                     gap: 8, minWidth: 0, flex: 1,
                                                 }}>
-                                                    <Icons.Dot color="#94a3b8" />
+                                                    <Icons.Dot color="var(--text-3)" />
                                                     <span style={{
-                                                        fontSize: 13, fontWeight: 600, color: "#475569",
+                                                        fontSize: 13, fontWeight: 600, color: "var(--text-2)",
                                                         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                                                     }}>
                                                         {h.name}
                                                     </span>
                                                 </div>
                                                 <span style={{
-                                                    fontSize: 11, fontWeight: 600, color: "#94a3b8",
+                                                    fontSize: 11, fontWeight: 600, color: "var(--text-3)",
                                                     flexShrink: 0,
-                                                    background: "#f8fafc", border: "1.5px solid #e2e8f0",
+                                                    background: "var(--surface-3)", border: "1.5px solid var(--border)",
                                                     borderRadius: 6, padding: "2px 6px",
                                                     whiteSpace: "nowrap",
                                                 }}>

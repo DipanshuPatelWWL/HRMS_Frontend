@@ -5,14 +5,14 @@ import API, { BASE_URL } from '../../services/api'
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const C = {
-    indigo: '#4f46e5', indigoDark: '#4338ca', indigoLight: '#eef2ff', indigoBorder: '#c7d2fe',
+    indigo: '#4f46e5', indigoDark: '#4338ca', indigoLight: 'var(--surface-3)', indigoBorder: '#c7d2fe',
     red: '#ef4444', redLight: '#fef2f2',
     emerald: '#059669', emeraldLight: '#ecfdf5',
     blue: '#2563eb', blueLight: '#eff6ff',
     amber: '#d97706', amberLight: '#fffbeb',
-    slate50: '#f8fafc', slate100: '#f1f5f9', slate200: '#e2e8f0', slate300: '#cbd5e1',
-    slate400: '#94a3b8', slate500: '#64748b', slate600: '#475569', slate700: '#334155',
-    slate800: '#1e293b', slate900: '#0f172a', white: '#ffffff', pageBg: '#f1f5f9',
+    slate50: 'var(--surface-2)', slate100: 'var(--surface-3)', slate200: 'var(--border)', slate300: 'var(--border-strong)',
+    slate400: 'var(--text-3)', slate500: 'var(--text-2)', slate600: 'var(--text-2)', slate700: 'var(--text-1)',
+    slate800: 'var(--text-1)', slate900: 'var(--text-1)', white: 'var(--surface)', pageBg: 'var(--surface-2)',
 }
 
 const STATUS = {
