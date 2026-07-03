@@ -89,13 +89,15 @@ const Protected = ({ children, allowedRoles, allowedDesignations }) => {
 // ─────────────────────────────────────────────
 const RoleRedirect = () => {
     const { user } = useContext(AuthContext);
-    const id = user._id;
-    if (!user) return <Navigate to="/login" replace />;
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
     if (user.role === "hr") return <Navigate to="/hr" replace />;
     if (user.role === "tl") return <Navigate to="/tl" replace />;
+    if (user.role === "manager") return <Navigate to="/manager" replace />;
+
     return <Navigate to="/employee" replace />;
 };
-
 const AppRoutes = () => (
     <Routes>
         <Route path="/login" element={<Login />} />
