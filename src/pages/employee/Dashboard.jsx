@@ -13,6 +13,7 @@ import {
     FaLaptopCode,
     FaDoorOpen,
     FaSun,
+    FaMoon,
 } from "react-icons/fa";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
@@ -181,6 +182,38 @@ const EmployeeDashboard = () => {
 
     };
 
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+
+        if (hour >= 5 && hour < 12) {
+            return {
+                text: "Good Morning",
+                icon: <FaSun />,
+            };
+        }
+
+        if (hour >= 12 && hour < 17) {
+            return {
+                text: "Good Afternoon",
+                icon: <FaSun />,
+            };
+        }
+
+        if (hour >= 17 && hour < 21) {
+            return {
+                text: "Good Evening",
+                icon: <FaSun />,
+            };
+        }
+
+        return {
+            text: "Good Night",
+            icon: <FaMoon />,
+        };
+    };
+
+    const greeting = getGreeting();
+
 
     const cards = [
         {
@@ -268,7 +301,8 @@ const EmployeeDashboard = () => {
                     <div className="emp-hero">
 
                         <h2 style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                            <FaSun /> Good Morning, {stats.employee?.name}
+                            {greeting.icon}
+                            {greeting.text}, {stats.employee?.name}
                         </h2>
                         <p>Welcome back. Here's your work summary for today.</p>
 
