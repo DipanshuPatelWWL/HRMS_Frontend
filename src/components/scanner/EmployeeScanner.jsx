@@ -1,15 +1,3 @@
-// ─────────────────────────────────────────────────────────────
-//  EmployeeScanner.jsx
-//  Drop this file into: src/components/scanner/EmployeeScanner.jsx
-//
-//  Install deps first:
-//    npm install @zxing/library
-//
-//  Usage (HR panel, e.g. inside Employees.jsx):
-//    import EmployeeScanner from "../scanner/EmployeeScanner";
-//    <EmployeeScanner onFound={(emp) => openEdit(emp)} />
-// ─────────────────────────────────────────────────────────────
-
 import { useState, useRef, useEffect, useCallback } from "react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { QRCodeSVG } from "qrcode.react";

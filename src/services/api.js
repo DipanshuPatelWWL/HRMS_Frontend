@@ -24,6 +24,11 @@ API.interceptors.request.use((req) => {
     if (token) {
         req.headers.Authorization = `Bearer ${token}`;
     }
+
+    if (window.hrmsAgent?.isElectron?.()) {
+        req.headers["x-client-type"] = "electron";
+    }
+
     return req;
 });
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import API, { BASE_URL } from "../../services/api";
+import { formatRole } from "../../utils/roleFormatter";
 import {
     FaBirthdayCake,
     FaEnvelope,
@@ -634,7 +635,7 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
                         <label style={labelStyle}>Employee *</label>
                         <select style={inputStyle} value={form.employeeId} onChange={e => set("employeeId", e.target.value)}>
                             <option value="">Select employee...</option>
-                            {users.map(u => <option key={u._id} value={u._id}>{u.name} — {u.designation || u.role}</option>)}
+                            {users.map(u => <option key={u._id} value={u._id}>{u.name} — {u.designation || formatRole(u.role)}</option>)}
                         </select>
                     </div>
 

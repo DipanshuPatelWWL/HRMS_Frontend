@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { formatRole } from "../../utils/roleFormatter";
 
 const styles = `
   .emp-select-wrap { position: relative; width: 100%; font-family: 'Nunito', sans-serif; }
@@ -423,7 +424,7 @@ const UserMultiSelect = ({ value = [], onChange, employees = [] }) => {
                                             <div className="emp-option-meta">
                                                 <div className="emp-option-name">{emp.name}</div>
                                                 <div className="emp-option-role">
-                                                    {ROLE_LABEL[emp.role] ?? emp.role}
+                                                    {formatRole(emp.role)}
                                                 </div>
                                             </div>
                                         </div>

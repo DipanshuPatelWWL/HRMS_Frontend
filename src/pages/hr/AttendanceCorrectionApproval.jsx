@@ -28,11 +28,18 @@ const AttendanceCorrectionApproval = () => {
     const [remark, setRemark] = useState("");
     const [stats, setStats] = useState(null);
 
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [total, setTotal] = useState(0);
+    const limit = 10;
+
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const res = await API.get("/attendance-corrections", { params: { status: filter } });
-            setCorrections(res.data.corrections || []);
+            const res = await API.get("/attendance-corrections", { params: { status: filter, page, limit } });
+            setCorrections(res.data.data || res.data.corrections || []);
+            setTotalPages(res.data.totalPages || 1);
+            setTotal(res.data.total || 0);
         } catch { /* silent */ }
         finally { setLoading(false); }
     };
@@ -44,7 +51,8 @@ const AttendanceCorrectionApproval = () => {
         } catch { /* silent */ }
     };
 
-    useEffect(() => { fetchAll(); fetchStats(); }, [filter]);
+    useEffect(() => { setPage(1); }, [filter]);
+    useEffect(() => { fetchAll(); fetchStats(); }, [filter, page]);
 
     const submitAction = async (id, action, hrRemark = "") => {
         setActionLoading(id);
@@ -271,6 +279,29 @@ const AttendanceCorrectionApproval = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                )}
+                {!loading && total > limit && (
+                    <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", padding: "16px", gap: "10px", borderTop: "1px solid var(--border)" }}>
+                        <span style={{ fontSize: ".75rem", color: "var(--text-2)", fontWeight: 600 }}>
+                            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}
+                        </span>
+                        <button
+                            className="btn btn-sm btn-ghost"
+                            disabled={page === 1}
+                            onClick={() => setPage(p => p - 1)}
+                            style={{ border: "1px solid var(--border)" }}
+                        >
+                            Prev
+                        </button>
+                        <button
+                            className="btn btn-sm btn-ghost"
+                            disabled={page === totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                            style={{ border: "1px solid var(--border)" }}
+                        >
+                            Next
+                        </button>
                     </div>
                 )}
             </div>

@@ -152,7 +152,7 @@ const TLDashboard = () => {
                                         alignItems: "center", justifyContent: "center",
                                         fontSize: ".75rem", fontWeight: 700,
                                     }}>
-                                        {member.name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                                        {(member.name || "").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?"}
                                     </div>
                                     <div>
                                         <p style={{ fontSize: ".85rem", fontWeight: 600, color: "var(--text-1)" }}>{member.name}</p>

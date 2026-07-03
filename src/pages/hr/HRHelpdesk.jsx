@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import API, { BASE_URL } from "../../services/api";
+import { formatRole } from "../../utils/roleFormatter";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
 import Swal from "sweetalert2";
@@ -918,7 +919,7 @@ const HRThreadModal = ({ ticket: initialTicket, onClose, onUpdate, onDelete, hrS
                                 <option value="">— Unassigned —</option>
                                 {hrStaffList.map((staff) => (
                                     <option key={staff._id} value={staff._id}>
-                                        {staff.name} ({staff.role})
+                                        {staff.name} ({formatRole(staff.role)})
                                     </option>
                                 ))}
                             </select>

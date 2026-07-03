@@ -534,8 +534,6 @@ const SalesIntelligence = () => {
 
     const handleLeadsGenerated = async (result) => {
         showToast(`✅ ${result.inserted} leads added successfully!`)
-        console.log("Generated result:", result);
-        console.log("Returned leads:", result.leads?.length);
         try {
             if (result.leads && result.leads.length > 0) {
                 // Prepend new leads to local state immediately

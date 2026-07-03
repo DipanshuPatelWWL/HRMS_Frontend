@@ -1,4 +1,5 @@
 import { useContext, useState, useRef, useEffect } from "react";
+import { formatRole } from "../../utils/roleFormatter";
 import { AuthContext } from "../../context/AuthContext";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import API, { BASE_URL, QR_CODE_URL } from "../../services/api";
@@ -321,7 +322,7 @@ const ProgressRing = ({ pct, size = 56, stroke = 5 }) => {
    MAIN COMPONENT
 ════════════════════════════════════════ */
 export default function Profile() {
-    const { user, setUser } = useContext(AuthContext);
+    const { user, setUser, refreshUser } = useContext(AuthContext);
     const fileRef = useRef(null);
 
     const initials = user?.name
@@ -518,7 +519,7 @@ export default function Profile() {
             const fd = new FormData(); fd.append("avatar", file);
             const { data } = await API.post("/users/me/avatar", fd);
             setAvatarPreview(toUrl(data.avatarUrl));
-            if (setUser) setUser(data.user);
+            if (refreshUser) refreshUser();
             setAvatarMsg({ type: "success", text: "Photo updated!" });
         } catch (err) {
             setAvatarMsg({ type: "error", text: err?.response?.data?.message || "Upload failed." });
@@ -555,7 +556,7 @@ export default function Profile() {
         try {
             const { data } = await API.put("/users/me/profile", { avatar: "" });
             setAvatarPreview(null);
-            if (setUser) setUser(data.user);
+            if (refreshUser) refreshUser();
             setAvatarMsg({ type: "success", text: "Photo removed." });
         } catch (err) {
             setAvatarMsg({ type: "error", text: err?.response?.data?.message || "Could not remove." });
@@ -586,7 +587,7 @@ export default function Profile() {
             }
             const { data } = await API.put("/users/me/profile", payload);
             setSelfMsg({ type: "success", text: "Profile updated!" });
-            if (setUser) setUser(data.user);
+            if (refreshUser) refreshUser();
             setSelfForm({
                 name: data.user?.name || "",
                 email: data.user?.email || "",
@@ -832,7 +833,7 @@ export default function Profile() {
                         <InfoRow label="Full Name" value={user?.name} Icon={LuUser} />
                         <InfoRow label="Employee ID" value={user?.employeeId} Icon={LuBadge} />
                         <InfoRow label="Email" value={user?.email} Icon={LuMail} />
-                        <InfoRow label="Role" value={user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)} Icon={LuShield} />
+                        <InfoRow label="Role" value={formatRole(user?.role)} Icon={LuShield} />
                         <InfoRow label="Designation" value={user?.designation} Icon={LuBriefcase} />
                         <InfoRow label="Department" value={user?.department} Icon={LuBuilding2} />
                         <InfoRow
@@ -1594,7 +1595,12 @@ export default function Profile() {
 
                             <div style={{ position: "relative", flexShrink: 0 }}>
                                 {avatarPreview
-                                    ? <img src={avatarPreview} alt="avatar" style={{ width: 78, height: 78, borderRadius: "50%", objectFit: "cover", border: "3px solid var(--surface)", boxShadow: "0 4px 14px rgba(0,0,0,.14)", display: "block" }} />
+                                    ? <img 
+                                        src={avatarPreview} 
+                                        alt="avatar" 
+                                        onError={() => setAvatarPreview(null)}
+                                        style={{ width: 78, height: 78, borderRadius: "50%", objectFit: "cover", border: "3px solid var(--surface)", boxShadow: "0 4px 14px rgba(0,0,0,.14)", display: "block" }} 
+                                      />
                                     : <div style={{ width: 78, height: 78, borderRadius: "50%", background: `linear-gradient(135deg,${T.accent},#9b89ff)`, border: "3px solid var(--surface)", boxShadow: "0 4px 14px rgba(0,0,0,.14)", display: "grid", placeItems: "center", color: "var(--surface)", fontSize: 24, fontWeight: 800, fontFamily: ff }}>{initials}</div>}
                                 <div style={{ position: "absolute", bottom: 4, right: 4, width: 13, height: 13, borderRadius: "50%", background: "#22c55e", border: "2px solid var(--surface)" }} />
                             </div>
@@ -1603,7 +1609,7 @@ export default function Profile() {
                                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                                     <p style={{ fontFamily: ff, fontWeight: 800, fontSize: 18, color: T.text, margin: 0 }}>{user?.name}</p>
                                     <span style={{ background: T.accentLight, color: roleColor, fontSize: 10, fontWeight: 700, letterSpacing: ".07em", textTransform: "uppercase", padding: "3px 10px", borderRadius: 99, border: `1px solid ${roleColor}33`, fontFamily: ff, flexShrink: 0 }}>
-                                        {user?.role}
+                                        {formatRole(user?.role)}
                                     </span>
                                 </div>
                                 <div style={{ display: "flex", gap: 10, marginTop: 5, flexWrap: "wrap" }}>

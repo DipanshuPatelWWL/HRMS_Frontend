@@ -99,7 +99,7 @@ const StatCard = ({ label, value, color, sub }) => (
 const MiniGrid = ({ days, daysInMonth, firstWeekday }) => (
     <div style={{ display: "grid", gridTemplateColumns: `repeat(7, 1fr)`, gap: 2, marginTop: 6 }}>
         {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-            <div key={i} style={{ textAlign: "center", fontSize: ".55rem", fontWeight: 700, color: "var(--border)", paddingBottom: 2 }}>{d}</div>
+            <div key={`${d}-${i}`} style={{ textAlign: "center", fontSize: ".55rem", fontWeight: 700, color: "var(--border)", paddingBottom: 2 }}>{d}</div>
         ))}
         {Array.from({ length: firstWeekday }, (_, i) => (
             <div key={`e${i}`} />
@@ -389,51 +389,83 @@ const TeamAttendance = () => {
                 )}
 
                 {/* ── MONTHLY TAB ── */}
-                {!loading && tab === "monthly" && data?.teamMembers?.length > 0 && (
-                    <div className="member-grid">
-                        {monthlyList.map(member => {
-                            const s = member.stats;
-                            return (
-                                <div key={member._id} className="member-card">
-                                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                                        <div style={{
-                                            width: 38, height: 38, borderRadius: "50%",
-                                            background: "linear-gradient(135deg,#667eea,#764ba2)",
-                                            color: "var(--surface)", display: "flex", alignItems: "center",
-                                            justifyContent: "center", fontWeight: 700, fontSize: ".78rem", flexShrink: 0,
-                                        }}>{initials(member.name)}</div>
-                                        <div>
-                                            <p style={{ fontWeight: 700, color: "var(--text-1)", fontSize: ".85rem" }}>{member.name}</p>
-                                            <p style={{ fontSize: ".7rem", color: "var(--text-3)", fontFamily: "DM Mono,monospace" }}>{member.employeeId}</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Stats row */}
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6, marginBottom: 10 }}>
-                                        {[
-                                            { label: "Present", value: s.presentDays + s.halfDays, color: "#22C55E" },
-                                            { label: "Absent", value: s.absentDays, color: "#3B82F6" },
-                                            { label: "Leave", value: s.leaveDays, color: "#A78BFA" },
-                                        ].map(item => (
-                                            <div key={item.label} style={{ background: "var(--surface-2)", borderRadius: 8, padding: "6px 8px", textAlign: "center" }}>
-                                                <p style={{ fontSize: "1rem", fontWeight: 800, color: item.color, lineHeight: 1 }}>{item.value}</p>
-                                                <p style={{ fontSize: ".6rem", color: "var(--text-3)", marginTop: 2, fontWeight: 600 }}>{item.label}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Half/Late chips */}
-                                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
-                                        {s.halfDays > 0 && <span style={{ fontSize: ".65rem", background: "var(--warn-bg)", color: "#D97706", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>½ {s.halfDays} Half Day</span>}
-                                        {s.lateDays > 0 && <span style={{ fontSize: ".65rem", background: "var(--danger-bg)", color: "#DC2626", padding: "2px 7px", borderRadius: 4, fontWeight: 700 }}>⏰ {s.lateDays} Late</span>}
-                                    </div>
-
-                                    {/* Mini calendar */}
-                                    <MiniGrid days={member.days} daysInMonth={daysInMonth} firstWeekday={firstWeekday} />
-                                </div>
-                            );
-                        })}
+                {!loading && tab === "monthly" && (monthlyList.length > 0 || (data?.teamMembers?.length > 0)) && (
+                    <div className="ta-card" style={{ padding: 0, overflow: "hidden" }}>
+                        <div className="hr-card-header" style={{ padding: "14px 20px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontWeight: 700, fontSize: ".85rem" }}>Monthly Attendance Summary — {MONTHS[viewMonth - 1]} {viewYear}</span>
+                            <span style={{ fontSize: ".75rem", color: "var(--text-3)" }}>{monthlyList.length} members</span>
+                        </div>
+                        <div style={{ overflowX: "auto" }}>
+                            <table className="ta-table">
+                                <thead>
+                                    <tr>
+                                        <th style={{ padding: "14px 20px" }}>Employee</th>
+                                        <th>Full Day</th>
+                                        <th>Half Day</th>
+                                        <th>Leave</th>
+                                        <th>Absent</th>
+                                        <th>Attendance %</th>
+                                        <th>Avg Working Hours/Day</th>
+                                        <th>Shift Hours</th>
+                                        <th>Compliance %</th>
+                                        <th>Working Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {monthlyList.length === 0 && (
+                                        <tr><td colSpan={10} className="empty-box">No results found</td></tr>
+                                    )}
+                                    {monthlyList.map(member => {
+                                        const s = member.stats || {
+                                            present: 0, late: 0, halfDay: 0, absent: 0,
+                                            leave: 0, holiday: 0, weekend: 0,
+                                            attendancePercentage: 0, workingDays: 0
+                                        };
+                                        return (
+                                            <tr key={member._id}>
+                                                <td style={{ padding: "12px 20px" }}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                        <div style={{
+                                                            width: 34, height: 34, borderRadius: "50%",
+                                                            background: "linear-gradient(135deg,#667eea,#764ba2)",
+                                                            color: "var(--surface)", display: "flex", alignItems: "center",
+                                                            justifyContent: "center", fontWeight: 700, fontSize: ".75rem", flexShrink: 0,
+                                                        }}>{initials(member.name)}</div>
+                                                        <div>
+                                                            <p style={{ fontWeight: 700, color: "var(--text-1)", fontSize: ".83rem", lineHeight: 1.3 }}>{member.name}</p>
+                                                            <p style={{ fontSize: ".7rem", color: "var(--text-3)", fontFamily: "DM Mono, monospace" }}>{member.employeeId}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td><span style={{ fontWeight: 700, color: "var(--success)" }}>{s.present + s.late}</span></td>
+                                                <td>{s.halfDay > 0 ? <span style={{ color: "#D97706", fontWeight: 700 }}>{s.halfDay}</span> : 0}</td>
+                                                <td>{s.leave > 0 ? <span style={{ color: "#7C3AED", fontWeight: 700 }}>{s.leave}</span> : 0}</td>
+                                                <td>{s.absent > 0 ? <span style={{ color: "#DC2626", fontWeight: 700 }}>{s.absent}</span> : 0}</td>
+                                                <td>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                        <span style={{ fontWeight: 800, color: s.attendancePercentage >= 90 ? "var(--success)" : s.attendancePercentage >= 75 ? "#D97706" : "#DC2626" }}>
+                                                            {s.attendancePercentage}%
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ fontFamily: "DM Mono, monospace", fontSize: ".78rem" }}>{fmtHours(s.avgDailyHours)}</td>
+                                                <td style={{ fontFamily: "DM Mono, monospace", fontSize: ".78rem", color: "var(--text-2)" }}>{s.expectedShiftHours}h</td>
+                                                <td>
+                                                    <span style={{ fontWeight: 800, color: s.compliancePercentage >= 90 ? "var(--success)" : s.compliancePercentage >= 75 ? "#D97706" : "#DC2626" }}>
+                                                        {s.compliancePercentage}%
+                                                    </span>
+                                                </td>
+                                                <td style={{ fontWeight: 600 }}>{s.workingDays}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                )}
+                {!loading && tab === "monthly" && !data?.teamMembers?.length && !monthlyList.length && (
+                    <div className="empty-box">No team members assigned.</div>
                 )}
             </div>
         </DashboardLayout>

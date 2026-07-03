@@ -501,7 +501,6 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/tl/daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/leave-approval" label="Leave Approvals" iconKey="leaveApprove" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/team-attendance" label="Team Attendance" iconKey="attendanceOverview" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/tl/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
                         </div>
                     </>
                 )}
@@ -518,7 +517,6 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/scan-logs" label="Scan Logs" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/hr/ai-training" label="AI Training" iconKey="aiTraining" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/sales-intelligence" label="Sales Intelligence" iconKey="salesIntelligence" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/activity-monitor" label="Activity Monitor" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
@@ -532,6 +530,8 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/hr/correction-requests" label="Attendance Management" iconKey="correctionRequests" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/payroll-management" label="Payroll" iconKey="payrollMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/hr/helpdesk" label="Helpdesk Management" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/archived-employees" label="Archived Employees" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/hr/terminated-employees" label="Terminated Employees" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/employee/attendance" label="My Attendance" iconKey="attendance" onClick={onClose} collapsed={collapsed} />
                         </div>
                     </>
@@ -563,6 +563,8 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager-leave-approval" label="Leave Approvals" iconKey="leaveApprove" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-correction-requests" label="Attendance Management" iconKey="correctionRequests" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-payroll-management" label="Payroll" iconKey="payrollMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager/archived-employees" label="Archived Employees" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/manager/terminated-employees" label="Terminated Employees" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-helpdesk" label="Helpdesk Management" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
                         </div>
                     </>

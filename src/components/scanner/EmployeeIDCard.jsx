@@ -145,7 +145,12 @@ function CardFront({ user, logoImg }) {
                     flexShrink: 0,
                 }}>
                     {avatarSrc
-                        ? <img src={avatarSrc} alt={user?.name} style={{ width: "100%", height: "30vh", objectFit: "cover", objectPosition: "bottom" }} />
+                        ? <img 
+                            src={avatarSrc} 
+                            alt={user?.name} 
+                            onError={() => setAvatarSrc(null)}
+                            style={{ width: "100%", height: "30vh", objectFit: "cover", objectPosition: "bottom" }} 
+                          />
                         : (
                             <div style={{
                                 width: "100%", height: "100%",

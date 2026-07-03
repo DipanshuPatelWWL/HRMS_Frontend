@@ -8,6 +8,8 @@ import { EmployeeIDCard } from "../../components/scanner/EmployeeScanner";
 import { QRCodeSVG } from "qrcode.react";
 import Swal from "sweetalert2";
 
+import { formatRole } from "../../utils/roleFormatter";
+
 // ─────────────────────────────────────────────
 //  Helpers
 // ─────────────────────────────────────────────
@@ -23,15 +25,7 @@ const getDaysInMonth = (year, month) => {
 const toUrl = (path) =>
     !path ? "" : path.startsWith("http") ? path : `${BASE_URL}/${path.replace(/^\//, "")}`;
 
-const getRoleLabel = (role) => {
-    if (!role) return "—";
-    const r = role.toLowerCase();
-    if (r === "tl") return "Team Leader";
-    if (r === "hr") return "HR";
-    if (r === "superadmin") return "Super Admin";
-    if (r === "manager") return "Manager";
-    return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
-};
+const getRoleLabel = (role) => formatRole(role);
 
 // ─────────────────────────────────────────────
 //  Static Data
@@ -1163,30 +1157,44 @@ const TLEmployeeCard = ({ employee }) => (
 
 
 const SalaryStructureTab = ({ employeeId }) => {
-    const COMPONENT_KEYS = ["basic", "hra", "specialAllowance", "conveyance", "otherAllowance"];
+    const COMPONENT_KEYS = ["basic", "hra", "conveyance", "otherAllowance", "specialAllowance"];
     const COMPONENT_LABELS = {
         basic: "Basic Salary",
-        hra: "HRA (House Rent Allowance)",
-        specialAllowance: "Special Allowance",
+        hra: "HRA",
+        specialAllowance: "Special Allowance (Auto Calculated)",
         conveyance: "Conveyance / Internet",
         otherAllowance: "Other Allowance",
     };
 
-    const DEFAULT_PERCENTS = { basic: 50, hra: 20, specialAllowance: 10, conveyance: 15, otherAllowance: 5 };
+    const STATE_MAP = {
+        "Uttar Pradesh": "UP", "Delhi": "DL", "Haryana": "HR",
+        "Maharashtra": "MH", "Karnataka": "KA", "Telangana": "TG",
+        "UP": "UP", "DL": "DL", "HR": "HR", "MH": "MH", "KA": "KA", "TG": "TG"
+    };
+
+    const PT_CONFIG = {
+        "UP": { label: "Uttar Pradesh", slabs: [{ limit: Infinity, pt: 0 }] },
+        "DL": { label: "Delhi", slabs: [{ limit: Infinity, pt: 0 }] },
+        "HR": { label: "Haryana", slabs: [{ limit: Infinity, pt: 0 }] },
+        "MH": { label: "Maharashtra", slabs: [{ limit: 7500, pt: 0 }, { limit: 10000, pt: 175 }, { limit: Infinity, pt: 200 }] },
+        "KA": { label: "Karnataka", slabs: [{ limit: 15000, pt: 0 }, { limit: Infinity, pt: 200 }] },
+        "TG": { label: "Telangana", slabs: [{ limit: 15000, pt: 0 }, { limit: Infinity, pt: 200 }] }
+    };
 
     const [monthlySalary, setMonthlySalary] = useState(0);
     const [structure, setStructure] = useState({
         basic: { enabled: true, percent: 50 },
-        hra: { enabled: true, percent: 20 },
-        specialAllowance: { enabled: true, percent: 10 },
-        conveyance: { enabled: true, percent: 15 },
-        otherAllowance: { enabled: true, percent: 5 },
+        hra: { enabled: true, type: "non-metro", percent: 40 },
+        specialAllowance: { enabled: true, autoCalculated: true },
+        conveyance: { enabled: true, type: "percent", value: 15 },
+        otherAllowance: { enabled: true, type: "percent", value: 5 },
     });
     const [deductions, setDeductions] = useState({
-        pf: { enabled: false, percent: 12, pfNumber: "" },
+        pf: { enabled: false, percent: 12, pfNumber: "", pfMode: "actual" },
         esi: { enabled: false, percent: 0.75, esiNumber: "" },
-        professionalTax: { enabled: false, fixedAmount: 0 },
+        professionalTax: { enabled: false, state: "UP" },
     });
+    const [payrollSettings, setPayrollSettings] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [result, setResult] = useState(null);
@@ -1195,58 +1203,155 @@ const SalaryStructureTab = ({ employeeId }) => {
         const load = async () => {
             setLoading(true);
             try {
-                const res = await API.get(`/users/${employeeId}`);
-                const sal = res.data.user?.salary || res.data.salary || {};
+                const [userRes, settingsRes] = await Promise.all([
+                    API.get(`/users/${employeeId}`),
+                    API.get("/settings/payroll")
+                ]);
+
+                const settings = settingsRes.data.settings;
+                setPayrollSettings(settings);
+
+                const sal = userRes.data.user?.salary || userRes.data.salary || {};
                 setMonthlySalary(sal.monthly || 0);
-                if (sal.structure) setStructure(prev => ({ ...prev, ...sal.structure }));
+
+                if (sal.structure) {
+                    setStructure(prev => ({
+                        ...prev,
+                        ...sal.structure,
+                        hra: {
+                            type: sal.structure.hra?.type || settings?.defaultHraType || "non-metro",
+                            percent: 40,
+                            ...sal.structure.hra
+                        },
+                        specialAllowance: { enabled: true, autoCalculated: true }
+                    }));
+                } else if (settings) {
+                    setStructure(prev => ({
+                        ...prev,
+                        hra: { ...prev.hra, type: settings.defaultHraType || "non-metro" }
+                    }));
+                }
+
                 if (sal.deductions) {
                     setDeductions(prev => ({
                         ...prev,
                         ...sal.deductions,
                         pf: {
-                            enabled: false, percent: 12, pfNumber: "",
+                            enabled: false, percent: 12, pfNumber: "", pfMode: settings?.pfMode || "actual",
                             ...sal.deductions.pf,
-                            pfNumber: sal.deductions.pf?.pfNumber || "",
                         },
-                        esi: {
-                            enabled: false, percent: 0.75, esiNumber: "",
-                            ...sal.deductions.esi,
-                            esiNumber: sal.deductions.esi?.esiNumber || "",
-                        },
+                        professionalTax: {
+                            enabled: false, state: STATE_MAP[sal.deductions.professionalTax?.state] || settings?.professionalTaxState || "UP",
+                            ...sal.deductions.professionalTax,
+                        }
+                    }));
+                } else if (settings) {
+                    setDeductions(prev => ({
+                        ...prev,
+                        pf: { ...prev.pf, pfMode: settings.pfMode || "actual" },
+                        professionalTax: { ...prev.professionalTax, state: STATE_MAP[settings.professionalTaxState] || "UP" }
                     }));
                 }
-            } catch { }
+            } catch (err) { console.error(err); }
             finally { setLoading(false); }
         };
         load();
     }, [employeeId]);
 
-    // Live totals
-    const totalPercent = COMPONENT_KEYS.reduce((s, k) => s + (structure[k].enabled ? Number(structure[k].percent || 0) : 0), 0);
-    const grossEarnings = monthlySalary;
+    // ── LIVE CALCULATIONS ──
+    const basicAmt = structure.basic.enabled ? Math.round((structure.basic.percent / 100) * monthlySalary) : 0;
 
-    const basicAmt = structure.basic.enabled ? round2((structure.basic.percent / 100) * grossEarnings) : 0;
-    const pfAmt = deductions.pf.enabled ? round2((deductions.pf.percent / 100) * basicAmt) : 0;
-    const esiAmt = deductions.esi.enabled ? round2((deductions.esi.percent / 100) * grossEarnings) : 0;
-    const ptAmt = deductions.professionalTax.enabled ? Number(deductions.professionalTax.fixedAmount || 0) : 0;
-    const totalStatutory = round2(pfAmt + esiAmt + ptAmt);
-    const netPreview = round2(grossEarnings - totalStatutory);
+    let hraPct = 0;
+    if (structure.hra.enabled) {
+        if (structure.hra.type === "metro") hraPct = 50;
+        else if (structure.hra.type === "non-metro") hraPct = 40;
+        else hraPct = structure.hra.percent || 0;
+    }
+    const hraAmt = Math.round((hraPct / 100) * basicAmt);
 
-    function round2(n) { return Math.round(n * 100) / 100; }
+    const getVal = (key) => {
+        const item = structure[key];
+        if (!item?.enabled) return 0;
+        if (item.type === "fixed") return item.value || 0;
+        return Math.round(((item.value || 0) / 100) * monthlySalary);
+    };
 
+    const conveyanceAmt = getVal("conveyance");
+    const otherAmt = getVal("otherAllowance");
+
+    const accumulated = basicAmt + hraAmt + conveyanceAmt + otherAmt;
+    const specialAmt = Math.max(0, monthlySalary - accumulated);
+
+    // Deductions Preview
+    let pfAmt = 0;
+    if (deductions.pf.enabled) {
+        const pfBase = deductions.pf.pfMode === "capped" ? Math.min(basicAmt, 15000) : basicAmt;
+        pfAmt = Math.round((deductions.pf.percent / 100) * pfBase);
+    }
+    const esiAmt = deductions.esi.enabled ? Math.round((deductions.esi.percent / 100) * monthlySalary) : 0;
+
+    const calculatePT = (stateCode, gross) => {
+        const config = PT_CONFIG[stateCode];
+        if (!config) return 0;
+        for (const slab of config.slabs) { if (gross <= slab.limit) return slab.pt; }
+        return 0;
+    };
+    const ptAmt = deductions.professionalTax.enabled ? calculatePT(deductions.professionalTax.state, monthlySalary) : 0;
+
+    const calculateTDS = (gross) => {
+        const annual = gross * 12;
+        const fy = payrollSettings?.financialYear || "2025-26";
+        const sd = 75000;
+        const taxable = Math.max(0, annual - sd);
+
+        let tax = 0;
+        if (fy === "2025-26") {
+            const slabs = [
+                { l: 400000, r: 0 }, { l: 800000, r: 0.05 }, { l: 1200000, r: 0.10 },
+                { l: 1600000, r: 0.15 }, { l: 2000000, r: 0.20 }, { l: 2400000, r: 0.25 }, { l: Infinity, r: 0.30 }
+            ];
+            let prev = 0;
+            for (const s of slabs) {
+                if (taxable <= prev) break;
+                tax += (Math.min(taxable, s.l) - prev) * s.r;
+                prev = s.l;
+            }
+            if (taxable <= 1200000 && tax <= 60000) tax = 0;
+        } else {
+            const slabs = [
+                { l: 300000, r: 0 }, { l: 700000, r: 0.05 }, { l: 1000000, r: 0.10 },
+                { l: 1200000, r: 0.15 }, { l: 1500000, r: 0.20 }, { l: Infinity, r: 0.30 }
+            ];
+            let prev = 0;
+            for (const s of slabs) {
+                if (taxable <= prev) break;
+                tax += (Math.min(taxable, s.l) - prev) * s.r;
+                prev = s.l;
+            }
+            if (taxable <= 700000 && tax <= 25000) tax = 0;
+        }
+        return Math.round((tax * 1.04) / 12);
+    };
+    const tdsAmt = calculateTDS(monthlySalary);
+
+    const totalStatutory = pfAmt + esiAmt + ptAmt + tdsAmt;
+    const netPreview = Math.max(0, monthlySalary - totalStatutory);
+    const gratuityAmt = Math.round(basicAmt * 0.0481);
+
+    // ── HANDLERS ──
     const handleStructureToggle = (key) => {
         setStructure(prev => ({ ...prev, [key]: { ...prev[key], enabled: !prev[key].enabled } }));
         setResult(null);
     };
 
-    const handleStructurePercent = (key, val) => {
+    const handleStructureValue = (key, field, val) => {
+        if (key === "basic" && field === "percent") {
+            const num = Number(val);
+            if (num < 0 || num > 100) return;
+        }
         setStructure(prev => ({
             ...prev,
-            [key]: {
-                ...prev[key],
-                percent: Number(val),
-                amount: round2((Number(val) / 100) * monthlySalary),
-            }
+            [key]: { ...prev[key], [field]: field === "type" ? val : Number(val) }
         }));
         setResult(null);
     };
@@ -1256,26 +1361,24 @@ const SalaryStructureTab = ({ employeeId }) => {
         setResult(null);
     };
     const handleDeductionValue = (key, field, val) => {
-        // pfNumber and esiNumber are strings, everything else is a number
-        const stringFields = ["pfNumber", "esiNumber"];
         setDeductions(prev => ({
             ...prev,
-            [key]: {
-                ...prev[key],
-                [field]: stringFields.includes(field) ? val : Number(val),
-            },
+            [key]: { ...prev[key], [field]: ["pfNumber", "esiNumber", "state", "pfMode"].includes(field) ? val : Number(val) },
         }));
         setResult(null);
     };
 
     const handleSave = async () => {
-        if (Math.round(totalPercent) !== 100) {
-            setResult({ success: false, message: `Component percents must add up to 100% (currently ${totalPercent}%)` });
+        if (accumulated > monthlySalary) {
+            setResult({ success: false, message: "Basic + HRA + Allowances exceed Gross Salary. Adjust components." });
             return;
         }
         setSaving(true); setResult(null);
         try {
-            await API.put(`/salary/${employeeId}/structure`, { structure, deductions });
+            const finalStructure = { ...structure };
+            delete finalStructure.specialAllowance.percent; // Strip percent to avoid misleading data
+
+            await API.put(`/salary/${employeeId}/structure`, { structure: finalStructure, deductions });
             setResult({ success: true, message: "Salary structure saved successfully" });
         } catch (err) {
             setResult({ success: false, message: err.response?.data?.message || "Save failed" });
@@ -1288,73 +1391,91 @@ const SalaryStructureTab = ({ employeeId }) => {
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
 
             {/* Monthly salary display */}
-            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "8px", padding: ".75rem 1rem", fontSize: ".85rem", fontWeight: 600, color: "#1e40af" }}>
-                Monthly CTC: ₹{monthlySalary.toLocaleString("en-IN")}
-                <span style={{ fontSize: ".72rem", color: "#3b82f6", marginLeft: ".5rem", fontWeight: 500 }}>
-                    (Edit in Basic Info tab)
-                </span>
+            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "8px", padding: ".75rem 1rem", fontSize: ".85rem", fontWeight: 600, color: "#1e40af", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                    Monthly CTC: ₹{monthlySalary.toLocaleString("en-IN")}
+                    <span style={{ fontSize: ".72rem", color: "#3b82f6", marginLeft: ".5rem", fontWeight: 500 }}>(Edit in Basic Info tab)</span>
+                </div>
+                <div style={{ fontSize: ".75rem", background: "#dbeafe", padding: "2px 8px", borderRadius: "4px" }}>
+                    FY {payrollSettings?.financialYear || "2025-26"}
+                </div>
             </div>
 
             {/* ── Salary Components ── */}
             <div>
                 <p style={{ fontWeight: 700, fontSize: ".8rem", color: "var(--text-2)", marginBottom: ".5rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
                     Salary Components
-                    <span style={{ marginLeft: ".5rem", color: Math.round(totalPercent) === 100 ? "#16a34a" : "#dc2626", fontWeight: 800 }}>
-                        ({totalPercent}% / 100%)
-                    </span>
                 </p>
-                {Math.round(totalPercent) !== 100 && (
-                    <div style={{
-                        background: "var(--danger-bg)", border: "1px solid #fecaca", borderRadius: "8px",
-                        padding: "8px 12px", fontSize: ".78rem", color: "#991b1b",
-                        fontWeight: 600, marginBottom: ".5rem", display: "flex", alignItems: "center", gap: 6,
-                    }}>
-                        ⚠ Components must total exactly 100%.
-                        Currently {totalPercent > 100 ? "over" : "under"} by {Math.abs(100 - totalPercent)}%
-                        — adjust percentages before saving.
+                {accumulated > monthlySalary && (
+                    <div style={{ background: "var(--danger-bg)", border: "1px solid #fecaca", borderRadius: "8px", padding: "8px 12px", fontSize: ".78rem", color: "#991b1b", fontWeight: 600, marginBottom: ".5rem" }}>
+                        ⚠ Components exceed 100% of Gross. Please reduce Basic or Allowances.
                     </div>
                 )}
 
-                {COMPONENT_KEYS.map(key => (
-                    <div key={key} style={{
-                        display: "flex", alignItems: "center", gap: ".75rem",
-                        padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
-                        background: structure[key].enabled ? "#f0fdf4" : "var(--surface-2)",
-                        border: `1px solid ${structure[key].enabled ? "#bbf7d0" : "var(--surface-3)"}`,
-                    }}>
-                        <input type="checkbox" checked={structure[key].enabled}
-                            onChange={() => handleStructureToggle(key)}
-                            style={{ accentColor: "#16a34a", width: 15, height: 15, cursor: "pointer" }} />
-                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: structure[key].enabled ? "var(--text-1)" : "var(--text-3)" }}>
-                            {COMPONENT_LABELS[key]}
-                        </span>
-                        <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
-                            <input
-                                type="number" min="0" max="100"
-                                value={structure[key].percent}
-                                onChange={e => handleStructurePercent(key, e.target.value)}
-                                disabled={!structure[key].enabled}
-                                style={{
-                                    width: 58, padding: "4px 8px", borderRadius: "6px",
-                                    border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700,
-                                    color: "var(--text-1)", background: structure[key].enabled ? "var(--surface)" : "var(--surface-3)",
-                                    textAlign: "right",
-                                }}
-                            />
-                            <span style={{ fontSize: ".75rem", color: "var(--text-2)" }}>%</span>
+                {/* BASIC */}
+                <div style={{ display: "flex", alignItems: "center", gap: ".75rem", padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem", background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                    <div style={{ width: 15, height: 15, background: "#16a34a", borderRadius: "2px" }} />
+                    <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600 }}>Basic Salary</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
+                        <input type="number" min="0" max="100" value={structure.basic.percent} onChange={e => handleStructureValue("basic", "percent", e.target.value)}
+                            style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700, textAlign: "right" }} />
+                        <span style={{ fontSize: ".75rem", color: "var(--text-2)" }}>%</span>
+                    </div>
+                    <span style={{ fontSize: ".82rem", fontWeight: 700, minWidth: 72, textAlign: "right" }}>₹{basicAmt.toLocaleString("en-IN")}</span>
+                </div>
+
+                {/* HRA */}
+                <div style={{ padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem", background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
+                        <input type="checkbox" checked={structure.hra.enabled} onChange={() => handleStructureToggle("hra")} />
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600 }}>HRA</span>
+                        <div style={{ display: "flex", gap: ".5rem" }}>
+                            {["non-metro", "metro"].map(t => (
+                                <button key={t} onClick={() => handleStructureValue("hra", "type", t)} disabled={!structure.hra.enabled}
+                                    style={{ padding: "2px 8px", fontSize: ".7rem", borderRadius: "4px", border: "1px solid var(--border)", background: structure.hra.type === t ? "#16a34a" : "var(--surface)", color: structure.hra.type === t ? "white" : "var(--text-1)", fontWeight: 700, cursor: "pointer", textTransform: "capitalize" }}>
+                                    {t}
+                                </button>
+                            ))}
                         </div>
-                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "var(--text-1)", minWidth: 72, textAlign: "right" }}>
-                            {structure[key].enabled
-                                ? `₹${round2((structure[key].percent / 100) * grossEarnings).toLocaleString("en-IN")}`
-                                : "—"}
-                        </span>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, minWidth: 72, textAlign: "right" }}>{structure.hra.enabled ? `₹${hraAmt.toLocaleString("en-IN")}` : "—"}</span>
+                    </div>
+                    {structure.hra.enabled && (
+                        <p style={{ fontSize: ".65rem", color: "var(--text-3)", marginLeft: "1.75rem", marginTop: "4px" }}>
+                            {structure.hra.type === "metro" ? "50%" : "40%"} of Basic Salary
+                        </p>
+                    )}
+                </div>
+
+                {/* Conveyance & Other */}
+                {["conveyance", "otherAllowance"].map(key => (
+                    <div key={key} style={{ display: "flex", alignItems: "center", gap: ".75rem", padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem", background: structure[key].enabled ? "#f0fdf4" : "var(--surface-2)", border: `1px solid ${structure[key].enabled ? "#bbf7d0" : "var(--surface-3)"}` }}>
+                        <input type="checkbox" checked={structure[key].enabled} onChange={() => handleStructureToggle(key)} />
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600 }}>{COMPONENT_LABELS[key]}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
+                            <input type="number" value={structure[key].value} onChange={e => handleStructureValue(key, "value", e.target.value)} disabled={!structure[key].enabled}
+                                style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700, textAlign: "right" }} />
+                            <select value={structure[key].type} onChange={e => handleStructureValue(key, "type", e.target.value)} disabled={!structure[key].enabled}
+                                style={{ padding: "4px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".7rem", fontWeight: 600 }}>
+                                <option value="percent">%</option>
+                                <option value="fixed">₹</option>
+                            </select>
+                        </div>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, minWidth: 72, textAlign: "right" }}>{structure[key].enabled ? `₹${getVal(key).toLocaleString("en-IN")}` : "—"}</span>
                     </div>
                 ))}
 
-                {/* Gross total row */}
+                {/* Special Allowance */}
+                <div style={{ display: "flex", alignItems: "center", gap: ".75rem", padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem", background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+                    <div style={{ width: 15, height: 15, background: "#64748b", borderRadius: "2px" }} />
+                    <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: "#64748b" }}>Special Allowance (Auto Calculated)</span>
+                    <span style={{ fontSize: ".82rem", fontWeight: 700, minWidth: 72, textAlign: "right", color: "#64748b" }}>
+                        {monthlySalary > 0 ? Math.round((specialAmt / monthlySalary) * 100) : 0}% | ₹{specialAmt.toLocaleString("en-IN")}
+                    </span>
+                </div>
+
                 <div style={{ display: "flex", justifyContent: "space-between", padding: ".65rem .85rem", background: "var(--surface-2)", borderRadius: "8px", border: "1px solid var(--border)", fontWeight: 800, fontSize: ".88rem" }}>
                     <span>Gross Salary</span>
-                    <span>₹{grossEarnings.toLocaleString("en-IN")}</span>
+                    <span>₹{monthlySalary.toLocaleString("en-IN")}</span>
                 </div>
             </div>
 
@@ -1365,180 +1486,86 @@ const SalaryStructureTab = ({ employeeId }) => {
                 </p>
 
                 {/* PF */}
-                <div style={{
-                    padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
-                    background: deductions.pf.enabled ? "var(--danger-bg)" : "var(--surface-2)",
-                    border: `1px solid ${deductions.pf.enabled ? "#fecaca" : "var(--surface-3)"}`,
-                }}>
+                <div style={{ padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem", background: deductions.pf.enabled ? "var(--danger-bg)" : "var(--surface-2)", border: `1px solid ${deductions.pf.enabled ? "#fecaca" : "var(--surface-3)"}` }}>
                     <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
-                        <input type="checkbox" checked={deductions.pf.enabled}
-                            onChange={() => handleDeductionToggle("pf")}
-                            style={{ accentColor: "#dc2626", width: 15, height: 15, cursor: "pointer" }} />
-                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.pf.enabled ? "var(--text-1)" : "var(--text-3)" }}>
-                            Provident Fund (PF) — 12% of Basic
-                        </span>
-                        <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
-                            <input type="number" min="0" max="100"
-                                value={deductions.pf.percent}
-                                onChange={e => handleDeductionValue("pf", "percent", e.target.value)}
-                                disabled={!deductions.pf.enabled}
-                                style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700, color: "var(--text-1)", background: deductions.pf.enabled ? "var(--surface)" : "var(--surface-3)", textAlign: "right" }}
-                            />
-                            <span style={{ fontSize: ".75rem", color: "var(--text-2)" }}>%</span>
-                        </div>
-                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>
-                            {deductions.pf.enabled ? `− ₹${pfAmt.toLocaleString("en-IN")}` : "—"}
-                        </span>
+                        <input type="checkbox" checked={deductions.pf.enabled} onChange={() => handleDeductionToggle("pf")} />
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600 }}>Provident Fund (PF)</span>
+                        <select value={deductions.pf.pfMode} onChange={e => handleDeductionValue("pf", "pfMode", e.target.value)} disabled={!deductions.pf.enabled}
+                            style={{ padding: "4px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".7rem", fontWeight: 600 }}>
+                            <option value="actual">Actual PF</option>
+                            <option value="capped">Capped PF (₹1,800 Max)</option>
+                        </select>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>{deductions.pf.enabled ? `− ₹${pfAmt.toLocaleString("en-IN")}` : "—"}</span>
                     </div>
-                    {deductions.pf.enabled && (
-                        <>
-                            <p style={{ fontSize: ".72rem", color: "#6b7280", marginTop: ".3rem", marginLeft: "1.75rem" }}>
-                                Basic: ₹{basicAmt.toLocaleString("en-IN")} × {deductions.pf.percent}% = ₹{pfAmt.toLocaleString("en-IN")}
-                            </p>
-                            <div style={{ marginTop: ".55rem", marginLeft: "1.75rem" }}>
-                                <label style={{ fontSize: ".72rem", fontWeight: 700, color: "var(--text-2)", display: "block", marginBottom: ".25rem" }}>
-                                    PF / UAN Number <span style={{ color: "var(--text-3)", fontWeight: 500 }}>(optional)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. MH/BAN/12345/000/0000001 or 12-digit UAN"
-                                    value={deductions.pf.pfNumber || ""}
-                                    onChange={e => handleDeductionValue("pf", "pfNumber", e.target.value.toUpperCase())}
-                                    style={{
-                                        width: "100%", padding: "5px 10px", borderRadius: "6px",
-                                        border: "1px solid #fca5a5", fontSize: ".8rem",
-                                        fontFamily: "monospace", letterSpacing: ".5px",
-                                        color: "var(--text-1)", background: "var(--surface)", outline: "none",
-                                    }}
-                                />
-                            </div>
-                        </>
-                    )}
                 </div>
 
                 {/* ESI */}
-                <div style={{
-                    padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
-                    background: deductions.esi.enabled ? "var(--danger-bg)" : "var(--surface-2)",
-                    border: `1px solid ${deductions.esi.enabled ? "#fecaca" : "var(--surface-3)"}`,
-                }}>
+                <div style={{ padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem", background: deductions.esi.enabled ? "var(--danger-bg)" : "var(--surface-2)", border: `1px solid ${deductions.esi.enabled ? "#fecaca" : "var(--surface-3)"}` }}>
                     <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
-                        <input type="checkbox" checked={deductions.esi.enabled}
-                            onChange={() => handleDeductionToggle("esi")}
-                            style={{ accentColor: "#dc2626", width: 15, height: 15, cursor: "pointer" }} />
-                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.esi.enabled ? "var(--text-1)" : "var(--text-3)" }}>
-                            ESI — % of Gross
-                        </span>
-                        <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
-                            <input type="number" min="0" max="100" step="0.01"
-                                value={deductions.esi.percent}
-                                onChange={e => handleDeductionValue("esi", "percent", e.target.value)}
-                                disabled={!deductions.esi.enabled}
-                                style={{ width: 58, padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700, color: "var(--text-1)", background: deductions.esi.enabled ? "var(--surface)" : "var(--surface-3)", textAlign: "right" }}
-                            />
-                            <span style={{ fontSize: ".75rem", color: "var(--text-2)" }}>%</span>
-                        </div>
-                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>
-                            {deductions.esi.enabled ? `− ₹${esiAmt.toLocaleString("en-IN")}` : "—"}
-                        </span>
+                        <input type="checkbox" checked={deductions.esi.enabled} onChange={() => handleDeductionToggle("esi")} />
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600 }}>ESI (0.75% of Gross)</span>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>{deductions.esi.enabled ? `− ₹${esiAmt.toLocaleString("en-IN")}` : "—"}</span>
                     </div>
-                    {deductions.esi.enabled && (
-                        <div style={{ marginTop: ".55rem", marginLeft: "1.75rem" }}>
-                            <label style={{ fontSize: ".72rem", fontWeight: 700, color: "var(--text-2)", display: "block", marginBottom: ".25rem" }}>
-                                ESI Number <span style={{ color: "var(--text-3)", fontWeight: 500 }}>(optional — 17 digits)</span>
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="e.g. 12345678901234567"
-                                value={deductions.esi.esiNumber || ""}
-                                maxLength={17}
-                                onChange={e => handleDeductionValue("esi", "esiNumber", e.target.value.replace(/\D/g, ""))}
-                                style={{
-                                    width: "100%", padding: "5px 10px", borderRadius: "6px",
-                                    border: `1px solid ${deductions.esi.esiNumber && deductions.esi.esiNumber.length !== 17 ? "#fbbf24" : "#fca5a5"}`,
-                                    fontSize: ".8rem", fontFamily: "monospace", letterSpacing: ".5px",
-                                    color: "var(--text-1)", background: "var(--surface)", outline: "none",
-                                }}
-                            />
-                            {deductions.esi.esiNumber && deductions.esi.esiNumber.length !== 17 && (
-                                <span style={{ fontSize: ".7rem", color: "#d97706", marginTop: "3px", display: "block", fontWeight: 600 }}>
-                                    ⚠ {17 - deductions.esi.esiNumber.length} more digit(s) required
-                                </span>
-                            )}
-                            {deductions.esi.esiNumber && deductions.esi.esiNumber.length === 17 && (
-                                <span style={{ fontSize: ".7rem", color: "#16a34a", marginTop: "3px", display: "block", fontWeight: 600 }}>
-                                    ✓ Valid ESI number length
-                                </span>
-                            )}
-                        </div>
-                    )}
                 </div>
 
                 {/* Professional Tax */}
-                <div style={{
-                    padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem",
-                    background: deductions.professionalTax.enabled ? "var(--danger-bg)" : "var(--surface-2)",
-                    border: `1px solid ${deductions.professionalTax.enabled ? "#fecaca" : "var(--surface-3)"}`,
-                }}>
+                <div style={{ padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem", background: deductions.professionalTax.enabled ? "var(--danger-bg)" : "var(--surface-2)", border: `1px solid ${deductions.professionalTax.enabled ? "#fecaca" : "var(--surface-3)"}` }}>
                     <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
-                        <input type="checkbox" checked={deductions.professionalTax.enabled}
-                            onChange={() => handleDeductionToggle("professionalTax")}
-                            style={{ accentColor: "#dc2626", width: 15, height: 15, cursor: "pointer" }} />
-                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: deductions.professionalTax.enabled ? "var(--text-1)" : "var(--text-3)" }}>
-                            Professional Tax — Fixed Amount
-                        </span>
-                        <div style={{ display: "flex", alignItems: "center", gap: ".35rem" }}>
-                            <span style={{ fontSize: ".75rem", color: "var(--text-2)" }}>₹</span>
-                            <input type="number" min="0"
-                                value={deductions.professionalTax.fixedAmount}
-                                onChange={e => handleDeductionValue("professionalTax", "fixedAmount", e.target.value)}
-                                disabled={!deductions.professionalTax.enabled}
-                                style={{ width: 72, padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".82rem", fontWeight: 700, color: "var(--text-1)", background: deductions.professionalTax.enabled ? "var(--surface)" : "var(--surface-3)", textAlign: "right" }}
-                            />
-                        </div>
-                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>
-                            {deductions.professionalTax.enabled ? `− ₹${ptAmt.toLocaleString("en-IN")}` : "—"}
-                        </span>
+                        <input type="checkbox" checked={deductions.professionalTax.enabled} onChange={() => handleDeductionToggle("professionalTax")} />
+                        <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600 }}>Professional Tax</span>
+                        <select value={deductions.professionalTax.state} onChange={e => handleDeductionValue("professionalTax", "state", e.target.value)} disabled={!deductions.professionalTax.enabled}
+                            style={{ padding: "4px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: ".7rem", fontWeight: 600 }}>
+                            {Object.keys(PT_CONFIG).map(s => <option key={s} value={s}>{PT_CONFIG[s].label}</option>)}
+                        </select>
+                        <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#dc2626", minWidth: 72, textAlign: "right" }}>{deductions.professionalTax.enabled ? `− ₹${ptAmt.toLocaleString("en-IN")}` : "—"}</span>
                     </div>
                 </div>
 
-                {/* Total statutory deduction */}
+                {/* TDS */}
+                <div style={{ display: "flex", alignItems: "center", gap: ".75rem", padding: ".65rem .85rem", borderRadius: "8px", marginBottom: ".4rem", background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+                    <div style={{ width: 15, height: 15, background: "#94a3b8", borderRadius: "2px" }} />
+                    <span style={{ flex: 1, fontSize: ".82rem", fontWeight: 600, color: "#475569" }}>Estimated Monthly TDS</span>
+                    <span style={{ fontSize: ".82rem", fontWeight: 700, color: "#475569", minWidth: 72, textAlign: "right" }}>− ₹{tdsAmt.toLocaleString("en-IN")}</span>
+                </div>
+
                 <div style={{ display: "flex", justifyContent: "space-between", padding: ".65rem .85rem", background: "var(--danger-bg)", borderRadius: "8px", border: "1px solid #fecaca", fontWeight: 800, fontSize: ".88rem", color: "#991b1b" }}>
-                    <span>Total Statutory Deductions</span>
-                    <span>− ₹{totalStatutory.toLocaleString("en-IN")}</span>
+                    <span>Total Deductions</span>
+                    <span>− ₹{(totalStatutory).toLocaleString("en-IN")}</span>
+                </div>
+            </div>
+
+            {/* Employer Contributions */}
+            <div>
+                <p style={{ fontWeight: 700, fontSize: ".8rem", color: "var(--text-2)", marginBottom: ".5rem", textTransform: "uppercase", letterSpacing: ".4px" }}>
+                    Employer Contributions (Display Only)
+                </p>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: ".65rem .85rem", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", fontSize: ".82rem" }}>
+                    <span style={{ fontWeight: 600 }}>Gratuity (4.81% of Basic)</span>
+                    <span style={{ fontWeight: 700 }}>₹{gratuityAmt.toLocaleString("en-IN")}</span>
                 </div>
             </div>
 
             {/* ── Net Preview ── */}
             <div style={{ background: "linear-gradient(135deg, var(--success-bg), #bbf7d0)", border: "2px solid #86efac", borderRadius: "10px", padding: "1rem", textAlign: "center" }}>
                 <p style={{ fontSize: ".75rem", fontWeight: 700, color: "#052e16", textTransform: "uppercase", letterSpacing: ".5px", marginBottom: ".35rem" }}>
-                    Estimated Net In-Hand (before attendance deductions)
+                    Estimated Net In-Hand
                 </p>
                 <p style={{ fontSize: "1.6rem", fontWeight: 800, color: "#052e16" }}>
                     ₹{netPreview.toLocaleString("en-IN")}
                 </p>
+                <p style={{ fontSize: ".65rem", color: "#166534", marginTop: "4px" }}>
+                    Gross: ₹{monthlySalary.toLocaleString()} | Total Deductions: ₹{totalStatutory.toLocaleString()}
+                </p>
             </div>
 
             {result && (
-                <div style={{
-                    background: result.success ? "var(--success-bg)" : "var(--danger-bg)",
-                    border: `1px solid ${result.success ? "#86efac" : "#fca5a5"}`,
-                    borderRadius: "8px", padding: "10px 14px", fontSize: ".82rem",
-                    color: result.success ? "#052e16" : "#450a0a",
-                    display: "flex", gap: "8px", alignItems: "center", fontWeight: 600
-                }}>
+                <div style={{ background: result.success ? "var(--success-bg)" : "var(--danger-bg)", border: `1px solid ${result.success ? "#86efac" : "#fca5a5"}`, borderRadius: "8px", padding: "10px 14px", fontSize: ".82rem", color: result.success ? "#052e16" : "#450a0a", display: "flex", gap: "8px", alignItems: "center", fontWeight: 600 }}>
                     {result.success ? "✅" : "❌"} {result.message}
                 </div>
             )}
 
-            <button className="btn btn-primary" onClick={handleSave}
-                disabled={saving || Math.round(totalPercent) !== 100}
-                title={Math.round(totalPercent) !== 100 ? `Total is ${totalPercent}% — must be 100% to save` : ""}
-                style={{
-                    justifyContent: "center",
-                    opacity: Math.round(totalPercent) !== 100 ? 0.5 : 1,
-                    cursor: Math.round(totalPercent) !== 100 ? "not-allowed" : "pointer",
-                }}>
+            <button className="btn btn-primary" onClick={handleSave} disabled={saving || accumulated > monthlySalary}
+                style={{ justifyContent: "center", opacity: accumulated > monthlySalary ? 0.5 : 1, cursor: accumulated > monthlySalary ? "not-allowed" : "pointer" }}>
                 {saving ? <><span className="spinner" />Saving...</> : "💾 Save Salary Structure"}
             </button>
         </div>
@@ -2519,7 +2546,7 @@ const Employees = () => {
                     </p>
                 </div>
 
-                {(isHR || isManager) && (
+                {/* {(isHR || isManager) && (
                     <div style={{ marginBottom: "1.25rem" }}>
                         <EmployeeScanner
                             onFound={(emp) => {
@@ -2528,7 +2555,7 @@ const Employees = () => {
                             }}
                         />
                     </div>
-                )}
+                )} */}
 
                 {/* ── Stats ── */}
                 <div style={{

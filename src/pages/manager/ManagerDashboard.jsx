@@ -65,12 +65,12 @@ const LeaveRow = ({ name, type, dates, status, onApprove, onReject }) => {
     return (
         <div className="list-row">
             <div className="avatar av-purple">
-                {name
-                    ?.split(" ")
+                {(name || "")
+                    .split(" ")
                     .map((n) => n[0])
                     .join("")
                     .slice(0, 2)
-                    .toUpperCase()}
+                    .toUpperCase() || "?"}
             </div>
             <div className="row-info">
                 <p className="row-name">{name}</p>

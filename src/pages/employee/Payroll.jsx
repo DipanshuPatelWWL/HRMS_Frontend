@@ -43,6 +43,54 @@ const StatusBadge = ({ status }) => {
     );
 };
 
+const TaxProjectionCard = ({ tds }) => {
+    if (!tds || !tds.amount || tds.amount <= 0) return null;
+    return (
+        <div className="card" style={{ marginBottom: "1.25rem", borderLeft: "4px solid #6366f1" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+                <div>
+                    <p className="fw-600" style={{ fontSize: "1rem", color: "var(--text-1)" }}>Tax Projection (FY 2025-26)</p>
+                    <p style={{ fontSize: ".75rem", color: "var(--text-3)" }}>Based on your current annual CTC projection</p>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                    <span style={{ background: "#e0e7ff", color: "#4338ca", padding: "2px 8px", borderRadius: "4px", fontSize: ".7rem", fontWeight: 700 }}>
+                        NEW REGIME
+                    </span>
+                </div>
+            </div>
+
+            <div className="grid-stats" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1rem" }}>
+                <div>
+                    <p style={{ fontSize: ".7rem", color: "var(--text-3)", textTransform: "uppercase", fontWeight: 700 }}>Annual CTC</p>
+                    <p style={{ fontSize: "1.1rem", fontWeight: 700 }}>₹{(tds.annualGross || 0).toLocaleString("en-IN")}</p>
+                </div>
+                <div>
+                    <p style={{ fontSize: ".7rem", color: "var(--text-3)", textTransform: "uppercase", fontWeight: 700 }}>Std. Deduction</p>
+                    <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--danger)" }}>- ₹{(tds.standardDeduction || 0).toLocaleString("en-IN")}</p>
+                </div>
+                <div>
+                    <p style={{ fontSize: ".7rem", color: "var(--text-3)", textTransform: "uppercase", fontWeight: 700 }}>Taxable Income</p>
+                    <p style={{ fontSize: "1.1rem", fontWeight: 700 }}>₹{(tds.taxableIncome || 0).toLocaleString("en-IN")}</p>
+                </div>
+                <div>
+                    <p style={{ fontSize: ".7rem", color: "var(--text-3)", textTransform: "uppercase", fontWeight: 700 }}>Est. Annual Tax</p>
+                    <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--danger)" }}>₹{(tds.annualTax || 0).toLocaleString("en-IN")}</p>
+                </div>
+                <div>
+                    <p style={{ fontSize: ".7rem", color: "var(--text-3)", textTransform: "uppercase", fontWeight: 700 }}>Monthly TDS</p>
+                    <p style={{ fontSize: "1.1rem", fontWeight: 800, color: "#4f46e5" }}>₹{(tds.amount || 0).toLocaleString("en-IN")}</p>
+                </div>
+            </div>
+
+            <div style={{ marginTop: "1.25rem", padding: "10px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+                <p style={{ fontSize: ".75rem", color: "#475569", lineHeight: "1.4" }}>
+                    <strong>Why is tax deducted?</strong> Your projected annual taxable income exceeds the Section 87A rebate threshold under the FY 2025-26 New Tax Regime. Income tax is therefore deducted monthly as TDS. Your effective tax rate is <strong>{tds.effectiveRate || 0}%</strong>.
+                </p>
+            </div>
+        </div>
+    );
+};
+
 const Payroll = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -124,16 +172,20 @@ const Payroll = () => {
             </div>
 
             {!loading && data.length > 0 && (
-                <div className="grid-stats" style={{ marginBottom: "1.25rem" }}>
-                    <div className="stat-card brand">
-                        <p style={{ fontSize: ".8rem", color: "var(--text-3)", marginBottom: ".3rem" }}>Total earned</p>
-                        <p style={{ fontSize: "1.75rem", fontWeight: 700 }}>₹{totalEarnings.toLocaleString("en-IN")}</p>
+                <>
+                    <div className="grid-stats" style={{ marginBottom: "1.25rem" }}>
+                        <div className="stat-card brand">
+                            <p style={{ fontSize: ".8rem", color: "var(--text-3)", marginBottom: ".3rem" }}>Total earned</p>
+                            <p style={{ fontSize: "1.75rem", fontWeight: 700 }}>₹{totalEarnings.toLocaleString("en-IN")}</p>
+                        </div>
+                        <div className="stat-card success">
+                            <p style={{ fontSize: ".8rem", color: "var(--text-3)", marginBottom: ".3rem" }}>Payslips</p>
+                            <p style={{ fontSize: "1.75rem", fontWeight: 700 }}>{data.length}</p>
+                        </div>
                     </div>
-                    <div className="stat-card success">
-                        <p style={{ fontSize: ".8rem", color: "var(--text-3)", marginBottom: ".3rem" }}>Payslips</p>
-                        <p style={{ fontSize: "1.75rem", fontWeight: 700 }}>{data.length}</p>
-                    </div>
-                </div>
+
+                    <TaxProjectionCard tds={data[0].statutoryDeductions?.tds} />
+                </>
             )}
 
             <div className="card">

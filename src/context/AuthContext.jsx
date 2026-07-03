@@ -202,6 +202,14 @@ export const AuthProvider = ({ children }) => {
         return <StopwatchLoader />;
     }
 
+    const refreshUser = async () => {
+        try {
+            const res = await API.get("/auth/me");
+            setUser(res.data.user);
+            localStorage.setItem("user", JSON.stringify(res.data.user));
+        } catch { /* silent */ }
+    };
+
     // ─────────────────────────────────────────────
     //  PROVIDER
     // ─────────────────────────────────────────────
@@ -209,8 +217,10 @@ export const AuthProvider = ({ children }) => {
         <AuthContext.Provider
             value={{
                 user,
+                setUser,
                 login,
                 logout,
+                refreshUser,
             }}
         >
             {children}

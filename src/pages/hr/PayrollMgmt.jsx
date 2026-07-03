@@ -51,10 +51,22 @@ const useFadeIn = (delay = 0) => {
 // ─────────────────────────────────────────────
 //  Sub-components
 // ─────────────────────────────────────────────
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status, isPreview }) => {
+    if (isPreview) {
+        return (
+            <span style={{
+                background: "#dbeafe", color: "#1e40af", border: "1.5px solid #93c5fd",
+                padding: "5px 12px", borderRadius: "20px", fontSize: ".78rem", fontWeight: 700,
+                display: "inline-flex", alignItems: "center", gap: 6,
+            }}>
+                <FiZap size={13} />
+                PREVIEW
+            </span>
+        );
+    }
     const s = status === "paid"
-        ? { bg: "var(--success-bg)", color: "var(--success)", border: "var(--success)", dot: "var(--success)", label: "Paid", Icon: FiCheckCircle }
-        : { bg: "var(--warn-bg)", color: "var(--warn)", border: "var(--warn)", dot: "var(--warn)", label: "Draft", Icon: FiClock };
+        ? { bg: "var(--success-bg)", color: "var(--success)", border: "var(--success)", dot: "var(--success)", label: "FINAL (Paid)", Icon: FiCheckCircle }
+        : { bg: "var(--warn-bg)", color: "var(--warn)", border: "var(--warn)", dot: "var(--warn)", label: "FINAL (Draft)", Icon: FiClock };
     return (
         <span style={{
             background: s.bg, color: s.color, border: `1.5px solid ${s.border}`,
@@ -69,6 +81,153 @@ const StatusBadge = ({ status }) => {
             <s.Icon size={13} />
             {s.label}
         </span>
+    );
+};
+
+// ─────────────────────────────────────────────
+//  Preview / Detail Modal Sub-component
+// ─────────────────────────────────────────────
+const SalaryPreviewModal = ({ isOpen, onClose, data }) => {
+    if (!isOpen || !data) return null;
+
+    // Distinguish between Live Preview (no status) and Saved Payroll record
+    const isSavedRecord = !!data._id;
+    const earnedAmount = data.grossEarnings ?? data.earnedTillDate;
+    const netAmount = data.netSalary ?? data.projectedMonthEndNet;
+    const tdsAmount = data.statutoryDeductions?.tds?.amount ?? data.projectedMonthEndTDS ?? 0;
+
+    return (
+        <div style={{
+            position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.5)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+            backdropFilter: "blur(4px)"
+        }} onClick={onClose}>
+            <div style={{
+                background: "var(--surface)", width: "100%", maxWidth: 550,
+                borderRadius: 16, overflow: "hidden", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+                animation: "slideDown 0.3s ease"
+            }} onClick={e => e.stopPropagation()}>
+                <div style={{ padding: "1.2rem 1.5rem", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: 10, fontSize: "1.1rem" }}>
+                        {isSavedRecord ? <FiList color="#2563eb" /> : <FiZap color="#2563eb" />}
+                        {isSavedRecord ? "Salary Breakdown" : "Live Salary Preview"}
+                    </h3>
+                    <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--text-3)" }}><FiX size={20} /></button>
+                </div>
+
+                <div style={{ padding: "1.5rem", maxHeight: "80vh", overflowY: "auto" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+
+                        {/* Summary Header */}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                            <div style={{ background: "var(--surface-2)", padding: "1rem", borderRadius: 10 }}>
+                                <p style={{ fontSize: ".7rem", color: "var(--text-3)", fontWeight: 700, textTransform: "uppercase", margin: 0 }}>Monthly CTC</p>
+                                <p style={{ fontSize: "1.3rem", fontWeight: 800, margin: "4px 0" }}>₹{data.monthlySalary?.toLocaleString("en-IN")}</p>
+                            </div>
+                            <div style={{ background: "#f0fdf4", padding: "1rem", borderRadius: 10, border: "1px solid #bbf7d0" }}>
+                                <p style={{ fontSize: ".7rem", color: "#166534", fontWeight: 700, textTransform: "uppercase", margin: 0 }}>
+                                    {isSavedRecord ? "Gross Earnings" : "Earned Till Date"}
+                                </p>
+                                <p style={{ fontSize: "1.3rem", fontWeight: 800, margin: "4px 0", color: "#15803d" }}>₹{earnedAmount?.toLocaleString("en-IN")}</p>
+                            </div>
+                        </div>
+
+                        {isSavedRecord && (
+                            <>
+                                {/* Attendance Breakdown */}
+                                <div style={{ background: "var(--surface-2)", padding: "12px", borderRadius: "10px", display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "10px", textAlign: "center" }}>
+                                    <div>
+                                        <p style={{ fontSize: ".65rem", color: "var(--text-3)", margin: 0 }}>PRESENT</p>
+                                        <p style={{ fontSize: ".9rem", fontWeight: 700, margin: 0 }}>{data.presentDays}d</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ fontSize: ".65rem", color: "var(--text-3)", margin: 0 }}>ABSENT</p>
+                                        <p style={{ fontSize: ".9rem", fontWeight: 700, margin: 0, color: "#dc2626" }}>{data.absentDays}d</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ fontSize: ".65rem", color: "var(--text-3)", margin: 0 }}>HALF DAY</p>
+                                        <p style={{ fontSize: ".9rem", fontWeight: 700, margin: 0, color: "#d97706" }}>{data.halfDays}d</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ fontSize: ".65rem", color: "var(--text-3)", margin: 0 }}>PAID LEAVE</p>
+                                        <p style={{ fontSize: ".9rem", fontWeight: 700, margin: 0, color: "#1d4ed8" }}>{data.paidLeave || 0}d</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ fontSize: ".65rem", color: "var(--text-3)", margin: 0 }}>LOP DAYS</p>
+                                        <p style={{ fontSize: ".9rem", fontWeight: 800, margin: 0, color: "#991b1b" }}>
+                                            {data.lopDays ?? Math.max(0, (data.absentDays || 0) + (data.halfDays || 0) * 0.5)}d
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Components Breakdown */}
+                                <div style={{ border: "1px solid var(--border)", borderRadius: "10px", overflow: "hidden" }}>
+                                    <div style={{ background: "var(--surface-3)", padding: "8px 12px", fontSize: ".75rem", fontWeight: 800, color: "var(--text-2)" }}>EARNINGS COMPONENTS</div>
+                                    <div style={{ padding: "12px" }}>
+                                        {(() => {
+                                            const STRUCTURE_LABELS = {
+                                                basic: "Basic Salary",
+                                                hra: "HRA (House Rent Allowance)",
+                                                specialAllowance: "Special Allowance",
+                                                conveyance: "Conveyance / Internet",
+                                                otherAllowance: "Other Allowance",
+                                            };
+                                            return Object.entries(data.salaryStructure || {})
+                                                .filter(([, comp]) => comp.amount > 0)
+                                                .map(([key, comp], i) => (
+                                                    <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: ".85rem", marginBottom: "6px" }}>
+                                                        <span>{comp.label || STRUCTURE_LABELS[key] || key}</span>
+                                                        <span style={{ fontWeight: 600 }}>₹{comp.amount?.toLocaleString()}</span>
+                                                    </div>
+                                                ));
+                                        })()}
+                                    </div>
+
+                                    <div style={{ background: "var(--surface-3)", padding: "8px 12px", fontSize: ".75rem", fontWeight: 800, color: "var(--text-2)", borderTop: "1px solid var(--border)" }}>DEDUCTIONS</div>
+                                    <div style={{ padding: "12px" }}>
+                                        {(() => {
+                                            const DEDUCTION_LABELS = { pf: "Provident Fund (PF)", esi: "ESI", professionalTax: "Professional Tax", tds: "Income Tax (TDS)" };
+                                            return Object.entries(data.statutoryDeductions || {})
+                                                .filter(([, ded]) => ded && ded.amount > 0)
+                                                .map(([key, ded], i) => (
+                                                    <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: ".85rem", marginBottom: "6px" }}>
+                                                        <span>{ded.label || DEDUCTION_LABELS[key] || key.toUpperCase()}</span>
+                                                        <span style={{ fontWeight: 600, color: "#dc2626" }}>- ₹{ded.amount?.toLocaleString()}</span>
+                                                    </div>
+                                                ));
+                                        })()}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {!isSavedRecord && (
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                                <div>
+                                    <p style={{ fontSize: ".75rem", color: "var(--text-3)", fontWeight: 700 }}>Proj. Gross</p>
+                                    <p style={{ fontSize: "1.1rem", fontWeight: 700 }}>₹{data.projectedMonthEndGross?.toLocaleString("en-IN")}</p>
+                                </div>
+                                <div>
+                                    <p style={{ fontSize: ".75rem", color: "var(--text-3)", fontWeight: 700 }}>Proj. TDS</p>
+                                    <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#dc2626" }}>- ₹{data.projectedMonthEndTDS?.toLocaleString("en-IN")}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Final Net Section */}
+                        <div style={{ background: "#eff6ff", padding: "1rem", borderRadius: 10, border: "1px solid #bfdbfe", textAlign: "center" }}>
+                            <p style={{ fontSize: ".75rem", color: "#1e40af", fontWeight: 700, textTransform: "uppercase", margin: 0 }}>
+                                {isSavedRecord ? "Final Net Payout" : "Projected Month-End Net"}
+                            </p>
+                            <p style={{ fontSize: "1.8rem", fontWeight: 800, margin: "4px 0", color: "#1d4ed8" }}>₹{netAmount?.toLocaleString("en-IN")}</p>
+                            <p style={{ fontSize: ".7rem", color: "#1e40af", margin: 0 }}>
+                                {isSavedRecord ? `Payout for ${MONTHS[data.month - 1]} ${data.year}` : "Expected payout if no further LOPs occur"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 
@@ -195,9 +354,15 @@ const PayrollMgmt = () => {
     const [toastVisible, setToastVisible] = useState(false);
     const [hoveredRow, setHoveredRow] = useState(null);
 
+    // New state for single preview
+    const [previewData, setPreviewData] = useState(null);
+    const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+
     const headerRef = useFadeIn(0);
     const genPanelRef = useFadeIn(100);
     const tablePanelRef = useFadeIn(200);
+
+    const isCurrentViewMonth = filterMonth === currentMonth && filterYear === currentYear;
 
     const showToast = (msg, type = "success") => {
         setToast({ msg, type });
@@ -231,16 +396,43 @@ const PayrollMgmt = () => {
     useEffect(() => { fetchPayrolls(); }, [filterMonth, filterYear, filterStatus]);
 
     const handleGenerate = async () => {
+        if (generating) return;
         setGenerating(true);
         setGenResult(null);
         try {
             const res = await API.post("/payroll/generate", { month: genMonth, year: genYear });
             setGenResult(res.data);
-            showToast(`Generated ${res.data.generated} payslip(s)`);
+            showToast(`Generated ${res.data.generated || 0} payslip(s)`);
             fetchPayrolls();
         } catch (err) {
-            showToast(err.response?.data?.message || "Generation failed", "error");
+            if (err.response?.status === 400 && err.response?.data?.message?.includes("Salary Preview")) {
+                Swal.fire({
+                    title: "Payroll Blocked",
+                    text: err.response.data.message,
+                    icon: "info",
+                    confirmButtonText: "Close"
+                });
+            } else if (err.response?.status === 429) {
+                showToast("A payroll generation job is already in progress. Please wait.", "error");
+            } else {
+                showToast(err.response?.data?.message || "Generation failed", "error");
+            }
         } finally { setGenerating(false); }
+    };
+
+    const handleShowPreview = async (empId) => {
+        try {
+            const res = await API.get(`/payroll/preview?employeeId=${empId}&month=${filterMonth}&year=${filterYear}`);
+            setPreviewData(res.data.preview);
+            setIsPreviewModalOpen(true);
+        } catch (err) {
+            showToast("Failed to fetch preview", "error");
+        }
+    };
+
+    const handleViewPayslip = (p) => {
+        setPreviewData(p);
+        setIsPreviewModalOpen(true);
     };
 
     const handleMarkPaid = async (id) => {
@@ -697,8 +889,8 @@ const PayrollMgmt = () => {
                                         <th>Period</th>
                                         <th>Attendance</th>
                                         <th>Monthly CTC</th>
-                                        <th>Deductions</th>
-                                        <th>Net Salary</th>
+                                        <th>Earned Till Date</th>
+                                        <th>Proj. Month Net</th>
                                         <th>Status</th>
                                         <th style={{ textAlign: "right" }}>Actions</th>
                                     </tr>
@@ -708,6 +900,9 @@ const PayrollMgmt = () => {
                                         const emp = p.employee || {};
                                         const init = (emp.name || "?").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
                                         const isHovered = hoveredRow === p._id;
+                                        // A payroll is a "Preview" if it's for the current month and still in draft status
+                                        const isPreview = isCurrentViewMonth && p.status === "draft";
+
                                         return (
                                             <tr
                                                 key={p._id}
@@ -751,7 +946,7 @@ const PayrollMgmt = () => {
                                                             <FiCheck size={10} />{p.presentDays ?? 0}P
                                                         </span>
                                                         {p.absentDays > 0 && (
-                                                            <span className="att-dot" style={{ background: "#fee2e2", color: "#991b1b", borderColor: "#fca5a5" }}>
+                                                            <span className="att-dot" style={{ background: "#fee2e2", color: "#991b1b", borderColor: "#fca5a5" }} title="Missed working days">
                                                                 <FiX size={10} />{p.absentDays}A
                                                             </span>
                                                         )}
@@ -765,41 +960,38 @@ const PayrollMgmt = () => {
                                                                 {p.paidLeave}PL
                                                             </span>
                                                         )}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                                                        {p.deductions > 0
-                                                            ? <span className="deduction-val">− ₹{p.deductions.toLocaleString("en-IN")}</span>
-                                                            : <span style={{ color: "#9ca3af", fontWeight: 500 }}>—</span>
-                                                        }
-                                                        {p.totalStatutoryDeductions > 0 && (
-                                                            <span style={{ fontSize: ".72rem", color: "#6b7280", fontWeight: 500 }}>
-                                                                incl. PF/ESI: ₹{p.totalStatutoryDeductions.toLocaleString("en-IN")}
+                                                        {p.remainingWorkingDays > 0 && (
+                                                            <span className="att-dot" style={{ background: "#f3f4f6", color: "#4b5563", borderColor: "#d1d5db" }} title="Upcoming working days in the month">
+                                                                <FiClock size={10} />{p.remainingWorkingDays} Pend
                                                             </span>
                                                         )}
                                                     </div>
+                                                </td>
+                                                <td>
+                                                    <span style={{ fontWeight: 600, color: "#111827" }}>
+                                                        ₹{(p.monthlySalary || 0).toLocaleString("en-IN")}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span style={{ fontWeight: 700, color: "#16a34a" }}>
+                                                        ₹{(p.grossEarnings || 0).toLocaleString("en-IN")}
+                                                    </span>
                                                 </td>
                                                 <td>
                                                     <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                                         <span className="net-salary">
                                                             ₹{(p.netSalary || 0).toLocaleString("en-IN")}
                                                         </span>
-                                                        {p.grossEarnings && p.grossEarnings !== p.monthlySalary && (
-                                                            <span style={{ fontSize: ".72rem", color: "#6b7280", fontWeight: 500 }}>
-                                                                Gross: ₹{p.grossEarnings.toLocaleString("en-IN")}
+                                                        {isPreview && (
+                                                            <span style={{ fontSize: ".65rem", color: "#2563eb", fontWeight: 700 }}>
+                                                                PROJECTED
                                                             </span>
                                                         )}
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <span className="net-salary">
-                                                        ₹{(p.netSalary || 0).toLocaleString("en-IN")}
-                                                    </span>
-                                                </td>
-                                                <td>
                                                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                                                        <StatusBadge status={p.status} />
+                                                        <StatusBadge status={p.status} isPreview={isPreview} />
                                                         {p.isReleased
                                                             ? <span style={{ fontSize: ".68rem", color: "#15803d", fontWeight: 700, display: "flex", alignItems: "center", gap: 3 }}>
                                                                 <FiCheck size={10} /> Visible to employee
@@ -812,6 +1004,27 @@ const PayrollMgmt = () => {
                                                 </td>
                                                 <td>
                                                     <div className="pr-actions">
+                                                        {p._id ? (
+                                                            <IconBtn
+                                                                variant="primary"
+                                                                title="View Detailed Breakdown"
+                                                                onClick={() => handleViewPayslip(p)}
+                                                                style={{ fontSize: ".76rem", padding: "6px 11px" }}
+                                                            >
+                                                                <FiList size={13} />
+                                                                View Payslip
+                                                            </IconBtn>
+                                                        ) : isPreview && (
+                                                            <IconBtn
+                                                                variant="primary"
+                                                                title="Detailed Projection"
+                                                                onClick={() => handleShowPreview(emp._id)}
+                                                                style={{ fontSize: ".76rem", padding: "6px 11px" }}
+                                                            >
+                                                                <FiZap size={13} />
+                                                                Preview
+                                                            </IconBtn>
+                                                        )}
                                                         <IconBtn
                                                             variant="ghost"
                                                             title="Download PDF"
@@ -854,6 +1067,13 @@ const PayrollMgmt = () => {
                     )}
                 </div>
             </div>
+
+            {/* Modal */}
+            <SalaryPreviewModal
+                isOpen={isPreviewModalOpen}
+                onClose={() => setIsPreviewModalOpen(false)}
+                data={previewData}
+            />
 
             {/* Toast */}
             {toast && (

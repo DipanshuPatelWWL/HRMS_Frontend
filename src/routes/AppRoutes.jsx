@@ -30,6 +30,7 @@ import HRDashboard from "../pages/hr/Dashboard";
 import Employees from "../pages/hr/Employees";
 import LeaveApproval from "../pages/hr/LeaveApproval";
 import PayrollMgmt from "../pages/hr/PayrollMgmt";
+import PayrollSettings from "../pages/hr/PayrollSettings";
 import HRHoliday from "../pages/hr/Holiday";
 import AnnouncementsPage from "../pages/hr/AnnouncementsPage";
 import AttendanceCorrectionRequest from "../pages/employee/AttendanceCorrectionRequest";
@@ -45,22 +46,23 @@ import EmployeeLeaves from "../pages/hr/EmployeeLeaves";
 import Celebrations from "../components/common/Celebrations";
 import ManagerSalesReports from "../pages/manager/ManagerSalesReports";
 import ManagerDailyReport from "../pages/manager/ManagerDailyReport";
-import HRAITraining from "../components/ai/HRAITraining";
 import BDESalesReport from "../pages/bde-bdm/BDESalesReport";
 import AssetManagement from "../pages/hr/AssetManagement";
 import PolicyManagement from "../pages/hr/PolicyManagement";
 import ActivityMonitor from "../pages/hr/ActivityMonitor";
 import Policies from "../pages/employee/Policies";
+import ArchivedEmployees from "../pages/hr/ArchivedEmployees";
+import TerminatedEmployees from "../pages/hr/TerminatedEmployees";
 
 //------------------------Advance Sales --------------------------------------//
 import SalesIntelligence from '../../pages/SalesIntelligence'
+import EmployeeHistory from "../pages/hr/EmployeeHistory";
 
 // ─────────────────────────────────────────────
 //  Protected route
 // ─────────────────────────────────────────────
 const Protected = ({ children, allowedRoles, allowedDesignations }) => {
     const { user } = useContext(AuthContext);
-
     if (!user) return <Navigate to="/login" replace />;
 
     // allowedRoles not passed → any authenticated user can access
@@ -87,6 +89,7 @@ const Protected = ({ children, allowedRoles, allowedDesignations }) => {
 // ─────────────────────────────────────────────
 const RoleRedirect = () => {
     const { user } = useContext(AuthContext);
+    const id = user._id;
     if (!user) return <Navigate to="/login" replace />;
     if (user.role === "hr") return <Navigate to="/hr" replace />;
     if (user.role === "tl") return <Navigate to="/tl" replace />;
@@ -146,6 +149,7 @@ const AppRoutes = () => (
         <Route path="/tl/daily-report" element={<Protected allowedRoles={["tl"]}><DailyReports /></Protected>} />
         <Route path="/tl/leave-approval" element={<Protected allowedRoles={["tl"]}><LeaveApproval /></Protected>} />
         <Route path="/tl/attendance" element={<Protected allowedRoles={["tl"]}><Attendance /></Protected>} />
+        <Route path="/tl/employee-history/:id" element={<Protected allowedRoles={["tl"]}><EmployeeHistory /></Protected>} />
 
         {/* Sales Report Route */}
         <Route path="/tl/sales-reports"
@@ -178,6 +182,7 @@ const AppRoutes = () => (
         <Route path="/hr/employees" element={<Protected allowedRoles={["hr"]}><Employees /></Protected>} />
         <Route path="/hr/leave-approval" element={<Protected allowedRoles={["hr"]}><LeaveApproval /></Protected>} />
         <Route path="/hr/payroll-management" element={<Protected allowedRoles={["hr"]}><PayrollMgmt /></Protected>} />
+        <Route path="/hr/payroll-settings" element={<Protected allowedRoles={["hr", "manager", "superadmin"]}><PayrollSettings /></Protected>} />
         <Route path="/hr/holidays" element={<Protected allowedRoles={["hr"]}><HRHoliday /></Protected>} />
         <Route path="/hr/announcements" element={<Protected allowedRoles={["hr"]}><AnnouncementsPage /></Protected>} />
         <Route path="/hr/correction-requests" element={<Protected allowedRoles={["hr"]}><AttendanceCorrectionApproval /></Protected>} />
@@ -186,10 +191,12 @@ const AppRoutes = () => (
         <Route path="/hr/scan-logs" element={<Protected allowedRoles={["hr"]}><ScanLogsPage /></Protected>} />
         <Route path="/hr/employee-leave" element={<Protected allowedRoles={["hr"]}><EmployeeLeaves /></Protected>} />
         <Route path="/hr/upcoming-events" element={<Protected allowedRoles={["hr"]}><Celebrations /></Protected>} />
-        <Route path="/hr/ai-training" element={<Protected allowedRoles={["hr"]}><HRAITraining /></Protected>} />
         <Route path="/hr/assets" element={<Protected allowedRoles={["hr"]}><AssetManagement /></Protected>} />
         <Route path="/hr/policies" element={<Protected allowedRoles={["hr"]}><PolicyManagement /></Protected>} />
         <Route path="/hr/activity-monitor" element={<Protected allowedRoles={["hr"]}><ActivityMonitor /></Protected>} />
+        <Route path="/hr/archived-employees" element={<Protected allowedRoles={["hr"]}><ArchivedEmployees /></Protected>} />
+        <Route path="/hr/terminated-employees" element={<Protected allowedRoles={["hr"]}><TerminatedEmployees /></Protected>} />
+        <Route path="/hr/employee-history/:id" element={<Protected allowedRoles={["hr"]}><EmployeeHistory /></Protected>} />
         <Route path="/hr/sales-intelligence"
             element={<Protected allowedRoles={["hr"]}><SalesIntelligence /></Protected>} />
 
@@ -213,6 +220,9 @@ const AppRoutes = () => (
         <Route path="/manager-assets" element={<Protected allowedRoles={["manager"]}><AssetManagement /></Protected>} />
         <Route path="/manager-policies" element={<Protected allowedRoles={["manager"]}><PolicyManagement /></Protected>} />
         <Route path="/manager-activity-monitor" element={<Protected allowedRoles={["manager"]}><ActivityMonitor /></Protected>} />
+        <Route path="/manager/archived-employees" element={<Protected allowedRoles={["manager"]}><ArchivedEmployees /></Protected>} />
+        <Route path="/manager/terminated-employees" element={<Protected allowedRoles={["manager"]}><TerminatedEmployees /></Protected>} />
+        <Route path="/manager/employee-history/:id" element={<Protected allowedRoles={["manager"]}><EmployeeHistory /></Protected>} />
         <Route path="/manager-sales-intelligence"
             element={<Protected allowedRoles={["manager"]}><SalesIntelligence /></Protected>} />
 

@@ -51,7 +51,6 @@ const pageTitles = {
     "/hr/announcements": "Announcements",
     "/hr/scan-logs": "Scan Logs",
     "/hr/upcoming-events": "Upcoming Events",
-    "/hr/ai-training": "AI Training",
     "/hr/assets": "Assets Management",
     "/hr/activity-monitor": "Activity Monitor",
     "/hr/policies": "Policy Management",

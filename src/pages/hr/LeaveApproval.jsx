@@ -670,7 +670,7 @@ const LeaveApproval = () => {
             const role = user?.role;
             let url = "";
 
-            if (role === "hr") url = `/leave/hr-approve/${id}`;
+            if (role === "hr" || role === "superadmin") url = `/leave/hr-approve/${id}`;
             else if (role === "manager") url = `/leave/manager-approve/${id}`;
             else if (role === "tl") url = `/leave/tl-approve/${id}`;
             else return Swal.fire({
@@ -893,7 +893,7 @@ const LeaveApproval = () => {
                                                     </span>
                                                 )}
 
-                                                {user?.role === "hr" && (shouldSkipTL(l) || l.tlApproval?.status === "approved") && (
+                                                {(user?.role === "hr" || user?.role === "superadmin") && (shouldSkipTL(l) || l.tlApproval?.status === "approved") && (
                                                     <div style={{ display: "flex", gap: ".4rem" }}>
                                                         <button
                                                             onClick={() => action(l._id, "approved")}
@@ -919,7 +919,7 @@ const LeaveApproval = () => {
                                                         </button>
                                                     </div>
                                                 )}
-                                                {user?.role === "hr" && !shouldSkipTL(l) && l.tlApproval?.status !== "approved" && (
+                                                {(user?.role === "hr" || user?.role === "superadmin") && !shouldSkipTL(l) && l.tlApproval?.status !== "approved" && (
                                                     <span style={{ fontSize: ".78rem", color: "#707070" }}>
                                                         ⏳ Awaiting TL
                                                     </span>

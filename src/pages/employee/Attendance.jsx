@@ -48,12 +48,13 @@ const MONTHLY_LATE_QUOTA = 3;
 
 const STATUS_COLORS = {
     present: { solid: "#22C55E", bg: "#DCFCE7", border: "#86EFAC", text: "#14532D" },
-    late: { solid: "#F97316", bg: "#FFEDD5", border: "#FDBA74", text: "#7C2D12" },
-    halfday: { solid: "#EAB308", bg: "#FEF9C3", border: "#FDE047", text: "#713F12" },
-    absent: { solid: "#3B82F6", bg: "#DBEAFE", border: "#93C5FD", text: "#1E3A8A" },
-    holiday: { solid: "#A855F7", bg: "#F3E8FF", border: "#D8B4FE", text: "#581C87" },
-    weekend: { solid: "#818CF8", bg: "#EEF2FF", border: "#C7D2FE", text: "#3730A3" },
-    leave: { solid: "#EC4899", bg: "#FCE7F3", border: "#F9A8D4", text: "#831843" }
+    late: { solid: "#22C55E", bg: "#DCFCE7", border: "#86EFAC", text: "#14532D" }, // late is treated as full day
+    halfday: { solid: "#F97316", bg: "#FFEDD5", border: "#FDBA74", text: "#7C2D12" }, // Orange
+    absent: { solid: "#EF4444", bg: "#FEE2E2", border: "#FCA5A5", text: "#7F1D1D" }, // Red
+    holiday: { solid: "#EAB308", bg: "#FEF9C3", border: "#FDE047", text: "#713F12" }, // Yellow
+    weekend: { solid: "#9CA3AF", bg: "#F3F4F6", border: "#D1D5DB", text: "#374151" }, // Gray
+    leave: { solid: "#A855F7", bg: "#F3E8FF", border: "#D8B4FE", text: "#581C87" }, // Purple
+    today: { solid: "#3B82F6", bg: "#DBEAFE", border: "#3B82F6", text: "#1E3A8A" } // Blue Border
 };
 
 const css = `
@@ -537,30 +538,6 @@ const Attendance = () => {
         fetchMonthly(viewMonthRef.current, viewYearRef.current);
     };
 
-    // useEffect(() => {
-    //     fetchToday();
-    //     syncOfflinePunches();
-
-    //     // Request browser notification permission on first load
-    //     if ("Notification" in window && Notification.permission === "default") {
-    //         Notification.requestPermission();
-    //     }
-
-    //     window.addEventListener("online", syncOfflinePunches);
-
-    //     const onFocus = () => {
-    //         fetchToday();
-    //         fetchMonthly(viewMonthRef.current, viewYearRef.current);
-    //     };
-    //     window.addEventListener("focus", onFocus);
-
-    //     return () => {
-    //         window.removeEventListener("online", syncOfflinePunches);
-    //         window.removeEventListener("focus", onFocus);
-    //     };
-    // }, []);
-
-
 
     useEffect(() => {
         fetchToday();
@@ -609,76 +586,6 @@ const Attendance = () => {
         fetchMonthly(viewMonth, viewYear);
         fetchHolidays(viewMonth, viewYear);
     }, [viewMonth, viewYear]);
-
-    // const doPunchIn = async (latitude = null, longitude = null, accuracy = null) => {
-    //     try {
-    //         let deviceUUID = "";
-    //         let productId = "";
-
-    //         // Step 1: Try Electron IPC (when running inside Electron window)
-    //         if (window.hrmsAgent?.getDeviceInfo) {
-    //             try {
-    //                 const info = await window.hrmsAgent.getDeviceInfo();
-    //                 deviceUUID = info?.deviceUUID || "";
-    //                 productId = info?.productId || "";
-    //             } catch (e) {
-    //                 console.warn("IPC bridge failed:", e);
-    //             }
-    //         }
-
-    //         // Step 2: Fallback — call local token server (browser tab on same PC)
-    //         // This is the key fix: website punch-in on the office PC works via agent
-    //         if (!deviceUUID || !productId) {
-    //             try {
-    //                 const agentBase = window.hrmsAgent?.getAgentConfig
-    //                     ? (await window.hrmsAgent.getAgentConfig()).tokenServerUrl
-    //                     : "http://127.0.0.1:57373";
-
-    //                 const r = await fetch(`${agentBase}/get-device-info`, {
-    //                     method: "GET",
-    //                     signal: (() => { const c = new AbortController(); setTimeout(() => c.abort(), 3000); return c.signal; })(),
-    //                 });
-    //                 if (r.ok) {
-    //                     const info = await r.json();
-    //                     deviceUUID = info?.deviceUUID || "";
-    //                     productId = info?.productId || "";
-    //                 }
-    //             } catch (e) {
-    //                 console.warn("Agent token server unreachable:", e.message);
-    //             }
-    //         }
-
-    //         const payload = {
-    //             deviceId: navigator.userAgent,
-    //             ...(deviceUUID && productId
-    //                 ? { deviceUUID, productId }
-    //                 : {}),
-    //             ...(latitude !== null && longitude !== null
-    //                 ? { lat: latitude, lng: longitude, accuracy: accuracy ?? 0 }
-    //                 : {}),
-    //         };
-
-    //         await API.post("/attendance/punch-in", payload);
-
-    //         await Promise.all([
-    //             fetchToday(),
-    //             fetchMonthly(viewMonth, viewYear),
-    //         ]);
-    //     } catch (e) {
-    //         const msg = e.response?.data?.message || "Punch-in failed";
-    //         if (mountedRef.current) {
-    //             Swal.fire({
-    //                 icon: "error",
-    //                 title: "Punch-In Failed",
-    //                 text: msg,
-    //                 confirmButtonColor: "#EF4444",
-    //             });
-    //             await fetchToday();
-    //         }
-    //     } finally {
-    //         if (mountedRef.current) setLoadingIn(false);
-    //     }
-    // };
 
 
 
@@ -741,13 +648,27 @@ const Attendance = () => {
 
     const doPunchIn = async (lat, lng, accuracy, deviceUUID = "", productId = "") => {
         try {
+            // ── Get stored deviceToken from Electron ──────────────────────
+            let deviceToken = null;
+            if (window.hrmsAgent?.getDeviceToken) {
+                try {
+                    deviceToken = await window.hrmsAgent.getDeviceToken();
+                } catch (e) {
+                    // ignore — will fallback
+                }
+            }
+
             const payload = {
                 deviceId: navigator.userAgent,
+                ...(deviceToken ? { deviceToken } : {}),
+                // Still send these as fallback info for logging
                 ...(deviceUUID && productId ? { deviceUUID, productId } : {}),
                 ...(lat != null && lng != null ? { lat, lng, accuracy: accuracy ?? 0 } : {}),
             };
 
-            await API.post("/attendance/punch-in", payload);
+            await API.post("/attendance/punch-in", payload, {
+                headers: { "x-client-type": window.hrmsAgent ? "electron" : "browser" }
+            });
             await Promise.all([fetchToday(), fetchMonthly(viewMonth, viewYear)]);
         } catch (e) {
             const msg = e.response?.data?.message || "Punch-in failed";
@@ -759,44 +680,6 @@ const Attendance = () => {
             if (mountedRef.current) setLoadingIn(false);
         }
     };
-
-    // const handlePunchIn = () => {
-    //     if (loadingIn || loadingOut || !!todayRec?.punchIn) return;
-    //     if (!navigator.onLine) { saveOfflinePunch("punch-in"); return; }
-
-    //     setLoadingIn(true);
-
-    //     if (!navigator.geolocation) {
-    //         doPunchIn(null, null, null);
-    //         return;
-    //     }
-
-    //     let settled = false;
-    //     const fallbackTimer = setTimeout(() => {
-    //         if (!settled) {
-    //             settled = true;
-    //             console.warn("GPS timed out — proceeding without location");
-    //             doPunchIn(null, null, null);
-    //         }
-    //     }, 8000);
-
-    //     navigator.geolocation.getCurrentPosition(
-    //         ({ coords }) => {
-    //             if (settled) return;
-    //             settled = true;
-    //             clearTimeout(fallbackTimer);
-    //             doPunchIn(coords.latitude, coords.longitude, coords.accuracy);
-    //         },
-    //         (err) => {
-    //             if (settled) return;
-    //             settled = true;
-    //             clearTimeout(fallbackTimer);
-    //             console.warn("GPS unavailable:", err.message);
-    //             doPunchIn(null, null, null);
-    //         },
-    //         { enableHighAccuracy: false, timeout: 7000, maximumAge: 60000 }
-    //     );
-    // };
 
 
     const handlePunchIn = () => {
@@ -839,7 +722,6 @@ const Attendance = () => {
 
     // Add this derived variable — used for stats and history table
     const pastMonthly = monthly.filter(d => {
-        // d.date may be a synthetic absent object with a local Date — use dateString if available
         const istDateStr = d.dateString
             ? d.dateString
             : new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
@@ -847,41 +729,12 @@ const Attendance = () => {
         return istDateStr <= nowISTStr;
     });
 
-    const toISTDate = (d) => new Date(
-        (d.dateString
-            ? d.dateString
-            : new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
-        ) + "T00:00:00+05:30"
-    );
+    const summary = monthlySummary || {};
 
-    // ── Stats (Priority: Half Day > Late > Full Day > Absent) ──
-    const statsMap = pastMonthly.reduce((acc, d) => {
-        const istStr = d.dateString
-            ? d.dateString + "T00:00:00+05:30"
-            : new Date(d.date).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }) + "T00:00:00+05:30";
-        const dt = new Date(istStr);
-
-        // Skip records before joining
-        if (joiningDate && dt < joiningDate) return acc;
-
-        const isPresent = (d.status === "present" || d.status === "half-day" || d.isHalfDay || d.isLate);
-
-        if (d.isHalfDay) {
-            acc.half++;
-        } else if (d.isLate) {
-            acc.late++;
-        } else if (isPresent) {
-            acc.full++;
-        } else if (d.status === "absent") {
-            acc.absent++;
-        }
-        return acc;
-    }, { full: 0, half: 0, late: 0, absent: 0 });
-
-    const fullOnlyCount = statsMap.full;
-    const halfOnlyCount = statsMap.half;
-    const lateOnlyCount = statsMap.late;
-    const absentDays = statsMap.absent;
+    const fullOnlyCount = summary.present || 0;
+    const halfOnlyCount = summary.halfDay || 0;
+    const lateOnlyCount = summary.late || 0;
+    const absentDays = summary.absent || 0;
     const presentTotal = fullOnlyCount + halfOnlyCount + lateOnlyCount;
 
     // ✅ FIX: Quota used this month = all late-flagged days (even if they became half-days)
@@ -896,44 +749,41 @@ const Attendance = () => {
     const quotaExhausted = quotaUsed >= MONTHLY_LATE_QUOTA;
 
     // ✅ Working days for current viewed month
-    const totalDaysInMonth = new Date(viewYear, viewMonth, 0).getDate();
-    const workingDays = Array.from({ length: totalDaysInMonth }, (_, i) => {
-        const date = new Date(viewYear, viewMonth - 1, i + 1);
-        return !isWeekend(date);
-    }).filter(Boolean).length;
-
-    const workingDaysFinal = workingDays - holidays.length;
+    const workingDaysFinal = summary.workingDays || 0;
 
     // ✅ Percentage based on total presence
-    const percentage = workingDaysFinal
-        ? Math.min(100, (presentTotal / workingDaysFinal) * 100).toFixed(1)
-        : 0;
+    const percentage = summary.attendancePercentage || 0;
 
     const chartData = useMemo(() => {
         return {
-            labels: ["Full Day", "Half Day", "Late", "Absent"],
+            labels: ["Present", "Late", "Half Day", "Leave", "Holiday", "Weekend", "Absent"],
             datasets: [{
                 label: "Days",
-                data: [fullOnlyCount, halfOnlyCount, lateOnlyCount, absentDays],
+                data: [
+                    summary.present || 0,
+                    summary.late || 0,
+                    summary.halfDay || 0,
+                    summary.leave || 0,
+                    summary.holiday || 0,
+                    summary.weekend || 0,
+                    summary.absent || 0
+                ],
                 backgroundColor: [
                     STATUS_COLORS.present.solid,
-                    STATUS_COLORS.halfday.solid,
                     STATUS_COLORS.late.solid,
-                    STATUS_COLORS.absent.solid
-                ],
-                hoverBackgroundColor: [
-                    STATUS_COLORS.present.solid,
                     STATUS_COLORS.halfday.solid,
-                    STATUS_COLORS.late.solid,
+                    STATUS_COLORS.leave.solid,
+                    STATUS_COLORS.holiday.solid,
+                    STATUS_COLORS.weekend.solid,
                     STATUS_COLORS.absent.solid
                 ],
                 borderRadius: 8,
                 borderSkipped: false,
             }],
         };
-    }, [fullOnlyCount, halfOnlyCount, lateOnlyCount, absentDays]);
+    }, [summary]);
 
-    const STATUS_MAP = ["present", "half-day", "late", "absent"];
+    const STATUS_MAP = ["present", "late", "half-day", "leave", "holiday", "weekend", "absent"];
 
     const isDark = document.documentElement.getAttribute("data-theme") === "dark";
     const gridColor = isDark ? "#221b1b" : "#F3F4F6";
@@ -1298,6 +1148,38 @@ const Attendance = () => {
                                 </p>
                             </div>
 
+                            {/* Expected Shift Hours */}
+                            <div style={{ background: "var(--surface-3)", borderRadius: 10, padding: "12px 14px", border: "1px solid var(--border-strong)" }}>
+                                <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "var(--text-2)", marginBottom: 6 }}>
+                                    Shift Hours
+                                </p>
+                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-1)", letterSpacing: "-1px", lineHeight: 1 }}>
+                                    {Math.floor(monthlySummary.expectedShiftHours || 9)}
+                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "var(--text-3)", letterSpacing: 0 }}>
+                                        h {Math.round(((monthlySummary.expectedShiftHours || 9) % 1) * 60)}m
+                                    </span>
+                                </p>
+                                <p style={{ fontSize: ".72rem", color: "var(--text-3)", marginTop: 4, fontWeight: 500 }}>
+                                    expected per day
+                                </p>
+                            </div>
+
+                            {/* Compliance % */}
+                            <div style={{ background: (monthlySummary.compliancePercentage || 0) >= 90 ? "var(--success-bg)" : (monthlySummary.compliancePercentage || 0) >= 75 ? "var(--warn-bg)" : "var(--danger-bg)", borderRadius: 10, padding: "12px 14px", border: `1px solid ${(monthlySummary.compliancePercentage || 0) >= 90 ? "var(--success)" : (monthlySummary.compliancePercentage || 0) >= 75 ? "var(--warn)" : "var(--danger)"}` }}>
+                                <p style={{ fontSize: ".67rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: (monthlySummary.compliancePercentage || 0) >= 90 ? "var(--success)" : (monthlySummary.compliancePercentage || 0) >= 75 ? "#D97706" : "var(--danger)", marginBottom: 6 }}>
+                                    Compliance %
+                                </p>
+                                <p style={{ fontSize: "1.6rem", fontWeight: 700, color: "var(--text-1)", letterSpacing: "-1px", lineHeight: 1 }}>
+                                    {monthlySummary.compliancePercentage || 0}
+                                    <span style={{ fontSize: ".85rem", fontWeight: 500, color: "var(--text-3)", letterSpacing: 0 }}>
+                                        %
+                                    </span>
+                                </p>
+                                <p style={{ fontSize: ".72rem", color: (monthlySummary.compliancePercentage || 0) >= 90 ? "#15803D" : (monthlySummary.compliancePercentage || 0) >= 75 ? "#B45309" : "#B91C1C", marginTop: 4, fontWeight: 500 }}>
+                                    overall adherence
+                                </p>
+                            </div>
+
                             {/* Total Late Minutes */}
                             <div style={{
                                 background: monthlySummary.totalLateMinutes > 0 ? "var(--warn-bg)" : "var(--success-bg)",
@@ -1396,9 +1278,8 @@ const Attendance = () => {
                                     const weekend = isWeekend(currentDate);
                                     const isFuture = currentDate > now && !today;
 
-                                    const nowHourIST = parseInt(
-                                        new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", hour12: false })
-                                    );
+                                    const nowIST = new Date().toLocaleString("en-CA", { timeZone: "Asia/Kolkata", hour12: false });
+                                    const nowHourIST = parseInt(nowIST.split(", ")[1]?.split(":")[0] ?? "0", 10);
                                     const isWorkInProgress = today && nowHourIST < 19;
 
                                     let sCls = "";
@@ -1531,7 +1412,7 @@ const Attendance = () => {
                                             </td>
                                         </tr>
                                     )}
-                                    {pastMonthly.map(item => {
+                                    {[...pastMonthly].reverse().map(item => {
                                         const d = new Date(item.date);
                                         // FIX #13: surface eightHourPassUsed visually in the history table
                                         const badgeCls =
@@ -1554,7 +1435,7 @@ const Attendance = () => {
                                                                     item.status === "present" ? "Present" :
                                                                         "Absent";
                                         return (
-                                            <tr key={item._id} onClick={() => setSelected(item)}>
+                                            <tr key={item.dateString || item.date} onClick={() => setSelected(item)}>
                                                 <td style={{ fontWeight: 600, color: "var(--text-1)" }}>
                                                     {d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                                                 </td>
@@ -1593,7 +1474,7 @@ const Attendance = () => {
 
                 </div>
 
-                {/* ✅ FIX: Pass holidays to AttendanceModal for real holiday detection */}
+                {/* FIX: Pass holidays to AttendanceModal for real holiday detection */}
                 <AttendanceModal
                     data={selected}
                     onClose={() => setSelected(null)}

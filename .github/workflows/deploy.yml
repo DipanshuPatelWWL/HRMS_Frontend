@@ -16,7 +16,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
+          cache: npm
 
       - name: Install Dependencies
         run: npm install
@@ -57,24 +58,9 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: 65002
-          source: "dist/**"
+          source: "dist/*"
           target: "/home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms"
-
-      - name: Fix Dist Folder Structure
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: 65002
-          script: |
-            cd /home/u787208577/domains/digitalwebguider.com/public_html/wwlhrms
-            if [ -d "dist" ]; then
-              mv dist/* .
-              rm -rf dist
-            fi
-            echo "Current Deployment Structure:"
-            ls -la
+          strip_components: 1
 
       - name: Create React .htaccess
         uses: appleboy/ssh-action@v1.0.3

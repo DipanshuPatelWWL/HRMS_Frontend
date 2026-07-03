@@ -238,7 +238,12 @@ export default function PublicProfile() {
                                 display: "flex", alignItems: "center", justifyContent: "center",
                             }}>
                                 {avatarSrc
-                                    ? <img src={avatarSrc} alt={emp.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                    ? <img 
+                                        src={avatarSrc} 
+                                        alt={emp.name} 
+                                        onError={() => setAvatarSrc(null)}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                                      />
                                     : <span style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>{initials}</span>}
                             </div>
 

@@ -61,14 +61,14 @@ export const generatePayslipPDF = async (p) => {
 
   const structureRows = p.salaryStructure
     ? Object.entries(p.salaryStructure)
-      .filter(([, c]) => c.enabled)
+      .filter(([, c]) => c.amount > 0)
       .map(([key, c]) => `
           <tr>
             <td style="padding:7px 10px;color:#374151;font-size:13px;">
               ${c.label || STRUCTURE_LABELS[key] || key}
             </td>
             <td style="padding:7px 10px;color:#374151;font-size:13px;text-align:right;">
-              ${c.percent}%
+              ${c.percent ? c.percent + "%" : "—"}
             </td>
             <td style="padding:7px 10px;font-weight:600;color:#111827;font-size:13px;text-align:right;">
               ${fmt(c.amount)}
@@ -84,68 +84,27 @@ export const generatePayslipPDF = async (p) => {
 
   // ── Statutory deduction rows ──────────────────────────
   const statutoryRows = p.statutoryDeductions
-    ? Object.values(p.statutoryDeductions)
-      .filter(d => d.enabled && d.amount > 0)
-      .map(d => {
-        const numTag = d.pfNumber
-          ? `<span style="font-size:11px;color:#6b7280;margin-left:6px;">(UAN: ${d.pfNumber})</span>`
-          : d.esiNumber
-            ? `<span style="font-size:11px;color:#6b7280;margin-left:6px;">(ESI No: ${d.esiNumber})</span>`
-            : "";
+    ? Object.entries(p.statutoryDeductions)
+      .filter(([, c]) => c && c.amount > 0)
+      .map(([key, c]) => {
+        const labelMap = { pf: "Provident Fund (PF)", esi: "ESI", professionalTax: "Professional Tax", tds: "Income Tax (TDS)" };
+        const label = c.label || labelMap[key] || key.toUpperCase();
         return `
             <tr>
               <td style="padding:7px 10px;color:#374151;font-size:13px;">
-                ${d.label || ""}${numTag}
+                ${label}
               </td>
               <td style="padding:7px 10px;color:#dc2626;font-size:13px;text-align:right;">
-                −${fmt(d.amount)}
+                −${fmt(c.amount)}
               </td>
             </tr>`;
       })
       .join("")
     : "";
 
-  // ── Attendance deduction rows ─────────────────────────
-  const attendanceDeductRows = [
-    p.absentDays > 0
-      ? `<tr>
-       <td style="padding:7px 10px;color:#374151;font-size:13px;">
-         Absent (${p.absentDays || 0} days × ${fmt(p.perDaySalary)})
-         <span style="font-size:11px;color:#6b7280;margin-left:6px;">
-           (reflected in gross earnings)
-         </span>
-       </td>
-       <td style="padding:7px 10px;color:#6b7280;font-size:13px;text-align:right;">
-         —
-       </td>
-     </tr>`
-      : "",
-
-    p.halfDayDeduct > 0
-      ? `<tr>
-           <td style="padding:7px 10px;color:#374151;font-size:13px;">
-             Half Days (${p.halfDays || 0} days × ${fmt(p.halfDaySalary)})
-           </td>
-           <td style="padding:7px 10px;color:#dc2626;font-size:13px;text-align:right;">
-             −${fmt(p.halfDayDeduct)}
-           </td>
-         </tr>`
-      : "",
-
-    p.unpaidLeaveAmt > 0
-      ? `<tr>
-           <td style="padding:7px 10px;color:#374151;font-size:13px;">
-             Unpaid Leave (${p.unpaidLeave || 0} days × ${fmt(p.perDaySalary)})
-           </td>
-           <td style="padding:7px 10px;color:#dc2626;font-size:13px;text-align:right;">
-             −${fmt(p.unpaidLeaveAmt)}
-           </td>
-         </tr>`
-      : "",
-  ].join("");
-
   // ── Amount in words ───────────────────────────────────
-  const netInWords = numberToWords(Math.floor(p.netSalary || 0));
+  // Use Math.round to fix floating point truncation error (e.g., 249999.03 floored is 249999)
+  const netInWords = numberToWords(Math.round(p.netSalary || 0));
 
   // ─────────────────────────────────────────────────────
   //  HTML TEMPLATE
@@ -415,9 +374,45 @@ export const generatePayslipPDF = async (p) => {
 
   <hr class="divider"/>
 
-  <!-- ── Earnings / Salary Structure ── -->
+  <!-- ── Earnings Calculation ── -->
   <div class="section">
-    <div class="section-title">Earnings — Salary Structure</div>
+    <div class="section-title">Salary Calculation</div>
+    <table>
+      <tbody>
+        <tr>
+          <td style="padding:7px 10px;color:#374151;font-size:13px;" colspan="2">Fixed Monthly CTC</td>
+          <td style="padding:7px 10px;font-weight:600;color:#111827;text-align:right;font-size:13px;">
+            ${fmt(p.monthlySalary)}
+          </td>
+        </tr>
+        ${p.lopAmount > 0 ? `
+        <tr>
+          <td style="padding:7px 10px;color:#dc2626;font-size:13px;" colspan="2">
+            Loss of Pay (LOP) Deduction <span style="font-size:11px;color:#6b7280;margin-left:4px;">(${p.lopDays || 0} days × ${fmt(p.perDaySalary)})</span>
+          </td>
+          <td style="padding:7px 10px;font-weight:600;color:#dc2626;text-align:right;font-size:13px;">
+            −${fmt(p.lopAmount)}
+          </td>
+        </tr>` : ""}
+      </tbody>
+      <tfoot>
+        <tr style="background:#eff6ff;border-top:2px solid #bfdbfe;">
+          <td style="padding:10px;font-weight:800;color:#1e40af;font-size:14px;" colspan="2">
+            Earned Gross Salary
+          </td>
+          <td style="padding:10px;font-weight:800;color:#1e40af;font-size:14px;text-align:right;">
+            ${fmt(p.grossEarnings)}
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  
+  <hr class="divider"/>
+
+  <!-- ── Component Breakdown ── -->
+  <div class="section">
+    <div class="section-title">Component Breakdown</div>
     <table>
       <thead>
         <tr style="background:#f3f4f6;">
@@ -429,26 +424,16 @@ export const generatePayslipPDF = async (p) => {
       <tbody>
         ${structureRows}
       </tbody>
-      <tfoot>
-        <tr style="background:#eff6ff;border-top:2px solid #bfdbfe;">
-          <td style="padding:10px;font-weight:800;color:#1e40af;font-size:14px;" colspan="2">
-            Gross Salary
-          </td>
-          <td style="padding:10px;font-weight:800;color:#1e40af;font-size:14px;text-align:right;">
-            ${fmt(p.grossEarnings || p.monthlySalary)}
-          </td>
-        </tr>
-      </tfoot>
     </table>
   </div>
 
   <hr class="divider"/>
 
-  <!-- ── Deductions ── -->
+  <!-- ── Statutory Deductions ── -->
   <div class="section">
-    <div class="section-title">Deductions</div>
+    <div class="section-title">Statutory Deductions</div>
 
-    ${statutoryRows || attendanceDeductRows
+    ${statutoryRows
       ? `<table>
            <thead>
              <tr style="background:#f3f4f6;">
@@ -458,17 +443,16 @@ export const generatePayslipPDF = async (p) => {
            </thead>
            <tbody>
              ${statutoryRows}
-             ${attendanceDeductRows}
            </tbody>
          </table>`
       : `<p style="color:#9ca3af;font-size:13px;padding:4px 0;">
-           No deductions this month
+           No statutory deductions this month
          </p>`
     }
 
     <div class="deduct-total">
       <span>Total Deductions</span>
-      <span>−${fmt(p.deductions || 0)}</span>
+      <span>−${fmt(p.totalStatutoryDeductions || 0)}</span>
     </div>
   </div>
 
@@ -479,9 +463,9 @@ export const generatePayslipPDF = async (p) => {
     <div>
       <div class="net-label">Net In-Hand Salary</div>
       <div class="net-sub">
-        Gross ${fmt(p.grossEarnings || p.monthlySalary)}
+        Earned Gross ${fmt(p.grossEarnings)}
         &nbsp;−&nbsp;
-        Deductions ${fmt(p.deductions || 0)}
+        Deductions ${fmt(p.totalStatutoryDeductions || 0)}
       </div>
     </div>
     <div class="net-amount">${fmt(p.netSalary || 0)}</div>

@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import API from "../../services/api";
+import { formatRole } from "../../utils/roleFormatter";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import {
     HiOutlineUsers,
@@ -37,12 +38,13 @@ const MONTHS = [
 
 const STATUS_COLORS = {
     present: { solid: "#22C55E", bg: "#DCFCE7", border: "#86EFAC", text: "#14532D" },
-    late: { solid: "#F97316", bg: "#FFEDD5", border: "#FDBA74", text: "#7C2D12" },
-    halfday: { solid: "#EAB308", bg: "#FEF9C3", border: "#FDE047", text: "#713F12" },
-    absent: { solid: "#3B82F6", bg: "#DBEAFE", border: "#93C5FD", text: "#1E3A8A" },
-    holiday: { solid: "#A855F7", bg: "#F3E8FF", border: "#D8B4FE", text: "#581C87" },
-    weekend: { solid: "#818CF8", bg: "#EEF2FF", border: "#C7D2FE", text: "#3730A3" },
-    leave: { solid: "#EC4899", bg: "#FCE7F3", border: "#F9A8D4", text: "#831843" }
+    late: { solid: "#22C55E", bg: "#DCFCE7", border: "#86EFAC", text: "#14532D" }, // late is treated as full day
+    halfday: { solid: "#F97316", bg: "#FFEDD5", border: "#FDBA74", text: "#7C2D12" }, // Orange
+    absent: { solid: "#EF4444", bg: "#FEE2E2", border: "#FCA5A5", text: "#7F1D1D" }, // Red
+    holiday: { solid: "#EAB308", bg: "#FEF9C3", border: "#FDE047", text: "#713F12" }, // Yellow
+    weekend: { solid: "#9CA3AF", bg: "#F3F4F6", border: "#D1D5DB", text: "#374151" }, // Gray
+    leave: { solid: "#A855F7", bg: "#F3E8FF", border: "#D8B4FE", text: "#581C87" }, // Purple
+    today: { solid: "#3B82F6", bg: "#DBEAFE", border: "#3B82F6", text: "#1E3A8A" } // Blue Border
 };
 
 const STATUS_CONFIG = {
@@ -62,6 +64,7 @@ const DAY_STATUS_CONFIG = {
     absent: { label: "Absent", ...STATUS_COLORS.absent },
     leave: { label: "Leave", ...STATUS_COLORS.leave },
     holiday: { label: "Holiday", ...STATUS_COLORS.holiday },
+    weekend: { label: "Weekend", ...STATUS_COLORS.weekend },
 };
 
 const matchesStatus = (emp, filterStatus) => {
@@ -950,6 +953,7 @@ const HRAttendanceOverview = () => {
                                 <option value="absent">Absent</option>
                                 <option value="leave">Leave</option>
                                 <option value="holiday">Holiday</option>
+                                <option value="weekend">Weekend</option>
                             </select>
                             <select
                                 value={dayWiseDeptFilter}
@@ -977,6 +981,7 @@ const HRAttendanceOverview = () => {
                                 { label: "Half Day", val: dayWiseSummary.halfday, cfg: DAY_STATUS_CONFIG.halfday },
                                 { label: "Absent", val: dayWiseSummary.absent, cfg: DAY_STATUS_CONFIG.absent },
                                 { label: "Leave", val: dayWiseSummary.leave, cfg: DAY_STATUS_CONFIG.leave },
+                                { label: "Weekend", val: dayWiseSummary.weekend, cfg: DAY_STATUS_CONFIG.weekend },
                             ].map(s => (
                                 <div key={s.label} className="summary-pill" style={{
                                     background: isDark ? `${s.cfg.solid}15` : s.cfg.bg,
@@ -1107,13 +1112,14 @@ const HRAttendanceOverview = () => {
                                         <tr>
                                             <th>Employee</th>
                                             <th>Department</th>
-                                            <th>Days Present</th>
-                                            <th>Late</th>
+                                            <th>Full Day</th>
+                                            <th>Half Day</th>
+                                            <th>Leave</th>
                                             <th>Absent</th>
-                                            <th>Leave Days</th>
-                                            <th>Total Hrs</th>
-                                            <th>Avg / Day</th>
-                                            <th>Late hrs</th>
+                                            <th>Average Hours/Day</th>
+                                            <th>Shift Hours</th>
+                                            <th>Compliance %</th>
+                                            <th>Total Hours</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1123,7 +1129,11 @@ const HRAttendanceOverview = () => {
                                             </tr>
                                         )}
                                         {filteredMonthly.map((emp) => {
-                                            const s = emp.stats;
+                                            const s = emp.stats || {
+                                                presentDays: 0, halfDays: 0, lateDays: 0,
+                                                absentDays: 0, leaveDays: 0, totalWorkHours: 0,
+                                                avgDailyHours: 0, totalLateMinutes: 0
+                                            };
                                             return (
                                                 <tr key={emp._id}>
                                                     <td>
@@ -1132,24 +1142,24 @@ const HRAttendanceOverview = () => {
                                                                 {initials(emp.name)}
                                                             </div>
                                                             <div>
-                                                                <p style={{ fontWeight: 700, color: "var(--text-1)", fontSize: ".83rem" }}>{emp.name}</p>
-                                                                <p style={{ fontSize: ".7rem", color: "var(--text-2)", fontFamily: "DM Mono,monospace", fontWeight: 500 }}>{emp.employeeId}</p>
+                                                                <p style={{ fontWeight: 700, color: "var(--text-1)", fontSize: ".83rem" }}>{emp.name || "—"}</p>
+                                                                <p style={{ fontSize: ".7rem", color: "var(--text-2)", fontFamily: "DM Mono,monospace", fontWeight: 500 }}>{emp.employeeId || "—"}</p>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td><span className="dept-tag">{emp.department || "—"}</span></td>
+                                                    <td><span style={{ fontWeight: 700, color: "#15803D", fontSize: ".85rem" }}>{(s.presentDays || 0) + (s.lateDays || 0)}</span></td>
+                                                    <td>{(s.halfDays || 0) > 0 ? <span style={{ background: "#FEF3C7", color: "#92400E", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem" }}>{s.halfDays}</span> : <span style={{ color: "var(--text-2)", fontWeight: 500 }}>0</span>}</td>
+                                                    <td>{(s.leaveDays || 0) > 0 ? <span style={{ background: "#F3E8FF", color: "#6B21A8", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem" }}>{s.leaveDays}</span> : <span style={{ color: "var(--text-2)", fontWeight: 500 }}>0</span>}</td>
+                                                    <td>{(s.absentDays || 0) > 0 ? <span style={{ background: "#FEE2E2", color: "#991B1B", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem" }}>{s.absentDays}</span> : <span style={{ color: "var(--text-2)", fontWeight: 500 }}>0</span>}</td>
+                                                    <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "var(--text-1)" }}>{fmtHours(s.avgDailyHours)}</td>
+                                                    <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "var(--text-2)" }}>{s.expectedShiftHours}h</td>
                                                     <td>
-                                                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                                            <span style={{ fontWeight: 700, color: "#15803D", fontSize: ".85rem" }}>{s.presentDays + s.halfDays}</span>
-                                                            {s.halfDays > 0 && <span style={{ fontSize: ".68rem", color: "#92400E", background: "#FEF3C7", padding: "1px 6px", borderRadius: 3, fontWeight: 600, border: "1px solid #FDE68A" }}>{s.halfDays} half</span>}
-                                                        </div>
+                                                        <span style={{ fontWeight: 800, color: s.compliancePercentage >= 90 ? "var(--success)" : s.compliancePercentage >= 75 ? "#D97706" : "#DC2626" }}>
+                                                            {s.compliancePercentage}%
+                                                        </span>
                                                     </td>
-                                                    <td>{s.lateDays > 0 ? <span style={{ background: "#FEE2E2", color: "#991B1B", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem" }}>{s.lateDays}</span> : <span style={{ color: "var(--text-2)", fontWeight: 500 }}>0</span>}</td>
-                                                    <td>{s.absentDays > 0 ? <span style={{ background: "#DBEAFE", color: "#1E3A8A", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem" }}>{s.absentDays}</span> : <span style={{ color: "var(--text-2)", fontWeight: 500 }}>0</span>}</td>
-                                                    <td>{s.leaveDays > 0 ? <span style={{ background: "#F3E8FF", color: "#6B21A8", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem" }}>{s.leaveDays}</span> : <span style={{ color: "#374151", fontWeight: 500 }}>0</span>}</td>
-                                                    <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "var(--text-1)" }}>{s.totalWorkHours > 0 ? <span style={{ display: "inline-flex", alignItems: "baseline", gap: 2 }}>{Math.floor(s.totalWorkHours)}<span style={{ fontSize: ".68rem", color: "#6B7280", fontWeight: 400 }}>h {Math.round((s.totalWorkHours % 1) * 60)}m</span></span> : <span style={{ color: "#9CA3AF" }}>—</span>}</td>
-                                                    <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "var(--text-1)" }}>{s.avgDailyHours > 0 ? <span style={{ display: "inline-flex", alignItems: "baseline", gap: 2 }}>{Math.floor(s.avgDailyHours)}<span style={{ fontSize: ".68rem", color: "#6B7280", fontWeight: 400 }}>h {Math.round((s.avgDailyHours % 1) * 60)}m</span></span> : <span style={{ color: "#9CA3AF" }}>—</span>}</td>
-                                                    <td>{s.totalLateMinutes > 0 ? (() => { const totalMins = Math.round(s.totalLateMinutes); const hrs = Math.floor(totalMins / 60); const mins = totalMins % 60; return <span style={{ background: "#FFF7ED", color: "#C2410C", padding: "2px 8px", borderRadius: 4, fontWeight: 700, fontSize: ".75rem", fontFamily: "DM Mono,monospace" }}>{hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`}</span>; })() : <span style={{ color: "#374151", fontWeight: 500 }}>—</span>}</td>
+                                                    <td style={{ fontFamily: "DM Mono,monospace", fontSize: ".77rem", fontWeight: 600, color: "var(--text-1)" }}>{fmtHours(s.totalWorkHours)}</td>
                                                 </tr>
                                             );
                                         })}
