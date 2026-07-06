@@ -240,6 +240,7 @@ const css = `
 .leg-swatch.weekend { background:${STATUS_COLORS.weekend.bg}; border-color:${STATUS_COLORS.weekend.border}; }
 .leg-swatch.absent  { background:${STATUS_COLORS.absent.bg}; border-color:${STATUS_COLORS.absent.border}; }
 .leg-swatch.today   { background:#EEF2FF; border-color:#6366F1; }
+.tbadge.short-leave { background: #E0E7FF; color: #3730A3; }
 
 /* Chart highlight pulse */
 .cal-cell.hl-present  { outline: 2.5px solid ${STATUS_COLORS.present.solid}; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(74,222,128,.25); }
@@ -1487,25 +1488,31 @@ const Attendance = () => {
                                     {[...pastMonthly].reverse().map(item => {
                                         const d = new Date(item.date);
                                         // FIX #13: surface eightHourPassUsed visually in the history table
+                                        const hasCompletedPunches = !!(item.punchIn && item.punchOut);
+                                        const isGenuinelyAbsent =
+                                            item.status === "absent" && !hasCompletedPunches;
+
                                         const badgeCls =
                                             item.status === "holiday" ? "holiday" :
                                                 item.status === "weekend" ? "weekend" :
                                                     item.status === "leave" || item.onLeave || item.leaveApproved ? "leave" :
                                                         item.isHalfDay ? "half-day" :
-                                                            item.isLate ? "late" :
-                                                                item.eightHourPassUsed ? "pass" :
-                                                                    item.status === "present" ? "present" :
-                                                                        "absent";
+                                                            item.isShortLeave ? "short-leave" :
+                                                                item.isLate ? "late" :
+                                                                    item.eightHourPassUsed ? "pass" :
+                                                                        isGenuinelyAbsent ? "absent" :
+                                                                            "present";
 
                                         const badgeLabel =
                                             item.status === "holiday" ? "Holiday" :
                                                 item.status === "weekend" ? "Weekend" :
                                                     item.status === "leave" || item.onLeave || item.leaveApproved ? "On Leave" :
                                                         item.isHalfDay ? "Half Day" :
-                                                            item.isLate ? `Late (+${item.lateMinutes}m)` :
-                                                                item.eightHourPassUsed ? "Present (8h Pass)" :
-                                                                    item.status === "present" ? "Present" :
-                                                                        "Absent";
+                                                            item.isShortLeave ? "Short Leave" :
+                                                                item.isLate ? `Late (+${item.lateMinutes}m)` :
+                                                                    item.eightHourPassUsed ? "Present (8h Pass)" :
+                                                                        isGenuinelyAbsent ? "Absent" :
+                                                                            "Present";
                                         return (
                                             <tr key={item.dateString || item.date} onClick={() => setSelected(item)}>
                                                 <td style={{ fontWeight: 600, color: "var(--text-1)" }}>
