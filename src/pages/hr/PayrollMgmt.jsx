@@ -350,6 +350,7 @@ const PayrollMgmt = () => {
 
     const [markingId, setMarkingId] = useState(null);
     const [bulkLoading, setBulkLoading] = useState(false);
+    const [recalculating, setRecalculating] = useState(false);
     const [toast, setToast] = useState(null);
     const [toastVisible, setToastVisible] = useState(false);
     const [hoveredRow, setHoveredRow] = useState(null);
@@ -418,6 +419,33 @@ const PayrollMgmt = () => {
                 showToast(err.response?.data?.message || "Generation failed", "error");
             }
         } finally { setGenerating(false); }
+    };
+
+    const handleRecalculateAll = async () => {
+        if (recalculating) return;
+
+        const result = await Swal.fire({
+            title: "Recalculate All Drafts?",
+            text: `This will refresh attendance & salary figures for every DRAFT payroll in ${MONTHS[filterMonth - 1]} ${filterYear} using the latest attendance/leave records. Paid payrolls are not touched.`,
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#2563eb",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Yes, recalculate",
+            cancelButtonText: "Cancel",
+        });
+        if (!result.isConfirmed) return;
+
+        setRecalculating(true);
+        try {
+            const res = await API.put("/payroll/bulk-recalculate", { month: filterMonth, year: filterYear });
+            showToast(`Recalculated ${res.data.updated || 0} draft payroll(s) ✅`);
+            fetchPayrolls();
+        } catch (err) {
+            showToast(err.response?.data?.message || "Recalculation failed", "error");
+        } finally {
+            setRecalculating(false);
+        }
     };
 
     const handleShowPreview = async (empId) => {
@@ -847,6 +875,19 @@ const PayrollMgmt = () => {
                         >
                             <FiRefreshCw size={14} />
                             Refresh
+                        </IconBtn>
+                        <IconBtn
+                            variant="ghost"
+                            onClick={handleRecalculateAll}
+                            disabled={recalculating || draftPayrolls.length === 0}
+                            title="Refresh attendance & salary figures for all draft payrolls in this period"
+                            style={{ marginTop: "auto", borderColor: "#93c5fd", color: "#1d4ed8" }}
+                        >
+                            {recalculating ? (
+                                <><FiRefreshCw size={14} className="spin" />Recalculating…</>
+                            ) : (
+                                <><FiZap size={14} />Recalculate All Drafts</>
+                            )}
                         </IconBtn>
                     </div>
 
