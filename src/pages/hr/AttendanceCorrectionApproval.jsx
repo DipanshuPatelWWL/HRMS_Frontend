@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
@@ -20,6 +21,7 @@ const fmtTime = (d) =>
     }) : "—";
 
 const AttendanceCorrectionApproval = () => {
+    const navigate = useNavigate();
     const [corrections, setCorrections] = useState([]);
     const [filter, setFilter] = useState("pending");
     const [loading, setLoading] = useState(true);
@@ -123,9 +125,24 @@ const AttendanceCorrectionApproval = () => {
                 .modal-row { display: flex; flex-direction: column; gap: .6rem; }
             `}</style>
 
-            <div className="page-header">
-                <h1>Correction Requests</h1>
-                <p>Review and apply employee attendance correction requests</p>
+            <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+                <div>
+                    <h1>Correction Requests</h1>
+                    <p>Review and apply employee attendance correction requests</p>
+                </div>
+                <button
+                    className="btn btn-primary"
+                    onClick={() => navigate("/hr/device-approvals")}
+                    style={{
+                        whiteSpace: "nowrap",
+                        padding: "10px 20px",
+                        fontSize: "0.9rem",
+                        fontWeight: 700,
+                        borderRadius: "10px",
+                    }}
+                >
+                    Device Approvals
+                </button>
             </div>
 
             {/* Stats row */}

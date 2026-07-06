@@ -57,6 +57,7 @@ import TerminatedEmployees from "../pages/hr/TerminatedEmployees";
 //------------------------Advance Sales --------------------------------------//
 import SalesIntelligence from '../../pages/SalesIntelligence'
 import EmployeeHistory from "../pages/hr/EmployeeHistory";
+import DeviceApprovals from "../pages/hr/DeviceApprovals";
 
 // ─────────────────────────────────────────────
 //  Protected route
@@ -201,7 +202,8 @@ const AppRoutes = () => (
         <Route path="/hr/employee-history/:id" element={<Protected allowedRoles={["hr"]}><EmployeeHistory /></Protected>} />
         <Route path="/hr/sales-intelligence"
             element={<Protected allowedRoles={["hr"]}><SalesIntelligence /></Protected>} />
-
+        <Route path="/hr/device-approvals"
+            element={<Protected allowedRoles={["hr"]}><DeviceApprovals /></Protected>} />
 
         {/* Manager Routes */}
         <Route path="/manager" element={<Protected allowedRoles={["manager"]}><ManagerDashboard /></Protected>} />

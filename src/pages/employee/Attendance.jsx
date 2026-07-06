@@ -646,6 +646,55 @@ const Attendance = () => {
         );
     });
 
+
+    // NEW — add this function
+    const requestDeviceApprovalFlow = async (deviceUUID, productId) => {
+        let extra = {};
+        if (window.hrmsAgent?.getDeviceInfo) {
+            try {
+                const info = await window.hrmsAgent.getDeviceInfo();
+                extra = { hostname: info?.hostname || "", os: info?.os || "" };
+            } catch { /* ignore — HR can still identify by deviceUUID/productId */ }
+        }
+
+        const { value: reason, isConfirmed } = await Swal.fire({
+            icon: "question",
+            title: "Request Device Approval",
+            html: "This device isn't approved for punch-in yet.<br/>Send a request to HR to get it approved.",
+            input: "text",
+            inputPlaceholder: "Reason (optional) — e.g. New office PC",
+            showCancelButton: true,
+            confirmButtonText: "Send Request",
+            cancelButtonText: "Cancel",
+            confirmButtonColor: "#6366F1",
+            cancelButtonColor: "#6b7280",
+        });
+
+        if (!isConfirmed) return;
+
+        try {
+            await API.post("/device-approvals/request", {
+                deviceUUID,
+                productId,
+                ...extra,
+                reason: reason || "",
+            });
+            Swal.fire({
+                icon: "success",
+                title: "Request Sent",
+                text: "HR has been notified. You'll be able to punch in once it's approved.",
+                confirmButtonColor: "#22C55E",
+            });
+        } catch (err) {
+            Swal.fire({
+                icon: "error",
+                title: "Request Failed",
+                text: err.response?.data?.message || "Could not send the request",
+                confirmButtonColor: "#EF4444",
+            });
+        }
+    };
+
     const doPunchIn = async (lat, lng, accuracy, deviceUUID = "", productId = "") => {
         try {
             // ── Get stored deviceToken from Electron ──────────────────────
@@ -671,9 +720,32 @@ const Attendance = () => {
             });
             await Promise.all([fetchToday(), fetchMonthly(viewMonth, viewYear)]);
         } catch (e) {
+            const code = e.response?.data?.code;
             const msg = e.response?.data?.message || "Punch-in failed";
+
             if (mountedRef.current) {
-                Swal.fire({ icon: "error", title: "Punch-In Failed", text: msg, confirmButtonColor: "#EF4444" });
+                if (code === "DEVICE_NOT_APPROVED") {
+                    const respDevice = e.response?.data?.device || {};
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Device Not Approved",
+                        text: msg,
+                        showCancelButton: true,
+                        confirmButtonText: "Request Approval",
+                        cancelButtonText: "Not now",
+                        confirmButtonColor: "#6366F1",
+                        cancelButtonColor: "#6b7280",
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            requestDeviceApprovalFlow(
+                                respDevice.deviceUUID || deviceUUID,
+                                respDevice.productId || productId
+                            );
+                        }
+                    });
+                } else {
+                    Swal.fire({ icon: "error", title: "Punch-In Failed", text: msg, confirmButtonColor: "#EF4444" });
+                }
                 await fetchToday();
             }
         } finally {

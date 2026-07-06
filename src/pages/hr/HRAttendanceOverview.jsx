@@ -53,6 +53,7 @@ const STATUS_CONFIG = {
     absent: { label: "Absent", bg: "#DBEAFE", color: "#1E3A8A", dot: "#3B82F6" },
     on_leave: { label: "On Leave", bg: "#F3E8FF", color: "#6B21A8", dot: "#7C3AED" },
     holiday: { label: "Holiday", bg: "var(--brand-light)", color: "var(--brand-dark)", dot: "var(--brand)" },
+    weekend: { label: "Weekend", bg: "#F3F4F6", color: "#374151", dot: "#9CA3AF" },
     not_started: { label: "Office Closed", bg: "var(--surface-2)", color: "var(--text-3)", dot: "var(--text-3)" },
     missed_punchout: { label: "Missed Punch Out", bg: "var(--warn-bg)", color: "var(--warn)", dot: "#F97316" },
 };
@@ -819,6 +820,8 @@ const HRAttendanceOverview = () => {
                                 <option value="punched_out">Punched Out</option>
                                 <option value="absent">Absent</option>
                                 <option value="on_leave">On Leave</option>
+                                <option value="holiday">Holiday</option>
+                                <option value="weekend">Weekend</option>
                                 <option value="not_started">Office Closed</option>
                             </select>
                             <select
