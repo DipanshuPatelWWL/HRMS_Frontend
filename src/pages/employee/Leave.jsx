@@ -119,6 +119,19 @@ const Leave = () => {
 
     const leaveEstimate = estimateLeavePaidStatus();
 
+    const openPicker = (e) => {
+        try {
+            e.target.showPicker?.();
+        } catch {
+            // safe to ignore — falls back to native icon click
+        }
+    };
+
+    const handleClear = () => {
+        setForm({ type: "casual", fromDate: "", toDate: "", reason: "" });
+        setSuccess("");
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -447,11 +460,25 @@ const Leave = () => {
                 }
                 .lv-sl-strip.zero .lv-sl-num { color: var(--warn); }
 
-                /* ── Short-leave status chip ───────────── */
+               /* ── Short-leave status chip ───────────── */
                 .badge-short {
                     background: var(--brand-light);
     color: var(--brand);
     border: 1px solid var(--border-strong);
+                }
+
+                /* ── Clear button ──────────────────────── */
+                .lv-clear-btn {
+                    color: var(--text-2);
+                    border: 1.5px solid var(--border);
+                    background: var(--surface);
+                    white-space: nowrap;
+                    transition: border-color .15s, color .15s, background .15s;
+                }
+                .lv-clear-btn:not(:disabled):hover {
+                    border-color: var(--danger);
+                    color: var(--danger);
+                    background: var(--danger-bg);
                 }
             `}</style>
 
@@ -556,36 +583,54 @@ const Leave = () => {
                         </div>
 
                         {/* Date pickers — hidden for short leave (auto-set to today) */}
-                        {form.type !== "short-leave" && (
-                            <div className="lv-date-row">
-                                <div className="form-group" style={{ margin: 0 }}>
-                                    <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                        <CalendarDays size={12} strokeWidth={2.2} />
-                                        From date
-                                    </label>
-                                    <input
-                                        type="date"
-                                        className="input"
-                                        value={form.fromDate}
-                                        onChange={e => setForm({ ...form, fromDate: e.target.value })}
-                                        required
-                                    />
+                        {form.type !== "short-leave" && (() => {
+                            const todayStr = new Date().toISOString().split("T")[0];
+                            const minToDate = form.fromDate || todayStr;
+                            return (
+                                <div className="lv-date-row">
+                                    <div className="form-group" style={{ margin: 0 }}>
+                                        <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                            <CalendarDays size={12} strokeWidth={2.2} />
+                                            From date
+                                        </label>
+                                        <input
+                                            type="date"
+                                            className="input"
+                                            value={form.fromDate}
+                                            min={todayStr}
+                                            onChange={e => {
+                                                const newFrom = e.target.value;
+                                                setForm(prev => ({
+                                                    ...prev,
+                                                    fromDate: newFrom,
+                                                    // Clear toDate if it's now before the new fromDate
+                                                    toDate: prev.toDate && prev.toDate < newFrom ? "" : prev.toDate,
+                                                }));
+                                            }}
+                                            onClick={openPicker}
+                                            required
+                                            style={{ cursor: "pointer" }}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ margin: 0 }}>
+                                        <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                            <CalendarDays size={12} strokeWidth={2.2} />
+                                            To date
+                                        </label>
+                                        <input
+                                            type="date"
+                                            className="input"
+                                            value={form.toDate}
+                                            min={minToDate}
+                                            onChange={e => setForm({ ...form, toDate: e.target.value })}
+                                            onClick={openPicker}
+                                            required
+                                            style={{ cursor: "pointer" }}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="form-group" style={{ margin: 0 }}>
-                                    <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                        <CalendarDays size={12} strokeWidth={2.2} />
-                                        To date
-                                    </label>
-                                    <input
-                                        type="date"
-                                        className="input"
-                                        value={form.toDate}
-                                        onChange={e => setForm({ ...form, toDate: e.target.value })}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                        )}
+                            );
+                        })()}
 
                         {/* Short leave Monday/Friday block warning */}
                         {form.type === "short-leave" && (() => {
@@ -661,22 +706,34 @@ const Leave = () => {
                             const day = today.getDay();
                             const isShortLeaveBlocked = form.type === "short-leave" && (day === 1 || day === 5);
                             return (
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary"
-                                    disabled={submitting || isShortLeaveBlocked}
-                                    style={{
-                                        justifyContent: "center",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: ".45rem",
-                                        opacity: isShortLeaveBlocked ? 0.5 : 1,
-                                        cursor: isShortLeaveBlocked ? "not-allowed" : "pointer",
-                                    }}
-                                >
-                                    <Send size={14} strokeWidth={2.2} />
-                                    {submitting ? "Submitting…" : "Apply"}
-                                </button>
+                                <div style={{ display: "flex", gap: ".6rem" }}>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary"
+                                        disabled={submitting || isShortLeaveBlocked}
+                                        style={{
+                                            flex: 1,
+                                            justifyContent: "center",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: ".45rem",
+                                            opacity: isShortLeaveBlocked ? 0.5 : 1,
+                                            cursor: isShortLeaveBlocked ? "not-allowed" : "pointer",
+                                        }}
+                                    >
+                                        <Send size={14} strokeWidth={2.2} />
+                                        {submitting ? "Submitting…" : "Apply"}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="btn lv-clear-btn"
+                                        onClick={handleClear}
+                                        disabled={submitting}
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
                             );
                         })()}
                     </form>

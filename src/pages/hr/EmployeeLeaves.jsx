@@ -47,6 +47,7 @@ const computeBalanceTotals = (leaveBalance) => {
 const EmployeeLeaves = () => {
     const [employees, setEmployees] = useState([]);
     const [search, setSearch] = useState("");
+    const [department, setDepartment] = useState("");
     const [selected, setSelected] = useState(null);
     const [totalInput, setTotalInput] = useState("");
     const [saving, setSaving] = useState(false);
@@ -114,11 +115,20 @@ const EmployeeLeaves = () => {
         }
     };
 
-    const filtered = employees.filter(e =>
-        e.name?.toLowerCase().includes(search.toLowerCase()) ||
-        e.email?.toLowerCase().includes(search.toLowerCase()) ||
-        e.employeeId?.toLowerCase().includes(search.toLowerCase())
-    );
+    const departments = [...new Set(
+        employees.map(e => e.department).filter(Boolean)
+    )].sort();
+
+    const filtered = employees.filter(e => {
+        const matchesSearch =
+            e.name?.toLowerCase().includes(search.toLowerCase()) ||
+            e.email?.toLowerCase().includes(search.toLowerCase()) ||
+            e.employeeId?.toLowerCase().includes(search.toLowerCase());
+
+        const matchesDepartment = !department || e.department === department;
+
+        return matchesSearch && matchesDepartment;
+    });
 
     return (
         <DashboardLayout>
@@ -242,13 +252,27 @@ const EmployeeLeaves = () => {
                         </span>
                     </div>
 
-                    <input
-                        className="input"
-                        placeholder="🔍  Search by name, email or ID..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        style={{ marginBottom: ".85rem" }}
-                    />
+                    <div style={{ display: "flex", gap: ".6rem", marginBottom: ".85rem" }}>
+                        <input
+                            className="input"
+                            placeholder="Search by name, email or ID..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            style={{ flex: 1 }}
+                        />
+
+                        <select
+                            className="input"
+                            value={department}
+                            onChange={e => setDepartment(e.target.value)}
+                            style={{ width: "180px", flexShrink: 0 }}
+                        >
+                            <option value="">All Departments</option>
+                            {departments.map(dept => (
+                                <option key={dept} value={dept}>{dept}</option>
+                            ))}
+                        </select>
+                    </div>
 
                     {loading ? (
                         <p className="hlb-empty">Loading employees…</p>

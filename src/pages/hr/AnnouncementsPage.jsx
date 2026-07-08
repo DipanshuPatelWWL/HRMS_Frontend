@@ -239,7 +239,8 @@ const AnnouncementsPage = () => {
         if (!isHR) return;
         try {
             const res = await API.get("/users");
-            setEmployees(res.data.users ?? res.data ?? []);
+            const allUsers = res.data.users ?? res.data ?? [];
+            setEmployees(allUsers.filter((u) => u.status === "active"));
         } catch { /* silent */ }
     }, [isHR]);
 

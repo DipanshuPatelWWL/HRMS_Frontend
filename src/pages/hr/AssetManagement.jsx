@@ -497,10 +497,13 @@ export default function AssetManagement() {
         const fetchData = async () => {
             try {
                 // ─── Fetch Employees ─────────────────────────────
-                const usersRes = await API.get("/users?role=employee,hr,manager");
+                const usersRes = await API.get("/users?role=employee,hr,manager&status=active");
 
                 if (usersRes.data.success) {
-                    setEmployees(usersRes.data.users || []);
+                    const activeEmployees = (usersRes.data.users || []).filter(
+                        (e) => (e.status || "").toLowerCase() === "active"
+                    );
+                    setEmployees(activeEmployees);
                 } else {
                     setEmployees([]);
                 }

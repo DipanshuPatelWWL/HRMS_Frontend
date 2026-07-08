@@ -716,9 +716,15 @@ const Attendance = () => {
                 ...(lat != null && lng != null ? { lat, lng, accuracy: accuracy ?? 0 } : {}),
             };
 
-            await API.post("/attendance/punch-in", payload, {
+            const punchRes = await API.post("/attendance/punch-in", payload, {
                 headers: { "x-client-type": window.hrmsAgent ? "electron" : "browser" }
             });
+
+            const returnedToken = punchRes?.data?.deviceToken;
+            if (returnedToken && window.hrmsAgent?.setDeviceToken) {
+                window.hrmsAgent.setDeviceToken(returnedToken).catch(() => { });
+            }
+
             await Promise.all([fetchToday(), fetchMonthly(viewMonth, viewYear)]);
         } catch (e) {
             const code = e.response?.data?.code;

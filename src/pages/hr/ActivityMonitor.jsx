@@ -795,7 +795,7 @@ export default function ActivityMonitor() {
 
     /* Load employees */
     useEffect(() => {
-        API.get("/users?limit=200")
+        API.get("/users?limit=200&status=active")
             .then(r => {
                 const list = r.data?.users || r.data?.employees || r.data?.data || (Array.isArray(r.data) ? r.data : []);
                 setEmployees(list);

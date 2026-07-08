@@ -90,6 +90,20 @@ const AttendanceCorrectionRequest = () => {
         setSuccess(""); setError("");
     };
 
+    const openPicker = (e) => {
+        try {
+            e.target.showPicker?.();
+        } catch {
+
+        }
+    };
+
+    const handleClear = () => {
+        setForm(EMPTY_FORM);
+        setSuccess("");
+        setError("");
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true); setSuccess(""); setError("");
@@ -259,6 +273,19 @@ const AttendanceCorrectionRequest = () => {
                 }
                 .corr-submit-btn:not(:disabled):active {
                     transform: translateY(0);
+                }
+                     /* ── Clear button ──────────────────────────────────── */
+                .corr-clear-btn {
+                    color: var(--text-2);
+                    border: 1.5px solid var(--border);
+                    background: var(--surface);
+                    transition: border-color .15s, color .15s, background .15s;
+                    white-space: nowrap;
+                }
+                .corr-clear-btn:not(:disabled):hover {
+                    border-color: var(--danger);
+                    color: var(--danger);
+                    background: var(--danger-bg);
                 }
 
                 /* ── My Requests scrollable panel ──────────────────── */
@@ -527,7 +554,9 @@ const AttendanceCorrectionRequest = () => {
                                     value={form.date}
                                     max={new Date().toISOString().split("T")[0]}
                                     onChange={handleChange}
+                                    onClick={openPicker}
                                     required
+                                    style={{ cursor: "pointer" }}
                                 />
                             </div>
 
@@ -544,7 +573,9 @@ const AttendanceCorrectionRequest = () => {
                                         className="input"
                                         value={form.requestedPunchIn}
                                         onChange={handleChange}
+                                        onClick={openPicker}
                                         required
+                                        style={{ cursor: "pointer" }}
                                     />
                                 </div>
                             )}
@@ -562,7 +593,9 @@ const AttendanceCorrectionRequest = () => {
                                         className="input"
                                         value={form.requestedPunchOut}
                                         onChange={handleChange}
+                                        onClick={openPicker}
                                         required
+                                        style={{ cursor: "pointer" }}
                                     />
                                 </div>
                             )}
@@ -599,14 +632,26 @@ const AttendanceCorrectionRequest = () => {
                                 </div>
                             )}
 
-                            <button
-                                type="submit"
-                                className="btn btn-primary corr-submit-btn"
-                                disabled={submitting}
-                            >
-                                <Send size={14} strokeWidth={2.2} />
-                                {submitting ? "Submitting…" : "Submit Request"}
-                            </button>
+                            <div style={{ display: "flex", gap: ".6rem" }}>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary corr-submit-btn"
+                                    disabled={submitting}
+                                    style={{ flex: 1 }}
+                                >
+                                    <Send size={14} strokeWidth={2.2} />
+                                    {submitting ? "Submitting…" : "Submit Request"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn corr-clear-btn"
+                                    onClick={handleClear}
+                                    disabled={submitting}
+                                >
+                                    Clear
+                                </button>
+                            </div>
                         </form>
                     </div>
 

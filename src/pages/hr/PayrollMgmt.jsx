@@ -10,8 +10,9 @@ import {
     FiDownload, FiCheckCircle, FiTrash2, FiZap,
     FiCalendar, FiFilter, FiUsers, FiDollarSign,
     FiTrendingUp, FiClock, FiCheck, FiX,
-    FiChevronDown, FiAlertCircle
+    FiChevronDown, FiAlertCircle, FiArrowUpCircle
 } from "react-icons/fi";
+import SalaryIncrementPanel from "./SalaryIncrementPanel";
 
 // ─────────────────────────────────────────────
 //  Constants
@@ -101,12 +102,12 @@ const SalaryPreviewModal = ({ isOpen, onClose, data }) => {
             position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.5)",
             display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
             backdropFilter: "blur(4px)"
-        }} onClick={onClose}>
+        }}>
             <div style={{
                 background: "var(--surface)", width: "100%", maxWidth: 550,
                 borderRadius: 16, overflow: "hidden", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
                 animation: "slideDown 0.3s ease"
-            }} onClick={e => e.stopPropagation()}>
+            }}>
                 <div style={{ padding: "1.2rem 1.5rem", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: 10, fontSize: "1.1rem" }}>
                         {isSavedRecord ? <FiList color="#2563eb" /> : <FiZap color="#2563eb" />}
@@ -225,6 +226,129 @@ const SalaryPreviewModal = ({ isOpen, onClose, data }) => {
                             </p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ─────────────────────────────────────────────
+//  Salary Increment Modal Sub-component
+// ─────────────────────────────────────────────
+const IncrementModal = ({ isOpen, onClose, employee }) => {
+    if (!isOpen || !employee) return null;
+
+    return (
+        <div style={{
+            position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.5)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+            backdropFilter: "blur(4px)"
+        }}>
+            <div style={{
+                background: "var(--surface)", width: "100%", maxWidth: 900,
+                borderRadius: 16, overflow: "hidden", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+                animation: "slideDown 0.3s ease"
+            }}>
+                <div style={{ padding: "1.2rem 1.5rem", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: 10, fontSize: "1.1rem" }}>
+                        <FiArrowUpCircle color="#2563eb" />
+                        Salary Increment — {employee.name || "Employee"}
+                    </h3>
+                    <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--text-3)" }}><FiX size={20} /></button>
+                </div>
+                <div style={{ padding: "1.5rem", maxHeight: "80vh", overflowY: "auto" }}>
+                    <SalaryIncrementPanel employeeId={employee._id} />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ─────────────────────────────────────────────
+//  Employee Picker Modal (choose employee → open increment panel)
+// ─────────────────────────────────────────────
+const EmployeePickerModal = ({ isOpen, onClose, employees, loading, onSelect }) => {
+    const [search, setSearch] = useState("");
+    if (!isOpen) return null;
+
+    const filtered = employees.filter(e => {
+        const q = search.toLowerCase();
+        return (
+            (e.name || "").toLowerCase().includes(q) ||
+            (e.employeeId || "").toLowerCase().includes(q) ||
+            (e.department || "").toLowerCase().includes(q)
+        );
+    });
+
+    return (
+        <div style={{
+            position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.5)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+            backdropFilter: "blur(4px)"
+        }}>
+            <div style={{
+                background: "var(--surface)", width: "100%", maxWidth: 480,
+                borderRadius: 16, overflow: "hidden", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+                animation: "slideDown 0.3s ease", display: "flex", flexDirection: "column", maxHeight: "80vh"
+            }}>
+                <div style={{ padding: "1.2rem 1.5rem", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: 10, fontSize: "1.1rem" }}>
+                        <FiArrowUpCircle color="#2563eb" />
+                        Select Employee
+                    </h3>
+                    <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--text-3)" }}><FiX size={20} /></button>
+                </div>
+
+                <div style={{ padding: "1rem 1.5rem 0" }}>
+                    <input
+                        type="text"
+                        placeholder="Search by name, ID, or department…"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        style={{
+                            width: "100%", padding: "9px 13px", borderRadius: 8,
+                            border: "1.5px solid var(--border)", fontSize: ".88rem", outline: "none",
+                        }}
+                    />
+                </div>
+
+                <div style={{ padding: "1rem 1.5rem 1.5rem", overflowY: "auto", flex: 1 }}>
+                    {loading && <p style={{ color: "var(--text-3)", fontSize: ".85rem", textAlign: "center", padding: "1rem 0" }}>Loading employees…</p>}
+
+                    {!loading && filtered.length === 0 && (
+                        <p style={{ color: "var(--text-3)", fontSize: ".85rem", textAlign: "center", padding: "1rem 0" }}>
+                            No employees match your search
+                        </p>
+                    )}
+
+                    {!loading && filtered.map(emp => (
+                        <div
+                            key={emp._id}
+                            onClick={() => onSelect(emp)}
+                            style={{
+                                display: "flex", alignItems: "center", gap: 12,
+                                padding: "10px 12px", borderRadius: 10, cursor: "pointer",
+                                transition: "background 0.15s ease", marginBottom: 6,
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = "var(--surface-2)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                        >
+                            <div style={{
+                                width: 36, height: 36, borderRadius: 9,
+                                background: "linear-gradient(135deg,#2563eb,#7c3aed)",
+                                color: "#fff", display: "grid", placeItems: "center",
+                                fontSize: ".72rem", fontWeight: 800, flexShrink: 0,
+                            }}>
+                                {(emp.name || "?").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                            </div>
+                            <div>
+                                <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--text-1)" }}>{emp.name || "—"}</div>
+                                <div style={{ fontSize: ".75rem", color: "var(--text-3)" }}>
+                                    {emp.employeeId || ""}{emp.department && ` · ${emp.department}`}{emp.role && ` · ${emp.role}`}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
@@ -359,6 +483,31 @@ const PayrollMgmt = () => {
     const [previewData, setPreviewData] = useState(null);
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
+    // New state for salary increment panel
+    const [incrementEmployee, setIncrementEmployee] = useState(null);
+    const [isIncrementModalOpen, setIsIncrementModalOpen] = useState(false);
+
+    // Standalone employee picker (for increments without a generated payslip)
+    const [isEmployeePickerOpen, setIsEmployeePickerOpen] = useState(false);
+    const [employeeList, setEmployeeList] = useState([]);
+    const [employeeListLoading, setEmployeeListLoading] = useState(false);
+
+    const fetchEmployeeList = async () => {
+        setEmployeeListLoading(true);
+        try {
+            const res = await API.get("/users/list"); // adjust to your actual "get employees" endpoint
+            setEmployeeList(res.data.users || []);
+        } catch (err) {
+            showToast("Failed to load employee list", "error");
+        } finally {
+            setEmployeeListLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isEmployeePickerOpen) fetchEmployeeList();
+    }, [isEmployeePickerOpen]);
+
     const headerRef = useFadeIn(0);
     const genPanelRef = useFadeIn(100);
     const tablePanelRef = useFadeIn(200);
@@ -461,6 +610,21 @@ const PayrollMgmt = () => {
     const handleViewPayslip = (p) => {
         setPreviewData(p);
         setIsPreviewModalOpen(true);
+    };
+
+    const handleShowIncrement = (emp) => {
+        if (!emp || !emp._id) {
+            showToast("Employee data unavailable for increment", "error");
+            return;
+        }
+        setIncrementEmployee(emp);
+        setIsIncrementModalOpen(true);
+    };
+
+    const handleSelectEmployeeForIncrement = (emp) => {
+        setIsEmployeePickerOpen(false);
+        setIncrementEmployee(emp);
+        setIsIncrementModalOpen(true);
     };
 
     const handleMarkPaid = async (id) => {
@@ -760,12 +924,22 @@ const PayrollMgmt = () => {
 
                 {/* Generate Panel */}
                 <div ref={genPanelRef} className="pr-panel">
-                    <p className="pr-panel-title">
-                        <span style={{ background: "#dbeafe", color: "#1d4ed8", width: 28, height: 28, borderRadius: 7, display: "grid", placeItems: "center" }}>
-                            <FiSettings size={15} />
-                        </span>
-                        Generate Payroll
-                    </p>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: ".75rem", marginBottom: "1rem" }}>
+                        <p className="pr-panel-title" style={{ margin: 0 }}>
+                            <span style={{ background: "#dbeafe", color: "#1d4ed8", width: 28, height: 28, borderRadius: 7, display: "grid", placeItems: "center" }}>
+                                <FiSettings size={15} />
+                            </span>
+                            Generate Payroll
+                        </p>
+                        <IconBtn
+                            variant="ghost"
+                            onClick={() => setIsEmployeePickerOpen(true)}
+                            style={{ borderColor: "#c4b5fd", color: "#6d28d9" }}
+                        >
+                            <FiArrowUpCircle size={14} />
+                            Manage Salary Increments
+                        </IconBtn>
+                    </div>
                     <div style={{ display: "flex", gap: ".85rem", flexWrap: "wrap", alignItems: "flex-end" }}>
                         <div>
                             <label className="pr-label">
@@ -1075,6 +1249,15 @@ const PayrollMgmt = () => {
                                                             <FiDownload size={13} />
                                                             PDF
                                                         </IconBtn>
+                                                        <IconBtn
+                                                            variant="ghost"
+                                                            title="View / Record Salary Increment"
+                                                            onClick={() => handleShowIncrement(emp)}
+                                                            style={{ fontSize: ".76rem", padding: "6px 11px", borderColor: "#c4b5fd", color: "#6d28d9" }}
+                                                        >
+                                                            <FiArrowUpCircle size={13} />
+                                                            Increment
+                                                        </IconBtn>
                                                         {p.status === "draft" && (
                                                             <>
                                                                 <IconBtn
@@ -1114,6 +1297,22 @@ const PayrollMgmt = () => {
                 isOpen={isPreviewModalOpen}
                 onClose={() => setIsPreviewModalOpen(false)}
                 data={previewData}
+            />
+
+            {/* Employee Picker (for increments without a generated payslip) */}
+            <EmployeePickerModal
+                isOpen={isEmployeePickerOpen}
+                onClose={() => setIsEmployeePickerOpen(false)}
+                employees={employeeList}
+                loading={employeeListLoading}
+                onSelect={handleSelectEmployeeForIncrement}
+            />
+
+            {/* Salary Increment Modal */}
+            <IncrementModal
+                isOpen={isIncrementModalOpen}
+                onClose={() => setIsIncrementModalOpen(false)}
+                employee={incrementEmployee}
             />
 
             {/* Toast */}

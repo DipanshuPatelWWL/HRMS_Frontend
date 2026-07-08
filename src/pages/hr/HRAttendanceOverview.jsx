@@ -934,7 +934,12 @@ const HRAttendanceOverview = () => {
                                 type="date"
                                 value={selectedDate}
                                 onChange={(e) => setSelectedDate(e.target.value)}
-                                style={{ fontWeight: 700 }}
+                                onClick={(e) => {
+                                    if (typeof e.currentTarget.showPicker === "function") {
+                                        e.currentTarget.showPicker();
+                                    }
+                                }}
+                                style={{ fontWeight: 700, cursor: "pointer" }}
                             />
                             <div className="search-wrap">
                                 <HiOutlineSearch className="search-icon" size={15} />

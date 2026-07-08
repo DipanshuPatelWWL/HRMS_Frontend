@@ -201,7 +201,7 @@ const StatusBadge = ({ status }) => {
 //  Confirm Dialog
 // ─────────────────────────────────────────────
 const ConfirmDialog = ({ title, message, confirmText, confirmStyle = {}, icon, onConfirm, onCancel, loading }) => (
-    <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && onCancel()}>
+    <div className="modal-backdrop">
         <div className="modal" style={{ maxWidth: 430, width: "calc(100% - 2rem)", margin: "0 auto" }}>
             <div style={{
                 width: 56, height: 56, borderRadius: "50%",
@@ -2841,7 +2841,7 @@ const Employees = () => {
 
             {/* ─── Add Modal ─── */}
             {addModal && (isHR || isManager) && (
-                <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setAddModal(false)}>
+                <div className="modal-backdrop">
                     <div className="modal enhanced-modal" key={form._key}>
                         <div className="modal-header">
                             <div>
@@ -2886,7 +2886,7 @@ const Employees = () => {
 
             {/* ─── Edit Modal (tabbed) ─── */}
             {editTarget && editEmp && (isHR || isManager) && (
-                <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setEditTarget(null)}>
+                <div className="modal-backdrop">
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
                             <div>
@@ -3140,7 +3140,7 @@ const Employees = () => {
 
             {/* ─── Salary Modal ─── */}
             {salaryModal && (
-                <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setSalaryModal(false)}>
+                <div className="modal-backdrop">
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
                             <span className="modal-title" style={{ color: "var(--text-1)" }}>💰 Salary Details — {selectedEmployee?.name}</span>
@@ -3194,7 +3194,7 @@ const Employees = () => {
 
             {/* ─── Assign Team Modal ─── */}
             {assignModal && (isHR || isManager) && (
-                <div className="modal-backdrop" onClick={e => e.target === e.currentTarget && setAssignModal(false)}>
+                <div className="modal-backdrop">
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
                             <div>
