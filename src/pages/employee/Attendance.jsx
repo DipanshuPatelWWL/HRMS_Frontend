@@ -704,8 +704,10 @@ const Attendance = () => {
                 try {
                     deviceToken = await window.hrmsAgent.getDeviceToken();
                 } catch (e) {
-                    // ignore — will fallback
+                    console.error("getDeviceToken Error", e);
                 }
+            } else {
+                console.log("getDeviceToken function not found");
             }
 
             const payload = {
@@ -715,7 +717,6 @@ const Attendance = () => {
                 ...(deviceUUID && productId ? { deviceUUID, productId } : {}),
                 ...(lat != null && lng != null ? { lat, lng, accuracy: accuracy ?? 0 } : {}),
             };
-
             const punchRes = await API.post("/attendance/punch-in", payload, {
                 headers: { "x-client-type": window.hrmsAgent ? "electron" : "browser" }
             });
