@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getMyAssets, getAssetHistory } from "../../services/assetsServices";
+import { getMyAssets, getAssetHistory, returnAsset } from "../../services/assetsServices";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { HistoryTimeline } from "../../components/common/AssetShared";
 import { BASE_URL } from "../../services/api";
@@ -408,6 +408,9 @@ const Icons = {
     Info: ({ size = 14 }) => (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
     ),
+    Undo: ({ size = 14 }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14 4 9l5-5" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></svg>
+    ),
 };
 
 const ASSET_ICONS = {
@@ -431,7 +434,7 @@ function CondBadge({ value }) {
 }
 
 /* ─── Asset Detail Modal ─────────────────────────────────────────────────── */
-function AssetDetailModal({ asset, onClose, onHistory }) {
+function AssetDetailModal({ asset, onClose, onHistory, onReturn }) {
     const meta = ASSET_META[asset.assetType] || ASSET_META.Other;
     const AssetIcon = ASSET_ICONS[asset.assetType] || Icons.Package;
 
@@ -548,14 +551,29 @@ function AssetDetailModal({ asset, onClose, onHistory }) {
                         ))}
                     </div>
 
-                    {/* History CTA */}
-                    <button
-                        className="ma2-hist-btn"
-                        style={{ width: "100%", justifyContent: "center", padding: "12px 0", fontSize: 13, borderRadius: 10 }}
-                        onClick={() => { onClose(); onHistory(); }}
-                    >
-                        <Icons.History size={15} /> View Full History
-                    </button>
+                    {/* History + Return CTA */}
+                    <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                            className="ma2-hist-btn"
+                            style={{ flex: 1, justifyContent: "center", padding: "12px 0", fontSize: 13, borderRadius: 10 }}
+                            onClick={() => { onClose(); onHistory(); }}
+                        >
+                            <Icons.History size={15} /> View Full History
+                        </button>
+                        {asset.isActive !== false && !asset.returnDate ? (
+                            <button
+                                className="ma2-hist-btn"
+                                style={{ flex: 1, justifyContent: "center", padding: "12px 0", fontSize: 13, borderRadius: 10, borderColor: "#FCA5A5", color: "#b91c1c" }}
+                                onClick={() => { onClose(); onReturn(asset); }}
+                            >
+                                <Icons.Undo size={14} /> Return Asset
+                            </button>
+                        ) : (
+                            <span className="ma2-tag" style={{ background: "var(--surface-2)", color: "var(--text-2)", flex: 1, justifyContent: "center" }}>
+                                Returned {asset.returnDate ? new Date(asset.returnDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : ""}
+                            </span>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
@@ -622,8 +640,69 @@ function HistoryModal({ modal, loading, onClose }) {
     );
 }
 
+
+/* ─── Return Confirm Modal ───────────────────────────────────────────────── */
+function ReturnConfirmModal({ asset, loading, error, onConfirm, onClose }) {
+    useEffect(() => {
+        const h = (e) => e.key === "Escape" && !loading && onClose();
+        window.addEventListener("keydown", h);
+        document.body.style.overflow = "hidden";
+        return () => {
+            window.removeEventListener("keydown", h);
+            document.body.style.overflow = "";
+        };
+    }, [onClose, loading]);
+
+    return (
+        <div className="ma2-modal-bg" onClick={(e) => e.target === e.currentTarget && !loading && onClose()}>
+            <div className="ma2-modal" style={{ maxWidth: 380 }}>
+                <div style={{ padding: "26px 24px 22px", textAlign: "center" }}>
+                    <div style={{
+                        width: 52, height: 52, borderRadius: "50%",
+                        background: "var(--danger-bg)", color: "#b91c1c",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        margin: "0 auto 14px",
+                    }}>
+                        <Icons.Undo size={22} />
+                    </div>
+                    <div style={{ fontWeight: 800, fontSize: 16, color: "var(--text-1)", marginBottom: 6 }}>
+                        Return this asset?
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--text-2)", fontWeight: 500, marginBottom: 18 }}>
+                        You're about to return <strong>{asset.name}</strong> ({asset.barcode}).
+                        The current date and time will be recorded automatically and HR will see it as returned.
+                    </div>
+                    {error && (
+                        <div style={{ fontSize: 12.5, color: "#9f1239", background: "var(--danger-bg)", borderRadius: 8, padding: "8px 10px", marginBottom: 14 }}>
+                            {error}
+                        </div>
+                    )}
+                    <div style={{ display: "flex", gap: 10 }}>
+                        <button
+                            className="ma2-hist-btn"
+                            style={{ flex: 1, justifyContent: "center", padding: "10px 0" }}
+                            onClick={onClose}
+                            disabled={loading}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className="ma2-hist-btn"
+                            style={{ flex: 1, justifyContent: "center", padding: "10px 0", background: "#e11d48", borderColor: "#e11d48", color: "#fff" }}
+                            onClick={onConfirm}
+                            disabled={loading}
+                        >
+                            {loading ? <Icons.Spin size={14} /> : "Confirm Return"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 /* ─── Asset Card ─────────────────────────────────────────────────────────── */
-function AssetCard({ asset, delay, onHistory, onClick }) {
+function AssetCard({ asset, delay, onHistory, onClick, onReturn }) {
     const meta = ASSET_META[asset.assetType] || ASSET_META.Other;
     const AssetIcon = ASSET_ICONS[asset.assetType] || Icons.Package;
 
@@ -703,6 +782,15 @@ function AssetCard({ asset, delay, onHistory, onClick }) {
                     >
                         <Icons.History size={13} /> History
                     </button>
+                    {asset.isActive !== false && !asset.returnDate && (
+                        <button
+                            className="ma2-hist-btn"
+                            style={{ borderColor: "#FCA5A5", color: "#b91c1c" }}
+                            onClick={(e) => { e.stopPropagation(); onReturn(asset); }}
+                        >
+                            <Icons.Undo size={13} /> Return
+                        </button>
+                    )}
                     <span className="ma2-card-arrow">
                         <Icons.Arrow size={15} />
                     </span>
@@ -723,6 +811,9 @@ export default function MyAssets() {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [detailAsset, setDetailAsset] = useState(null);
     const [showPwd, setShowPwd] = useState(false);
+    const [returnConfirmAsset, setReturnConfirmAsset] = useState(null);
+    const [returningId, setReturningId] = useState(null);
+    const [returnError, setReturnError] = useState("");
 
     useEffect(() => {
         getMyAssets()
@@ -744,6 +835,34 @@ export default function MyAssets() {
             setHistoryModal({ asset, history: [] });
         } finally {
             setHistoryLoading(false);
+        }
+    };
+
+    const handleConfirmReturn = async () => {
+        if (!returnConfirmAsset) return;
+        const assetId = returnConfirmAsset._id;
+        setReturningId(assetId);
+        setReturnError("");
+        try {
+            const res = await returnAsset(assetId);
+            const updated = res.data?.data;
+            setData((prev) => ({
+                ...prev,
+                assets: prev.assets.map((a) =>
+                    a._id === assetId
+                        ? {
+                            ...a,
+                            isActive: false,
+                            returnDate: updated?.returnDate || new Date().toISOString(),
+                        }
+                        : a
+                ),
+            }));
+            setReturnConfirmAsset(null);
+        } catch (err) {
+            setReturnError(err.response?.data?.message || "Failed to return asset. Please try again.");
+        } finally {
+            setReturningId(null);
         }
     };
 
@@ -960,6 +1079,7 @@ export default function MyAssets() {
                                 delay={320 + i * 55}
                                 onHistory={() => openHistory(asset)}
                                 onClick={() => setDetailAsset(asset)}
+                                onReturn={(a) => setReturnConfirmAsset(a)}
                             />
                         ))}
                     </div>
@@ -971,6 +1091,7 @@ export default function MyAssets() {
                         asset={detailAsset}
                         onClose={() => setDetailAsset(null)}
                         onHistory={() => openHistory(detailAsset)}
+                        onReturn={(a) => setReturnConfirmAsset(a)}
                     />
                 )}
                 {historyModal && (
@@ -978,6 +1099,15 @@ export default function MyAssets() {
                         modal={historyModal}
                         loading={historyLoading}
                         onClose={() => setHistoryModal(null)}
+                    />
+                )}
+                {returnConfirmAsset && (
+                    <ReturnConfirmModal
+                        asset={returnConfirmAsset}
+                        loading={returningId === returnConfirmAsset._id}
+                        error={returnError}
+                        onConfirm={handleConfirmReturn}
+                        onClose={() => { setReturnConfirmAsset(null); setReturnError(""); }}
                     />
                 )}
             </div>

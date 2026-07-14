@@ -33,3 +33,6 @@ export const getAssetHistory = (assetId) =>
 
 export const getMyAssets = () =>
     API.get(`${BASE}/me`);
+
+export const returnAsset = (assetId, note = "") =>
+    API.patch(`${BASE}/${assetId}/return`, { note });

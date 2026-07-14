@@ -835,6 +835,7 @@ export default function AssetManagement() {
                                                 <th>Asset</th>
                                                 <th>Barcode</th>
                                                 <th>Condition</th>
+                                                <th>Status</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
@@ -1004,6 +1005,7 @@ export default function AssetManagement() {
                                 { label: "Purchase Date", value: detailAsset.purchaseDate?.slice(0, 10) || "—" },
                                 { label: "Warranty Expiry", value: detailAsset.warrantyExpiry?.slice(0, 10) || "—" },
                                 { label: "Assigned Date", value: detailAsset.assignedDate?.slice(0, 10) || "—" },
+                                { label: "Return Date", value: detailAsset.returnDate ? new Date(detailAsset.returnDate).toISOString().slice(0, 10) : "—" },
                             ].map(({ label, value }) => (
                                 <div key={label} style={{
                                     background: "#f8fafc", borderRadius: 9,
@@ -1087,6 +1089,27 @@ function AssetRow({ asset, delay, onRowClick, onHistory, onCondChange, onPhotoUp
             </td>
 
             <td><CondBadge value={asset.condition} /></td>
+
+            <td>
+                {asset.isActive === false || asset.returnDate ? (
+                    <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 5,
+                        padding: "3px 10px", borderRadius: 20, fontSize: 11.5,
+                        fontWeight: 600, background: "#FAECE7", color: "#993C1D",
+                    }}>
+                        Returned {asset.returnDate ? new Date(asset.returnDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : ""}
+                    </span>
+                ) : (
+                    <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 5,
+                        padding: "3px 10px", borderRadius: 20, fontSize: 11.5,
+                        fontWeight: 600, background: "#EAF3DE", color: "#3B6D11",
+                    }}>
+                        In Use
+                    </span>
+                )}
+            </td>
+
 
             {/* Actions — stopPropagation so they don't open the detail modal */}
             <td onClick={(e) => e.stopPropagation()}>
