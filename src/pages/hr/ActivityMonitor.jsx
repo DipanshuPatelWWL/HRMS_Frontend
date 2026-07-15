@@ -25,6 +25,46 @@ const fmtTime = (iso) => {
     });
 };
 
+// NEW
+/* ── Detect near-solid-color images (locked screen / blank capture) ── */
+const isLikelyBlankImage = (imgEl) => {
+    try {
+        const canvas = document.createElement("canvas");
+        const w = (canvas.width = 40); // small sample size is enough
+        const h = (canvas.height = 24);
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(imgEl, 0, 0, w, h);
+        const { data } = ctx.getImageData(0, 0, w, h);
+
+        let rSum = 0, gSum = 0, bSum = 0;
+        const pixelCount = w * h;
+        for (let i = 0; i < data.length; i += 4) {
+            rSum += data[i];
+            gSum += data[i + 1];
+            bSum += data[i + 2];
+        }
+        const rAvg = rSum / pixelCount, gAvg = gSum / pixelCount, bAvg = bSum / pixelCount;
+
+        let variance = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            variance +=
+                Math.abs(data[i] - rAvg) +
+                Math.abs(data[i + 1] - gAvg) +
+                Math.abs(data[i + 2] - bAvg);
+        }
+        variance /= pixelCount;
+
+        // Real screenshots have lots of edges/text/UI → high variance.
+        // A flat locked-screen frame has almost none.
+        return variance < 4;
+    } catch (e) {
+        // Canvas read can fail (e.g. CORS) — don't block rendering on that
+        return false;
+    }
+};
+
+/* ── Group titles by hour slot ── */
+
 /* ── Group titles by hour slot ── */
 const groupByHour = (titles) => {
     const slots = {};
@@ -785,6 +825,7 @@ export default function ActivityMonitor() {
     const [refreshKey, setRefreshKey] = useState(0);
     const [capturing, setCapturing] = useState(false);
     const [captureModal, setCaptureModal] = useState(null);
+    const [captureBlank, setCaptureBlank] = useState(false);
     const [streaming, setStreaming] = useState(false);
     const [streamFrame, setStreamFrame] = useState(null);
     const [streamLocked, setStreamLocked] = useState(false);
@@ -890,6 +931,7 @@ export default function ActivityMonitor() {
         if (!selectedUser || capturing) return;
         if (pollRef.current) clearInterval(pollRef.current);
         setCapturing(true);
+        setCaptureBlank(false);
         try {
             const res = await API.post(`/activity-monitor/capture-request/${selectedUser}`);
             const captureId = res.data?.captureId;
@@ -1227,13 +1269,27 @@ export default function ActivityMonitor() {
                                     : `Captured at ${new Date(captureModal.completedAt).toLocaleTimeString()}`
                                 }
                             </div>
+                      // NEW
                             <div style={{ marginBottom: 20 }}>
                                 <div className="am-modal-img-box">
                                     <div className="am-modal-img-label">🖥️ Screenshot</div>
-                                    {captureModal.screenshot
-                                        ? <img src={captureModal.screenshot} alt="screenshot" style={{ width: "100%", maxHeight: "50vh", height: "auto", objectFit: "contain", display: "block" }} />
-                                        : <div className="am-modal-no-img">No screenshot available</div>
-                                    }
+                                    {captureModal.screenshot && !captureBlank ? (
+                                        <img
+                                            src={captureModal.screenshot}
+                                            alt="screenshot"
+                                            style={{ width: "100%", maxHeight: "50vh", height: "auto", objectFit: "contain", display: "block" }}
+                                            onLoad={(e) => {
+                                                if (isLikelyBlankImage(e.target)) setCaptureBlank(true);
+                                            }}
+                                        />
+                                    ) : captureModal.screenshot && captureBlank ? (
+                                        <div className="am-modal-no-img" style={{ flexDirection: "column", gap: 6 }}>
+                                            <span style={{ fontSize: 24 }}>🔒</span>
+                                            <span>Employee's screen appears to be locked</span>
+                                        </div>
+                                    ) : (
+                                        <div className="am-modal-no-img">No screenshot available</div>
+                                    )}
                                 </div>
                             </div>
                             <button className="am-modal-close" onClick={() => setCaptureModal(null)}>
