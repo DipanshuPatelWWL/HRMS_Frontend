@@ -594,6 +594,8 @@ const css = `
   padding: 24px;
   max-width: 900px;
   width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 .am-modal-title {
@@ -698,6 +700,9 @@ const css = `
   padding: 0;
   max-width: 1000px;
   width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 20px 60px rgba(0,0,0,0.4);
   overflow: hidden;
 }
@@ -708,6 +713,7 @@ const css = `
   padding: 14px 20px;
   background: #0A0C10;
   color: #fff;
+  flex-shrink: 0;
 }
 .am-stream-title {
   display: flex; align-items: center; gap: 10px;
@@ -720,7 +726,9 @@ const css = `
 }
 .am-stream-screen {
   background: #000;
-  aspect-ratio: 16/9;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc(90vh - 110px);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; position: relative;
 }
@@ -743,6 +751,7 @@ const css = `
   background: var(--surface-2);
   border-top: 1px solid var(--border);
   font-size: 12px; color: var(--text-2);
+  flex-shrink: 0;
 }
 .am-stream-stop-btn {
   padding: 8px 20px;
@@ -1222,7 +1231,7 @@ export default function ActivityMonitor() {
                                 <div className="am-modal-img-box">
                                     <div className="am-modal-img-label">🖥️ Screenshot</div>
                                     {captureModal.screenshot
-                                        ? <img src={captureModal.screenshot} alt="screenshot" style={{ width: "100%", height: 320, objectFit: "cover", display: "block" }} />
+                                        ? <img src={captureModal.screenshot} alt="screenshot" style={{ width: "100%", maxHeight: "50vh", height: "auto", objectFit: "contain", display: "block" }} />
                                         : <div className="am-modal-no-img">No screenshot available</div>
                                     }
                                 </div>
