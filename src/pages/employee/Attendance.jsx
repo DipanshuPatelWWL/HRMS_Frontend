@@ -241,6 +241,7 @@ const css = `
 .leg-swatch.absent  { background:${STATUS_COLORS.absent.bg}; border-color:${STATUS_COLORS.absent.border}; }
 .leg-swatch.today   { background:#EEF2FF; border-color:#6366F1; }
 .tbadge.short-leave { background: #E0E7FF; color: #3730A3; }
+.tbadge.not-joined  { background: var(--surface-3); color: var(--text-3); }
 
 /* Chart highlight pulse */
 .cal-cell.hl-present  { outline: 2.5px solid ${STATUS_COLORS.present.solid}; outline-offset: 2px; transform: scale(1.12); z-index: 3; box-shadow: 0 0 0 4px rgba(74,222,128,.25); }
@@ -1373,6 +1374,8 @@ const Attendance = () => {
                                         sCls = "s-holiday";
                                     } else if (weekend) {
                                         sCls = "s-weekend";  // always show weekend color, past AND future
+                                    } else if (rec?.status === "not_joined" || rec?.status === "inactive") {
+                                        sCls = "";           // blank — backend confirms not employed on this day
                                     } else if (isBeforeJoining || isFuture) {
                                         sCls = "";           // blank for future non-weekend, non-holiday days
                                     } else if (rec) {
@@ -1392,9 +1395,11 @@ const Attendance = () => {
                                     }
 
                                     // const isBeforeJoining = joiningDate && currentDate < joiningDate;
+                                    const isNotJoinedRec = rec?.status === "not_joined" || rec?.status === "inactive";
                                     const hasRecord =
                                         !isBeforeJoining &&
                                         !isFuture &&
+                                        !isNotJoinedRec &&
                                         !!(rec || holiday || weekend || sCls === "s-absent");
 
                                     const noStatus = !sCls ? "no-status" : "";
@@ -1500,26 +1505,29 @@ const Attendance = () => {
                                             item.status === "absent" && !hasCompletedPunches;
 
                                         const badgeCls =
-                                            item.status === "holiday" ? "holiday" :
-                                                item.status === "weekend" ? "weekend" :
-                                                    item.status === "leave" || item.onLeave || item.leaveApproved ? "leave" :
-                                                        item.isHalfDay ? "half-day" :
-                                                            item.isShortLeave ? "short-leave" :
-                                                                item.isLate ? "late" :
-                                                                    item.eightHourPassUsed ? "pass" :
-                                                                        isGenuinelyAbsent ? "absent" :
-                                                                            "present";
+                                            item.status === "not_joined" || item.status === "inactive" ? "not-joined" :
+                                                item.status === "holiday" ? "holiday" :
+                                                    item.status === "weekend" ? "weekend" :
+                                                        item.status === "leave" || item.onLeave || item.leaveApproved ? "leave" :
+                                                            item.isHalfDay ? "half-day" :
+                                                                item.isShortLeave ? "short-leave" :
+                                                                    item.isLate ? "late" :
+                                                                        item.eightHourPassUsed ? "pass" :
+                                                                            isGenuinelyAbsent ? "absent" :
+                                                                                "present";
 
                                         const badgeLabel =
-                                            item.status === "holiday" ? "Holiday" :
-                                                item.status === "weekend" ? "Weekend" :
-                                                    item.status === "leave" || item.onLeave || item.leaveApproved ? "On Leave" :
-                                                        item.isHalfDay ? "Half Day" :
-                                                            item.isShortLeave ? "Short Leave" :
-                                                                item.isLate ? `Late (+${item.lateMinutes}m)` :
-                                                                    item.eightHourPassUsed ? "Present (8h Pass)" :
-                                                                        isGenuinelyAbsent ? "Absent" :
-                                                                            "Present";
+                                            item.status === "not_joined" ? "Not Joined" :
+                                                item.status === "inactive" ? "Inactive" :
+                                                    item.status === "holiday" ? "Holiday" :
+                                                        item.status === "weekend" ? "Weekend" :
+                                                            item.status === "leave" || item.onLeave || item.leaveApproved ? "On Leave" :
+                                                                item.isHalfDay ? "Half Day" :
+                                                                    item.isShortLeave ? "Short Leave" :
+                                                                        item.isLate ? `Late (+${item.lateMinutes}m)` :
+                                                                            item.eightHourPassUsed ? "Present (8h Pass)" :
+                                                                                isGenuinelyAbsent ? "Absent" :
+                                                                                    "Present";
                                         return (
                                             <tr key={item.dateString || item.date} onClick={() => setSelected(item)}>
                                                 <td style={{ fontWeight: 600, color: "var(--text-1)" }}>

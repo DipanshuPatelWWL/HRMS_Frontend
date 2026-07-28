@@ -138,36 +138,39 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
                     : "No",
         },
     ];
-const getStatusBadge = () => {
-    if (data.status === "leave" || data.onLeave) return "badge-leave";
-    if (holiday) return "badge-holiday";
-    if (weekend) return "badge-weekend";
-    if (data.isHalfDay) return "badge-warn";
-    if (data.isShortLeave) return "badge-neutral";
-    if (data.eightHourPassUsed) return "badge-success";
-    if (data.isLate) return "badge-late";
+    const getStatusBadge = () => {
+        if (data.status === "not_joined" || data.status === "inactive") return "badge-neutral";
+        if (data.status === "leave" || data.onLeave) return "badge-leave";
+        if (holiday) return "badge-holiday";
+        if (weekend) return "badge-weekend";
+        if (data.isHalfDay) return "badge-warn";
+        if (data.isShortLeave) return "badge-neutral";
+        if (data.eightHourPassUsed) return "badge-success";
+        if (data.isLate) return "badge-late";
 
-    const map = {
-        present: "badge-success",
-        "half-day": "badge-warn",
-        "short-leave": "badge-neutral",
-        absent: "badge-absent",
+        const map = {
+            present: "badge-success",
+            "half-day": "badge-warn",
+            "short-leave": "badge-neutral",
+            absent: "badge-absent",
+        };
+
+        return map[data.status] || "badge-absent";
     };
 
-    return map[data.status] || "badge-absent";
-};
+    const getStatusLabel = () => {
+        if (data.status === "not_joined") return "Not Joined";
+        if (data.status === "inactive") return "Inactive";
+        if (data.status === "leave" || data.onLeave) return "On Leave";
+        if (holiday) return holidayName || "Holiday";
+        if (weekend) return "Weekend";
+        if (data.isHalfDay) return "Half Day";
+        if (data.isShortLeave) return "Short Leave";
+        if (data.eightHourPassUsed) return "Present (8h Pass)";
+        if (data.isLate) return "Late";
 
-const getStatusLabel = () => {
-    if (data.status === "leave" || data.onLeave) return "On Leave";
-    if (holiday) return holidayName || "Holiday";
-    if (weekend) return "Weekend";
-    if (data.isHalfDay) return "Half Day";
-    if (data.isShortLeave) return "Short Leave";
-    if (data.eightHourPassUsed) return "Present (8h Pass)";
-    if (data.isLate) return "Late";
-
-    return data.status ? (data.status.charAt(0).toUpperCase() + data.status.slice(1).replace("-", " ")) : "Absent";
-};
+        return data.status ? (data.status.charAt(0).toUpperCase() + data.status.slice(1).replace("-", " ")) : "Absent";
+    };
 
     const STATUS_COLORS = {
         present: { solid: "#22C55E", bg: "#DCFCE7", border: "#86EFAC", text: "#14532D" },
