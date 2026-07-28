@@ -139,7 +139,7 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
         },
     ];
     const getStatusBadge = () => {
-        if (data.status === "not_joined" || data.status === "inactive") return "badge-neutral";
+        if (data.status === "not_joined" || data.status === "inactive" || data.status === "pre_system") return "badge-neutral";
         if (data.status === "leave" || data.onLeave) return "badge-leave";
         if (holiday) return "badge-holiday";
         if (weekend) return "badge-weekend";
@@ -161,6 +161,7 @@ const AttendanceModal = ({ data, onClose, holidays = [] }) => {
     const getStatusLabel = () => {
         if (data.status === "not_joined") return "Not Joined";
         if (data.status === "inactive") return "Inactive";
+        if (data.status === "pre_system") return "No Record (Account not yet created)";
         if (data.status === "leave" || data.onLeave) return "On Leave";
         if (holiday) return holidayName || "Holiday";
         if (weekend) return "Weekend";
