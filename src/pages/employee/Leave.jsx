@@ -575,8 +575,6 @@ const Leave = () => {
                                 onChange={e => setForm({ ...form, type: e.target.value })}
                             >
                                 <option value="casual">Casual Leave</option>
-                                <option value="sick">Sick Leave</option>
-                                <option value="earned">Earned Leave</option>
                                 <option value="unpaid">Unpaid Leave</option>
                                 <option value="short-leave">Short Leave</option>
                             </select>

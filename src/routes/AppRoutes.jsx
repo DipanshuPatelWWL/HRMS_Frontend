@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { isOnProbation, getProbationEndDate } from "../utils/probation";
 
 // Auth
 import Login from "../pages/auth/Login";
@@ -86,6 +87,37 @@ const Protected = ({ children, allowedRoles, allowedDesignations }) => {
 };
 
 // ─────────────────────────────────────────────
+//  Probation guard — blocks /leave routes
+// ─────────────────────────────────────────────
+const ProbationGuard = ({ children }) => {
+    const { user } = useContext(AuthContext);
+
+    if (user && isOnProbation(user.joiningDate)) {
+        const home =
+            user.role === "hr" ? "/hr" :
+                user.role === "tl" ? "/tl" :
+                    user.role === "manager" ? "/manager" : "/employee";
+
+        return (
+            <Navigate
+                to={home}
+                replace
+                state={{
+                    probationBlocked: true,
+                    probationEndDate: getProbationEndDate(user.joiningDate),
+                }}
+            />
+        );
+    }
+
+    return children;
+};
+
+// ─────────────────────────────────────────────
+//  Root redirect based on role
+// ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
 //  Root redirect based on role
 // ─────────────────────────────────────────────
 const RoleRedirect = () => {
@@ -108,7 +140,7 @@ const AppRoutes = () => (
         {/* ── EMPLOYEE ROUTES ── */}
         <Route path="/employee" element={<Protected allowedRoles={["employee"]}><EmployeeDashboard /></Protected>} />
         <Route path="/employee/attendance" element={<Protected><Attendance /></Protected>} />
-        <Route path="/employee/leave" element={<Protected allowedRoles={["employee"]}><Leave /></Protected>} />
+        <Route path="/employee/leave" element={<Protected allowedRoles={["employee"]}><ProbationGuard><Leave /></ProbationGuard></Protected>} />
         <Route path="/employee/payroll" element={<Protected allowedRoles={["employee"]}><Payroll /></Protected>} />
         <Route path="/employee/profile" element={<Protected allowedRoles={["employee"]}><Profile /></Protected>} />
         <Route path="/employee/tasks" element={<Protected allowedRoles={["employee"]}><Tasks /></Protected>} />
@@ -136,7 +168,7 @@ const AppRoutes = () => (
 
         {/* Personal (reusing same components as employee – TL is also an employee) */}
         <Route path="/tl/team-attendance" element={<Protected allowedRoles={["tl"]}><TeamAttendance /></Protected>} />
-        <Route path="/tl/leave" element={<Protected allowedRoles={["tl"]}><Leave /></Protected>} />
+        <Route path="/tl/leave" element={<Protected allowedRoles={["tl"]}><ProbationGuard><Leave /></ProbationGuard></Protected>} />
         <Route path="/tl/payroll" element={<Protected allowedRoles={["tl"]}><Payroll /></Protected>} />
         <Route path="/tl/profile" element={<Protected allowedRoles={["tl"]}><Profile /></Protected>} />
         <Route path="/tl/tasks" element={<Protected allowedRoles={["tl"]}><Tasks /></Protected>} />

@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useContext, useEffect, useLayoutEffect, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useNotificationDots } from "../common/NotificationDot";
-
+import { isOnProbation } from "../../utils/probation";
 import {
     MdDashboard,
     MdAccessTime,
@@ -405,6 +405,8 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
         user?.role === "tl" &&
         user?.department === "Sales";
 
+    const onProbation = isOnProbation(user?.joiningDate);
+
     return (
         <div className={sidebarClass}>
             {/* ── Brand ── */}
@@ -454,7 +456,9 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                         <NavItem to="/employee" label="Dashboard" iconKey="dashboard" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/attendance" label="Attendance" iconKey="attendance" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/holidays" label="Holiday Calendar" iconKey="holiday" onClick={onClose} collapsed={collapsed} />
-                        <NavItem to="/employee/leave" label="Leave" iconKey="leave" onClick={onClose} collapsed={collapsed} />
+                        {!onProbation && (
+                            <NavItem to="/employee/leave" label="Leave" iconKey="leave" onClick={onClose} collapsed={collapsed} />
+                        )}
                         <NavItem to="/employee/attendance-correction" label="Attendance Correction" iconKey="attendanceCorrection" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
                         <NavItem to="/employee/payroll" label="Payroll" iconKey="payroll" onClick={onClose} collapsed={collapsed} />
@@ -484,7 +488,9 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/tl" label="Dashboard" iconKey="dashboard" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/attendance" label="My Attendance" iconKey="attendance" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/holidays" label="Holiday Calendar" iconKey="holiday" onClick={onClose} collapsed={collapsed} />
-                            <NavItem to="/tl/leave" label="My Leave" iconKey="leave" onClick={onClose} collapsed={collapsed} />
+                            {!onProbation && (
+                                <NavItem to="/tl/leave" label="My Leave" iconKey="leave" onClick={onClose} collapsed={collapsed} />
+                            )}
                             <NavItem to="/tl/attendance-correction" label="Attendance Correction" iconKey="attendanceCorrection" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/payroll" label="My Payroll" iconKey="payroll" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/tl/tasks" label="My Tasks" iconKey="tasks" onClick={onClose} collapsed={collapsed} />
