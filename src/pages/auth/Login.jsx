@@ -38,6 +38,7 @@ const Login = () => {
             if (role === "hr") navigate("/hr");
             else if (role === "tl") navigate("/tl");
             else if (role === "manager") navigate("/manager");
+            else if (role === "superadmin") navigate("/superadmin");
             else navigate("/employee");
 
         } catch (err) {

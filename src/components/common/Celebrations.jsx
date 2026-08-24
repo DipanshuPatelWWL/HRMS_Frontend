@@ -505,6 +505,36 @@ const TemplateCard = ({ def, isSelected, onSelect, onPreview }) => (
 );
 
 
+
+const formatDateTimeLocalIST = (dateValue) => {
+    if (!dateValue) return "";
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return "";
+    }
+
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    }).formatToParts(date);
+
+    const values = {};
+
+    parts.forEach(({ type, value }) => {
+        values[type] = value;
+    });
+
+    return `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}`;
+};
+
+
 // ─────────────────────────────────────────────
 // MODAL
 // ─────────────────────────────────────────────
@@ -543,7 +573,7 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
                 recipients: editData.recipients?.map(r => r._id || r) ||
                     (editData.employeeId ? [editData.employeeId?._id || editData.employeeId] : []),
                 customMessage: editData.customMessage || "",
-                scheduledAt: editData.scheduledAt ? new Date(editData.scheduledAt).toISOString().slice(0, 16) : "",
+                scheduledAt: formatDateTimeLocalIST(editData.scheduledAt),
             });
 
             // If editData has a templateId, try to match a local theme card
@@ -786,12 +816,16 @@ const CelebrationModal = ({ isOpen, onClose, onSave, editData, users, templates,
                                     <input
                                         type="checkbox"
                                         checked={form.recipients.includes(u._id)}
-                                        onChange={e =>
-                                            set("recipients", e.target.checked
+                                        onChange={e => {
+                                            const newRecipients = e.target.checked
                                                 ? [...form.recipients, u._id]
-                                                : form.recipients.filter(id => id !== u._id)
-                                            )
-                                        }
+                                                : form.recipients.filter(id => id !== u._id);
+                                            setForm(f => ({
+                                                ...f,
+                                                recipients: newRecipients,
+                                                sendToOthers: newRecipients.length > 0,
+                                            }));
+                                        }}
                                         style={{ accentColor: "#5b4cf5" }}
                                     />
                                     <div style={{ flex: 1 }}>
@@ -966,8 +1000,19 @@ const Celebrations = () => {
     const fetchUsers = async () => {
         try {
             const res = await API.get("/users");
-            setUsers(res.data?.users || res.data || []);
-        } catch { }
+
+            const allUsers = res.data?.users || res.data || [];
+
+            // Only show active users in celebrations
+            const activeUsers = allUsers.filter(
+                user => user.status === "active"
+            );
+
+            setUsers(activeUsers);
+        } catch (error) {
+            console.error("Failed to fetch users:", error);
+            setUsers([]);
+        }
     };
 
     const fetchTemplates = async () => {
@@ -1031,7 +1076,9 @@ const Celebrations = () => {
         setEditData({
             employeeId: { _id: event.employeeId },
             eventType: event.eventType,
-            recipients: [event.employeeId],  // auto-check the employee
+            sendToEmployee: true,
+            sendToOthers: true,
+            recipients: [event.employeeId],
         });
         setModalOpen(true);
     };

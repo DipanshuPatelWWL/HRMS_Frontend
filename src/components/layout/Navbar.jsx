@@ -87,6 +87,34 @@ const pageTitles = {
     "/manager-correction-requests": "Attendance Management",
     "/manager-payroll-management": "Payroll Management",
     "/manager-helpdesk": "Helpdesk Management",
+
+
+
+
+    // ── superadmin – Overview ────────────────────────────────────
+    "/superadmin": "Super Admin Dashboard",
+    "/superadmin-employees": "Employees",
+    "/superadmin-attendance": "Attendance Overview",
+    "/superadmin-holidays": "Holiday Management",
+    "/superadmin-announcements": "Announcements",
+    "/superadmin-scan-logs": "Scan Logs",
+    "/superadmin-view-task": "View Tasks",
+    "/superadmin/upcoming-events": "Upcoming Events",
+    "/superadmin-sales-reports": "Sales Reports",
+    "/superadmin-sales-intelligence": "Sales Intelligence",
+    "/hr/sales-intelligence": "Sales Intelligence",
+    "/sales-intelligence": "Sales Intelligence",
+    "/superadmin-daily-report": "Daily Report",
+    "/superadmin-policies": "Policy Management",
+    "/superadmin-activity-monitor": "Activity Monitor",
+    "/superadmin-assets": "Assets Management",
+    "/superadmin/profile": "Profile",
+
+    // ── superadmin – Management ──────────────────────────────────
+    "/superadmin-leave-approval": "Leave Approvals",
+    "/superadmin-correction-requests": "Attendance Management",
+    "/superadmin-payroll-management": "Payroll Management",
+    "/superadmin-helpdesk": "Helpdesk Management",
 };
 
 /* ── Icons ── */
@@ -157,8 +185,10 @@ const Navbar = ({ onSidebarOpen, collapsed, onToggleCollapse }) => {
         .join("")
         .toUpperCase()
         .slice(0, 2) || "U";
-
-    const profilePath = `/${pathname.split("/")[1]}/profile`;
+const roleBase = pathname.split("/")[1]?.split("-")[0] || "employee";
+const profilePath = roleBase === "superadmin" || roleBase === "manager"
+    ? `/${roleBase}/profile`
+    : `/${roleBase}/profile`;
 
     return (
         <>

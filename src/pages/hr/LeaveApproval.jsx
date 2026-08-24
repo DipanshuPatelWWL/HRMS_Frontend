@@ -672,6 +672,7 @@ const LeaveApproval = () => {
 
             if (role === "hr" || role === "superadmin") url = `/leave/hr-approve/${id}`;
             else if (role === "manager") url = `/leave/manager-approve/${id}`;
+            else if (role === "superadmin") url = `/leave/superadmin-approve/${id}`;
             else if (role === "tl") url = `/leave/tl-approve/${id}`;
             else return Swal.fire({
                 icon: "error",

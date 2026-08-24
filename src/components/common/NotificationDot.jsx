@@ -4,15 +4,15 @@ const NotificationDotContext = createContext(null);
 
 /* Map notification type → which route(s) get a dot */
 const TYPE_TO_ROUTES = {
-    announcement: ["/employee/announcements", "/tl/announcements", "/hr/announcements", "/manager-announcements"],
-    leave_applied: ["/hr/leave-approval", "/tl/leave-approval", "/manager-leave-approval"],
+    announcement: ["/employee/announcements", "/tl/announcements", "/hr/announcements", "/manager-announcements","/superadmin-announcements"],
+    leave_applied: ["/hr/leave-approval", "/tl/leave-approval", "/manager-leave-approval","/superadmin-leave-approval"],
     leave_approved: ["/employee/leave", "/tl/leave"],
     leave_rejected: ["/employee/leave", "/tl/leave"],
     task_assigned: ["/employee/tasks", "/tl/tasks"],
     task_updated: ["/employee/tasks", "/tl/tasks"],
-    task_done: ["/tl/team", "/manager-view-task"],
-    ticket_replied: ["/employee/helpdesk", "/tl/helpdesk", "/hr/helpdesk", "/manager-helpdesk"],
-    ticket_resolved: ["/employee/helpdesk", "/tl/helpdesk", "/hr/helpdesk", "/manager-helpdesk"],
+    task_done: ["/tl/team", "/manager-view-task","/superadmin-view-task"],
+    ticket_replied: ["/employee/helpdesk", "/tl/helpdesk", "/hr/helpdesk", "/manager-helpdesk","/superadmin-helpdesk"],
+    ticket_resolved: ["/employee/helpdesk", "/tl/helpdesk", "/hr/helpdesk", "/manager-helpdesk","/superadmin-helpdesk"],
     payroll: ["/employee/payroll", "/tl/payroll"],
     attendance_alert: ["/employee/attendance", "/tl/attendance"],
     general: [],

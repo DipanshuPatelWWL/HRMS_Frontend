@@ -343,8 +343,42 @@ const EmployeePickerModal = ({ isOpen, onClose, employees, loading, onSelect }) 
                             </div>
                             <div>
                                 <div style={{ fontWeight: 700, fontSize: ".88rem", color: "var(--text-1)" }}>{emp.name || "—"}</div>
-                                <div style={{ fontSize: ".75rem", color: "var(--text-3)" }}>
-                                    {emp.employeeId || ""}{emp.department && ` · ${emp.department}`}{emp.role && ` · ${emp.role}`}
+                                <div style={{
+                                    fontSize: ".75rem",
+                                    color: "var(--text-3)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 6,
+                                    flexWrap: "wrap",
+                                }}>
+                                    <span>
+                                        {emp.employeeId || ""}
+                                        {emp.department && ` · ${emp.department}`}
+                                    </span>
+
+                                    {emp.role && (
+                                        <span style={{
+                                            padding: "2px 7px",
+                                            borderRadius: 999,
+                                            fontSize: ".65rem",
+                                            fontWeight: 800,
+                                            textTransform: "uppercase",
+                                            background:
+                                                emp.role === "hr"
+                                                    ? "#fef3c7"
+                                                    : emp.role === "tl"
+                                                        ? "#dbeafe"
+                                                        : "#f3f4f6",
+                                            color:
+                                                emp.role === "hr"
+                                                    ? "#92400e"
+                                                    : emp.role === "tl"
+                                                        ? "#1d4ed8"
+                                                        : "#4b5563",
+                                        }}>
+                                            {emp.role}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>

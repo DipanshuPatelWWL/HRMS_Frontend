@@ -277,6 +277,7 @@ const NavItem = ({ to, label, iconKey, onClick, collapsed }) => {
             to !== "/employee" &&
             to !== "/tl" &&
             to !== "/manager" &&
+            to !== "/superadmin" &&
             pathname.startsWith(to + "/")
         );
 
@@ -572,6 +573,42 @@ const Sidebar = ({ isOpen, onClose, collapsed }) => {
                             <NavItem to="/manager/archived-employees" label="Archived Employees" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager/terminated-employees" label="Terminated Employees" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
                             <NavItem to="/manager-helpdesk" label="Helpdesk Management" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
+                        </div>
+                    </>
+                )}
+
+
+
+
+                 {/* ══ SUPER ADMIN ══ */}
+                {user?.role === "superadmin" && (
+                    <>
+                        <div className="sidebar-section">
+                            <div className="sidebar-section-label" style={{ color: "var(--text-3)" }}>Overview</div>
+                            <NavItem to="/superadmin" label="Dashboard" iconKey="dashboard" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-employees" label="Employees" iconKey="employees" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-attendance" label="Attendance Overview" iconKey="attendanceOverview" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-holidays" label="Holiday Management" iconKey="holidayMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-announcements" label="Announcements" iconKey="announcements" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-scan-logs" label="Scan Logs" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-view-task" label="View Tasks" iconKey="viewTasks" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin/upcoming-events" label="Upcoming Events" iconKey="upcomingEvents" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-sales-reports" label="Sales Report" iconKey="salesReport" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-sales-intelligence" label="Sales Intelligence" iconKey="salesIntelligence" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-daily-report" label="Daily Report" iconKey="dailyReport" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-assets" label="Assets Management" iconKey="assetsMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-activity-monitor" label="Activity Monitor" iconKey="scanLogs" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-policies" label="Policy Management" iconKey="policies" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin/profile" label="Profile" iconKey="profile" onClick={onClose} collapsed={collapsed} />
+                        </div>
+                        <div className="sidebar-section">
+                            <div className="sidebar-section-label" style={{ color: "var(--text-3)" }}>Management</div>
+                            <NavItem to="/superadmin-leave-approval" label="Leave Approvals" iconKey="leaveApprove" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-correction-requests" label="Attendance Management" iconKey="correctionRequests" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-payroll-management" label="Payroll" iconKey="payrollMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin/archived-employees" label="Archived Employees" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin/terminated-employees" label="Terminated Employees" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
+                            <NavItem to="/superadmin-helpdesk" label="Helpdesk Management" iconKey="helpdeskMgmt" onClick={onClose} collapsed={collapsed} />
                         </div>
                     </>
                 )}

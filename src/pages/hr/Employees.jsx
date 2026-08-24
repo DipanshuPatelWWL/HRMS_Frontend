@@ -3,9 +3,6 @@ import API, { BASE_URL } from "../../services/api";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { AuthContext } from "../../context/AuthContext";
 import StopwatchLoader from "../../components/common/StopwatchLoader";
-import EmployeeScanner from "../../components/scanner/EmployeeScanner"
-import { EmployeeIDCard } from "../../components/scanner/EmployeeScanner";
-import { QRCodeSVG } from "qrcode.react";
 import Swal from "sweetalert2";
 
 import { formatRole } from "../../utils/roleFormatter";
@@ -431,41 +428,87 @@ const FormFields = ({ form, onChange }) => {
                     <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
                         Role <span style={{ color: "var(--danger)" }}>*</span>
                     </label>
-                    <select name="role" className="input select" value={form.role} onChange={onChange}>
+                    <select
+                        name="role"
+                        className="input select"
+                        value={form.role}
+                        onChange={onChange}
+                    >
                         <option value="employee">Employee</option>
+
                         <option value="tl">Team Leader</option>
-                        {(form._creatorRole === "manager" || form._creatorRole === "superadmin") && (
-                            <option value="hr">HR</option>
-                        )}
+
+                        {/* Manager + Superadmin can create HR */}
+                        {(form._creatorRole === "manager" ||
+                            form._creatorRole === "superadmin") && (
+                                <option value="hr">HR</option>
+                            )}
+
+                        {/* Only Superadmin can create Manager */}
                         {form._creatorRole === "superadmin" && (
                             <option value="manager">Manager</option>
                         )}
+
+                        {/* Only Superadmin can create another Superadmin */}
+                        {form._creatorRole === "superadmin" && (
+                            <option value="superadmin">Superadmin</option>
+                        )}
                     </select>
                 </div>
+                
                 <div className="form-group" style={{ margin: 0 }}>
                     <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Department</label>
-                    <select name="department" className="input select" value={form.department} onChange={handleFieldChange}>
-                        <option value="">Select department</option>
-                        <option value="SEO">SEO</option>
-                        <option value="Sales">Sales</option>
-                        <option value="Development">Development</option>
-                        <option value="HR">HR</option>
-                    </select>
+                    {["manager", "superadmin"].includes(form.role?.toLowerCase?.()) ? (
+                        <div
+                            className="input"
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                background: "var(--surface-2)",
+                                color: "var(--text-3)",
+                                fontStyle: "italic",
+                                cursor: "not-allowed",
+                            }}
+                        >
+                            Not applicable — {form.role === "manager" ? "Managers" : "Superadmins"} oversee all departments
+                        </div>
+                    ) : (
+                        <select
+                            name="department"
+                            className="input select"
+                            value={form.department}
+                            onChange={handleFieldChange}
+                        >
+                            <option value="">Select department</option>
+                            <option value="SEO">SEO</option>
+                            <option value="Sales">Sales</option>
+                            <option value="Development">Development</option>
+
+                            {/* HR department can only be selected by Manager/Superadmin */}
+                            {(form._creatorRole === "manager" ||
+                                form._creatorRole === "superadmin") && (
+                                    <option value="HR">HR</option>
+                                )}
+                        </select>
+                    )}
                 </div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: ".75rem" }} className="resp-grid-2">
-                <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Designation</label>
-                    <select
-                        name="designation" className="input select" value={form.designation} onChange={onChange}
-                        disabled={!form.department}
-                        style={{ opacity: !form.department ? 0.6 : 1, cursor: !form.department ? "not-allowed" : "pointer" }}
-                    >
-                        <option value="">{form.department ? "Select designation" : "Select dept first"}</option>
-                        {designations.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                </div>
+                
+                {!["manager", "superadmin"].includes(form.role?.toLowerCase?.()) && (
+                    <div className="form-group" style={{ margin: 0 }}>
+                        <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>Designation</label>
+                        <select
+                            name="designation" className="input select" value={form.designation} onChange={onChange}
+                            disabled={!form.department}
+                            style={{ opacity: !form.department ? 0.6 : 1, cursor: !form.department ? "not-allowed" : "pointer" }}
+                        >
+                            <option value="">{form.department ? "Select designation" : "Select dept first"}</option>
+                            {designations.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                    </div>
+                )}
                 {(["employee", "tl", "hr"].includes(form.role?.toLowerCase?.())) && (
                     <div className="form-group" style={{ margin: 0 }}>
                         <label className="form-label" style={{ color: "var(--text-1)", fontWeight: 600 }}>
@@ -1817,9 +1860,16 @@ const Employees = () => {
 
 
     const { user } = useContext(AuthContext);
-    const isHR = user?.role?.toLowerCase() === "hr";
-    const isTL = user?.role?.toLowerCase() === "tl";
-    const isManager = user?.role?.toLowerCase() === "manager";
+
+    const currentUserRole = user?.role?.toLowerCase();
+
+    const isHR = currentUserRole === "hr";
+    const isTL = currentUserRole === "tl";
+    const isManager = currentUserRole === "manager";
+    const isSuperadmin = currentUserRole === "superadmin";
+
+    // Users who are allowed to create users
+    const canManageUsers = isHR || isManager || isSuperadmin;
 
     useEffect(() => { fetchEmployees(); }, []);
 
@@ -1941,25 +1991,67 @@ const Employees = () => {
         e.employeeId?.toLowerCase().includes(search.toLowerCase())
     );
 
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
+
         setForm(prev => {
-            let updated = { ...prev, [name]: value };
-            if (name === "role" && value !== "employee") updated.monthlySalary = "";
+            let updated = {
+                ...prev,
+                [name]: value
+            };
+
+            // Reset salary when changing to a role
+            // that doesn't use salary in this form.
+            if (
+                name === "role" &&
+                !["employee", "tl", "hr"].includes(value)
+            ) {
+                updated.monthlySalary = "";
+            }
+
+            // HR creator is not allowed to use HR department.
+            if (
+                name === "role" &&
+                prev._creatorRole === "hr" &&
+                value !== "hr" &&
+                prev.department === "HR"
+            ) {
+                updated.department = "";
+                updated.designation = "";
+            }
+
+            // Manager / Superadmin are org-wide roles — they don't belong
+            // to a single department, so clear any previously selected one.
+            if (
+                name === "role" &&
+                ["manager", "superadmin"].includes(value)
+            ) {
+                updated.department = "";
+                updated.designation = "";
+            }
+
             return updated;
         });
     };
 
-
     const openAdd = () => {
-        if (!isHR && !isManager) return;
+        if (!canManageUsers) return;
+
         setSearch("");
-        setForm({ ...EMPTY_FORM, _isAdd: true, _creatorRole: user?.role, _key: Date.now() });
+
+        setForm({
+            ...EMPTY_FORM,
+            _isAdd: true,
+            _creatorRole: currentUserRole,
+            _key: Date.now(),
+        });
+
         setAddModal(true);
     };
 
     const openEdit = (emp) => {
-        if (!isHR && !isManager) return;
+        if (!isHR && !isManager && !isSuperadmin) return;
         const role = emp.role?.toLowerCase?.() || emp.role || "employee";
         const monthlySalary =
             emp.salary?.monthly ||
@@ -1987,13 +2079,92 @@ const Employees = () => {
     };
 
     const handleCreate = async () => {
-        if (!isHR && !isManager) return;
+        if (!canManageUsers) return;
+
+        const creatorRole = currentUserRole;
+        const targetRole = form.role?.toLowerCase();
+
+        // ─────────────────────────────────────────────
+        // ROLE PERMISSION
+        // HR        → employee + tl
+        // Manager   → employee + tl + hr + manager
+        // Superadmin → everything
+        // ─────────────────────────────────────────────
+
+        const allowedRoles = {
+            hr: ["employee", "tl"],
+            manager: ["employee", "tl", "hr", "manager"],
+            superadmin: [
+                "employee",
+                "tl",
+                "hr",
+                "manager",
+                "superadmin",
+            ],
+        };
+
+        if (!allowedRoles[creatorRole]?.includes(targetRole)) {
+            Swal.fire({
+                icon: "error",
+                title: "Not Authorized",
+                text: "You are not authorized to create this user role.",
+                confirmButtonColor: "#EF4444",
+            });
+            return;
+        }
+
+        // HR cannot create/select HR department
+        if (creatorRole === "hr" && form.department === "HR") {
+            Swal.fire({
+                icon: "error",
+                title: "Not Authorized",
+                text: "HR cannot create users under the HR department.",
+                confirmButtonColor: "#EF4444",
+            });
+            return;
+        }
+
+        if (!form.name || !form.email || !form.password) {
+            Swal.fire({
+                icon: "warning",
+                title: "Missing Fields",
+                text: "Please fill in all required fields",
+                confirmButtonColor: "#6366F1"
+            });
+            return;
+        }
+
+        // Salary is required for these roles
+        if (
+            ["employee", "tl", "hr"].includes(targetRole) &&
+            !form.monthlySalary
+        ) {
+            Swal.fire({
+                icon: "warning",
+                title: "Salary Required",
+                text: "Salary is required for employees, team leaders and HR",
+                confirmButtonColor: "#6366F1"
+            });
+            return;
+        }
+
+        // Continue with your existing validation below...
         if (!form.name || !form.email || !form.password) {
             Swal.fire({ icon: "warning", title: "Missing Fields", text: "Please fill in all required fields", confirmButtonColor: "#6366F1" });
             return;
         }
-        if (form.role === "employee" && !form.monthlySalary) {
-            Swal.fire({ icon: "warning", title: "Salary Required", text: "Salary is required for employees", confirmButtonColor: "#6366F1" });
+        if (
+            ["employee", "tl", "hr"].includes(
+                form.role?.toLowerCase()
+            ) &&
+            !form.monthlySalary
+        ) {
+            Swal.fire({
+                icon: "warning",
+                title: "Salary Required",
+                text: "Salary is required for employees, team leaders and HR",
+                confirmButtonColor: "#6366F1"
+            });
             return;
         }
         if (form.password.length < 8) {
@@ -2053,7 +2224,7 @@ const Employees = () => {
     };
 
     const handleUpdate = async () => {
-        if (!isHR && !isManager) return;
+        if (!isHR && !isManager && !isSuperadmin) return;
         if (!form.name || !form.email) {
             Swal.fire({ icon: "warning", title: "Missing Fields", text: "Please fill in all required fields", confirmButtonColor: "#6366F1" });
             return;
@@ -2101,7 +2272,7 @@ const Employees = () => {
     };
 
     const handleConfirmAction = async () => {
-        if ((!isHR && !isManager) || !confirm) return;
+        if ((!isHR && !isManager && !isSuperadmin) || !confirm) return;
         const { type, employee } = confirm;
         setActionLoading(true);
         try {
@@ -2674,7 +2845,7 @@ const Employees = () => {
                                 </svg>
                                 {filtered.length} {filtered.length === 1 ? (isTL ? "member" : "employee") : (isTL ? "members" : "employees")}
                             </span>
-                            {(isHR || isManager) && (
+                            {(isHR || isManager || isSuperadmin) && (
                                 <>
                                     <button className="btn btn-primary" onClick={openAdd} style={{ gap: "6px" }}>
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -2731,7 +2902,7 @@ const Employees = () => {
                                         : "Get started by adding your first employee"
                                 }
                             </p>
-                            {!search && !isTL && (isHR || isManager) && (
+                            {!search && !isTL && canManageUsers && (
                                 <button className="btn btn-primary" onClick={openAdd} style={{ marginTop: "1.25rem", gap: "6px" }}>
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                         <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
@@ -2750,7 +2921,7 @@ const Employees = () => {
                     )}
 
                     {/* HR view: full table */}
-                    {!loading && filtered.length > 0 && (isHR || isManager) && (
+                    {!loading && filtered.length > 0 && (isHR || isManager || isSuperadmin) && (
                         <div className="emp-table-wrap">
                             <table className="emp-table">
                                 <thead>
@@ -2840,7 +3011,7 @@ const Employees = () => {
             </div>
 
             {/* ─── Add Modal ─── */}
-            {addModal && (isHR || isManager) && (
+            {addModal && canManageUsers && (
                 <div className="modal-backdrop">
                     <div className="modal enhanced-modal" key={form._key}>
                         <div className="modal-header">
@@ -2885,7 +3056,7 @@ const Employees = () => {
             )}
 
             {/* ─── Edit Modal (tabbed) ─── */}
-            {editTarget && editEmp && (isHR || isManager) && (
+            {editTarget && editEmp && (isHR || isManager || isSuperadmin) && (
                 <div className="modal-backdrop">
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
@@ -3193,7 +3364,7 @@ const Employees = () => {
             )}
 
             {/* ─── Assign Team Modal ─── */}
-            {assignModal && (isHR || isManager) && (
+            {assignModal && (isHR || isManager || isSuperadmin) && (
                 <div className="modal-backdrop">
                     <div className="modal enhanced-modal">
                         <div className="modal-header">
@@ -3410,7 +3581,7 @@ const Employees = () => {
             )}
 
             {/* ─── Confirm Dialog ─── */}
-            {confirm && activeConfirmConfig && (isHR || isManager) && (
+            {confirm && activeConfirmConfig && (isHR || isManager || isSuperadmin) && (
                 <ConfirmDialog
                     title={activeConfirmConfig.title}
                     message={activeConfirmConfig.getMessage(confirm.employee?.name)}

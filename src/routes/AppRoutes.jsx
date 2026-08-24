@@ -60,6 +60,14 @@ import SalesIntelligence from '../../pages/SalesIntelligence'
 import EmployeeHistory from "../pages/hr/EmployeeHistory";
 import DeviceApprovals from "../pages/hr/DeviceApprovals";
 
+
+
+//------------------------Super Admin --------------------------------------//
+
+import SuperAdminDashboard from "../pages/superAdmin/SuperAdminDashboard";
+
+
+
 // ─────────────────────────────────────────────
 //  Protected route
 // ─────────────────────────────────────────────
@@ -73,6 +81,7 @@ const Protected = ({ children, allowedRoles, allowedDesignations }) => {
         if (user.role === "hr") return <Navigate to="/hr" replace />;
         if (user.role === "tl") return <Navigate to="/tl" replace />;
         if (user.role === "manager") return <Navigate to="/manager" replace />;
+        if (user.role === "superadmin") return <Navigate to="/superadmin" replace />;
         return <Navigate to="/employee" replace />;
     }
 
@@ -96,8 +105,8 @@ const ProbationGuard = ({ children }) => {
         const home =
             user.role === "hr" ? "/hr" :
                 user.role === "tl" ? "/tl" :
-                    user.role === "manager" ? "/manager" : "/employee";
-
+                    user.role === "manager" ? "/manager" :
+                        user.role === "superadmin" ? "/superadmin" : "/employee";
         return (
             <Navigate
                 to={home}
@@ -128,7 +137,7 @@ const RoleRedirect = () => {
     if (user.role === "hr") return <Navigate to="/hr" replace />;
     if (user.role === "tl") return <Navigate to="/tl" replace />;
     if (user.role === "manager") return <Navigate to="/manager" replace />;
-
+    if (user.role === "superadmin") return <Navigate to="/superadmin" replace />;
     return <Navigate to="/employee" replace />;
 };
 const AppRoutes = () => (
@@ -261,6 +270,35 @@ const AppRoutes = () => (
         <Route path="/manager/employee-history/:id" element={<Protected allowedRoles={["manager"]}><EmployeeHistory /></Protected>} />
         <Route path="/manager-sales-intelligence"
             element={<Protected allowedRoles={["manager"]}><SalesIntelligence /></Protected>} />
+
+
+            
+
+             {/* Super Admin Routes */}
+        <Route path="/superadmin" element={<Protected allowedRoles={["superadmin"]}><SuperAdminDashboard /></Protected>} />
+                <Route path="/superadmin/profile" element={<Protected allowedRoles={["superadmin"]}><Profile /></Protected>} />
+      // NEW
+<Route path="/superadmin-employees" element={<Protected allowedRoles={["superadmin"]}><Employees /></Protected>} />
+<Route path="/superadmin-leave-approval" element={<Protected allowedRoles={["superadmin"]}><LeaveApproval /></Protected>} />
+<Route path="/superadmin-payroll-management" element={<Protected allowedRoles={["superadmin"]}><PayrollMgmt /></Protected>} />
+<Route path="/superadmin-holidays" element={<Protected allowedRoles={["superadmin"]}><HRHoliday /></Protected>} />
+<Route path="/superadmin-announcements" element={<Protected allowedRoles={["superadmin"]}><AnnouncementsPage /></Protected>} />
+<Route path="/superadmin-correction-requests" element={<Protected allowedRoles={["superadmin"]}><AttendanceCorrectionApproval /></Protected>} />
+<Route path="/superadmin-helpdesk" element={<Protected allowedRoles={["superadmin"]}><HRHelpdesk /></Protected>} />
+<Route path="/superadmin-attendance" element={<Protected allowedRoles={["superadmin"]}><HRAttendanceOverview /></Protected>} />
+<Route path="/superadmin-scan-logs" element={<Protected allowedRoles={["superadmin"]}><ScanLogsPage /></Protected>} />
+        <Route path="/superadmin-view-task" element={<Protected allowedRoles={["superadmin"]}><ManagerTasks /></Protected>} />
+        <Route path="/superadmin/upcoming-events" element={<Protected allowedRoles={["superadmin"]}><Celebrations /></Protected>} />
+        <Route path="/superadmin-sales-reports" element={<Protected allowedRoles={["superadmin"]}><ManagerSalesReports /></Protected>} />
+        <Route path="/superadmin-daily-report" element={<Protected allowedRoles={["superadmin"]}><ManagerDailyReport /></Protected>} />
+        <Route path="/superadmin-assets" element={<Protected allowedRoles={["superadmin"]}><AssetManagement /></Protected>} />
+        <Route path="/superadmin-policies" element={<Protected allowedRoles={["superadmin"]}><PolicyManagement /></Protected>} />
+        <Route path="/superadmin-activity-monitor" element={<Protected allowedRoles={["superadmin"]}><ActivityMonitor /></Protected>} />
+        <Route path="/superadmin/archived-employees" element={<Protected allowedRoles={["superadmin"]}><ArchivedEmployees /></Protected>} />
+        <Route path="/superadmin/terminated-employees" element={<Protected allowedRoles={["superadmin"]}><TerminatedEmployees /></Protected>} />
+        <Route path="/superadmin/employee-history/:id" element={<Protected allowedRoles={["superadmin"]}><EmployeeHistory /></Protected>} />
+        <Route path="/superadmin-sales-intelligence"
+            element={<Protected allowedRoles={["superadmin"]}><SalesIntelligence /></Protected>} />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/login" replace />} />
