@@ -16,7 +16,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 /* ─────────────────────────────────────────────
-   Stat Card
+   Stat Cards
 ───────────────────────────────────────────── */
 const StatCard = ({ title, value, accent, sub, icon: Icon, payrollPct }) => (
     <div
